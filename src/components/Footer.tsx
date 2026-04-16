@@ -16,13 +16,13 @@ export function Footer() {
                 <span className="font-semibold">TELLECT</span>
               </span>
             </Link>
-            <p className="text-slate-500 text-sm max-w-xs leading-relaxed font-medium">
+            <p className="text-slate-600 dark:text-slate-300 text-sm max-w-xs leading-relaxed font-medium">
               Scaling expertise with total trust. The world&apos;s premier professional consultation ecosystem.
             </p>
           </div>
           <div>
             <h4 className="font-black uppercase tracking-widest text-[10px] text-slate-400 mb-6">Platform</h4>
-            <ul className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-400">
+            <ul className="space-y-4 text-sm font-bold text-slate-700 dark:text-slate-200">
               <li><Link href="/experts" className="hover:text-primary transition-colors">Browse Experts</Link></li>
               <li><Link href="/signup" className="hover:text-primary transition-colors">Become an Expert</Link></li>
               <li><Link href="/safety" className="hover:text-primary transition-colors">Safety Protocol</Link></li>
@@ -30,7 +30,7 @@ export function Footer() {
           </div>
           <div>
             <h4 className="font-black uppercase tracking-widest text-[10px] text-slate-400 mb-6">Support</h4>
-            <ul className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-400">
+            <ul className="space-y-4 text-sm font-bold text-slate-700 dark:text-slate-200">
               <li><Link href="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
               <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
@@ -39,7 +39,7 @@ export function Footer() {
           </div>
           <div>
             <h4 className="font-black uppercase tracking-widest text-[10px] text-slate-400 mb-6">Connect</h4>
-            <ul className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-400">
+            <ul className="space-y-4 text-sm font-bold text-slate-700 dark:text-slate-200">
               <li><Link href="/help" className="hover:text-primary transition-colors">Contact Us</Link></li>
             </ul>
           </div>

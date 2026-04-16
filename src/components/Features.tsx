@@ -49,9 +49,9 @@ export function Features() {
           </div>
           <div className="flex-1 w-full lg:w-auto h-40 glass rounded-[2.5rem] border border-white/20 shadow-2xl flex items-center justify-center p-8">
              <div className="flex items-center gap-12 text-slate-900 dark:text-white">
-                <span className="font-black text-4xl tracking-tighter opacity-80">TRUST+</span>
-                <span className="font-black text-4xl tracking-tighter opacity-80">SECURE.</span>
-                <span className="font-black text-4xl tracking-tighter opacity-80">HAYY.</span>
+                <span className="font-black text-4xl tracking-tighter">TRUST+</span>
+                <span className="font-black text-4xl tracking-tighter">SECURE.</span>
+                <span className="font-black text-4xl tracking-tighter">PAKTELLECT.</span>
              </div>
           </div>
         </div>
@@ -67,7 +67,7 @@ export function Features() {
                 {f.icon}
               </div>
               <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 group-hover:text-primary transition-colors">{f.title}</h3>
-              <p className="text-sm font-medium text-slate-500 leading-relaxed">{f.desc}</p>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
         </div>

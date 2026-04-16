@@ -18,7 +18,7 @@ export default function TermsPage() {
           <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-[0.9] text-slate-900 dark:text-white mb-6">
             Transparent rules. Safer outcomes.
           </h1>
-          <p className="text-xl text-slate-500 font-medium leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
             This page summarizes key platform rules, including Pakistan-focused safety and compliance expectations.
             It is not legal advice.
           </p>

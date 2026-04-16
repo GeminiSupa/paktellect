@@ -88,7 +88,7 @@ export function Navbar() {
         isOpen ? "max-h-[400px] border-t border-slate-100 dark:border-slate-800 py-6" : "max-h-0"
       )}>
         <div className="container mx-auto px-8 flex flex-col gap-6">
-          <div className="flex flex-col gap-4 text-sm font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">
+          <div className="flex flex-col gap-4 text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">
             {user?.user_metadata?.role !== 'expert' && <Link href="/experts" onClick={() => setIsOpen(false)}>Directory</Link>}
             <Link href="#features" onClick={() => setIsOpen(false)}>Safety Protocol</Link>
             <Link href="#how-it-works" onClick={() => setIsOpen(false)}>Escrow Flow</Link>

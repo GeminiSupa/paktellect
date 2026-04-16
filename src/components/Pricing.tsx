@@ -41,7 +41,9 @@ export function Pricing() {
           <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-none text-slate-900 dark:text-white">
             Transparent <br /> <span className="text-primary">professional scaling.</span>
           </h2>
-          <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto">No hidden tiers. Choose the level of engagement that fits your professional journey.</p>
+          <p className="text-xl text-slate-600 dark:text-slate-300 font-medium max-w-2xl mx-auto">
+            No hidden tiers. Choose the level of engagement that fits your professional journey.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-7xl mx-auto">
@@ -54,12 +56,12 @@ export function Pricing() {
               )}
               
               <div className="mb-10">
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-4">{plan.name} Plan</h3>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300 mb-4">{plan.name} Plan</h3>
                 <div className="flex items-baseline gap-1.5 mb-2">
                     <span className="text-5xl font-black tracking-tighter text-slate-950 dark:text-white">${plan.price}</span>
-                    <span className="text-slate-500 text-xs font-black uppercase tracking-widest">/mo</span>
+                    <span className="text-slate-600 dark:text-slate-300 text-xs font-black uppercase tracking-widest">/mo</span>
                 </div>
-                <p className="text-sm font-medium text-slate-400 leading-relaxed">{plan.desc}</p>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed">{plan.desc}</p>
               </div>
               
               <div className="h-px w-full bg-slate-100 dark:bg-slate-800 mb-10" />

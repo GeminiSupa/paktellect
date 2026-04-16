@@ -18,7 +18,7 @@ export default function HelpCenterPage() {
           <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-[0.9] text-slate-900 dark:text-white mb-6">
             Support that protects your sessions.
           </h1>
-          <p className="text-xl text-slate-500 font-medium leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
             Quick answers, safety guidance, and escrow rules—written for Pakistan-based professionals and clients.
           </p>
 
@@ -28,7 +28,7 @@ export default function HelpCenterPage() {
                 <ShieldCheck className="size-6 text-primary" />
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Safety Protocol</h2>
-              <p className="text-slate-500 font-medium mb-6">
+              <p className="text-slate-600 dark:text-slate-300 font-medium mb-6">
                 Keep communications on-platform, avoid external payment links, and follow verification standards.
               </p>
               <Link href="/safety" className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline">
@@ -41,7 +41,7 @@ export default function HelpCenterPage() {
                 <Wallet className="size-6 text-orange-600" />
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Escrow Protection</h2>
-              <p className="text-slate-500 font-medium mb-6">
+              <p className="text-slate-600 dark:text-slate-300 font-medium mb-6">
                 Learn when funds are held, when they are released, and what happens during disputes.
               </p>
               <Link href="/escrow-protection" className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline">
@@ -54,7 +54,7 @@ export default function HelpCenterPage() {
                 <MessageSquare className="size-6 text-slate-900 dark:text-white" />
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Disputes & moderation</h2>
-              <p className="text-slate-500 font-medium mb-6">
+              <p className="text-slate-600 dark:text-slate-300 font-medium mb-6">
                 If something goes wrong, we keep a record trail to protect both sides and resolve fairly.
               </p>
               <Link href="/terms" className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline">
@@ -67,7 +67,7 @@ export default function HelpCenterPage() {
                 <ShieldCheck className="size-6 text-teal-600" />
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Privacy</h2>
-              <p className="text-slate-500 font-medium mb-6">
+              <p className="text-slate-600 dark:text-slate-300 font-medium mb-6">
                 How we handle account data, files, and logs, and how you can request changes.
               </p>
               <Link href="/privacy" className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline">

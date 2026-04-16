@@ -90,7 +90,7 @@ function ExpertsContent() {
                    reviews: t.review_count || 0,
                    rate: t.hourly_rate || 50,
                    image: t.profile_pic_url,
-                   isVerified: t.is_verified || true,
+                   isVerified: Boolean(t.is_verified),
                    category: t.category || 'Academic',
                    specialty: t.specialty,
                    isOnline: t.is_online || false,

@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-[0.9] text-slate-900 dark:text-white mb-6">
             Privacy, by default.
           </h1>
-          <p className="text-xl text-slate-500 font-medium leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
             We collect only what’s needed to operate the platform, protect users, and improve reliability.
           </p>
 
