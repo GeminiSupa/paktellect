@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/Button"
-import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera } from "lucide-react"
+import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera, Star, MessageSquarePlus } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useStore } from "@/store/useStore"
 import { toast } from "sonner"
@@ -35,6 +35,19 @@ export default function TeacherProfile() {
   const [academicCredentials, setAcademicCredentials] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  type ReviewRow = {
+    id: string
+    booking_id: string
+    rating: number
+    comment?: string | null
+    expert_reply?: string | null
+    expert_replied_at?: string | null
+    created_at: string
+    student?: { full_name?: string | null } | null
+  }
+  const [reviews, setReviews] = useState<ReviewRow[]>([])
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({})
+  const [replyingId, setReplyingId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadProfile() {
@@ -77,6 +90,51 @@ export default function TeacherProfile() {
     }
     loadProfile()
   }, [user])
+
+  useEffect(() => {
+    async function loadReviews() {
+      if (!user) return
+      try {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select("id, booking_id, rating, comment, expert_reply, expert_replied_at, created_at, student:profiles!reviews_student_id_fkey(full_name)")
+          .eq("expert_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(25)
+        if (error) throw error
+        setReviews((data || []) as ReviewRow[])
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    loadReviews()
+  }, [user])
+
+  const submitReply = async (reviewId: string) => {
+    if (!user) return
+    const text = (replyDrafts[reviewId] || "").trim()
+    if (!text) {
+      toast.error("Write a short reply first.")
+      return
+    }
+    setReplyingId(reviewId)
+    try {
+      const now = new Date().toISOString()
+      const { error } = await supabase
+        .from("reviews")
+        .update({ expert_reply: text, expert_replied_at: now })
+        .eq("id", reviewId)
+      if (error) throw error
+      setReviews((prev) => prev.map((r) => (r.id === reviewId ? { ...r, expert_reply: text, expert_replied_at: now } : r)))
+      toast.success("Reply posted")
+    } catch (err: unknown) {
+      console.error(err)
+      const message = err instanceof Error ? err.message : "Failed to post reply"
+      toast.error(message)
+    } finally {
+      setReplyingId(null)
+    }
+  }
 
   const handleAddPortfolioLink = () => {
     const url = prompt("Enter link URL (e.g., Behance, GitHub, Dribbble):")
@@ -268,6 +326,75 @@ export default function TeacherProfile() {
                  onChange={(e) => setQualifications(e.target.value)}
                />
              </div>
+          </section>
+
+          {/* Reviews & replies */}
+          <section className="space-y-8">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                <Star className="size-5 text-orange-600 fill-orange-600" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Reviews</h2>
+            </div>
+
+            {reviews.length === 0 ? (
+              <div className="text-center py-16 bg-slate-50/50 dark:bg-slate-900/50 rounded-[2.5rem] border border-slate-200 dark:border-slate-800">
+                <Star className="size-12 text-slate-200 mx-auto mb-4" />
+                <p className="text-slate-500 font-bold">No reviews yet.</p>
+                <p className="text-sm text-slate-500 mt-2 font-medium">Reviews appear after completed bookings.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((r) => (
+                  <div key={r.id} className="p-8 rounded-[2.5rem] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          {r.student?.full_name || "Client"} • {r.created_at.split("T")[0]}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <Star key={n} className={`size-4 ${r.rating >= n ? "text-orange-500 fill-orange-500" : "text-slate-300"}`} />
+                          ))}
+                          <span className="text-xs font-black text-slate-500">({r.rating}/5)</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Booking: {r.booking_id.substring(0, 8)}</p>
+                    </div>
+
+                    {r.comment ? <p className="mt-5 text-slate-700 dark:text-slate-200 font-medium leading-relaxed">{r.comment}</p> : null}
+
+                    <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                      {r.expert_reply ? (
+                        <div className="rounded-2xl bg-white/80 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 p-6">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Your reply</p>
+                          <p className="text-slate-700 dark:text-slate-200 font-medium leading-relaxed">{r.expert_reply}</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Post a public reply</p>
+                          <textarea
+                            value={replyDrafts[r.id] || ""}
+                            onChange={(e) => setReplyDrafts((prev) => ({ ...prev, [r.id]: e.target.value }))}
+                            className="w-full min-h-[110px] rounded-[1.6rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/10"
+                            placeholder="Thank you for your feedback…"
+                            disabled={replyingId === r.id}
+                          />
+                          <Button
+                            onClick={() => submitReply(r.id)}
+                            disabled={replyingId === r.id}
+                            className="h-12 px-6 rounded-2xl bg-primary text-white font-black"
+                          >
+                            {replyingId === r.id ? <Loader2 className="size-4 animate-spin" /> : <MessageSquarePlus className="size-4" />}
+                            Post reply
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="space-y-8">

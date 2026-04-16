@@ -256,7 +256,7 @@ export default function TeacherOverview() {
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Client Messages</span>
                          </div>
-                         <span className="text-lg font-black text-indigo-600">0</span>
+                         <span className="text-lg font-black text-indigo-600">{counts.messages}</span>
                       </Link>
                    </div>
                 </div>

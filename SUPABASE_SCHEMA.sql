@@ -25,6 +25,7 @@ BEGIN
     -- reviews policies
     DROP POLICY IF EXISTS "Reviews are viewable by everyone" ON reviews;
     DROP POLICY IF EXISTS "Students can write reviews for their bookings" ON reviews;
+    DROP POLICY IF EXISTS "Experts can reply to reviews" ON reviews;
 
     -- profiles policies
     DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
@@ -304,6 +305,8 @@ CREATE TABLE IF NOT EXISTS reviews (
   student_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
   rating INT CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,
+  expert_reply TEXT,
+  expert_replied_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
@@ -336,6 +339,19 @@ BEGIN
       ADD CONSTRAINT reviews_student_id_fkey
       FOREIGN KEY (student_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
   END IF;
+
+  -- One review per completed service (booking)
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.table_constraints
+    WHERE table_schema = 'public'
+      AND table_name = 'reviews'
+      AND constraint_type = 'UNIQUE'
+      AND constraint_name = 'reviews_booking_id_unique'
+  ) THEN
+    ALTER TABLE public.reviews
+      ADD CONSTRAINT reviews_booking_id_unique UNIQUE (booking_id);
+  END IF;
 END $$;
 
 -- ============================================================
@@ -343,6 +359,10 @@ END $$;
 -- ============================================================
 DO $$
 BEGIN
+    -- Teachers: category (required for rankings + domain requirements)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='category') THEN
+        ALTER TABLE teachers ADD COLUMN category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health'));
+    END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='timezone') THEN
         ALTER TABLE teachers ADD COLUMN timezone TEXT DEFAULT 'UTC';
     END IF;
@@ -368,6 +388,14 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='messages' AND column_name='is_read') THEN
         ALTER TABLE messages ADD COLUMN is_read BOOLEAN DEFAULT false;
+    END IF;
+
+    -- Reviews: expert reply fields (idempotent)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='reviews' AND column_name='expert_reply') THEN
+        ALTER TABLE reviews ADD COLUMN expert_reply TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='reviews' AND column_name='expert_replied_at') THEN
+        ALTER TABLE reviews ADD COLUMN expert_replied_at TIMESTAMP WITH TIME ZONE;
     END IF;
 END $$;
 
@@ -458,7 +486,135 @@ CREATE POLICY "Reviews are viewable by everyone"
 
 CREATE POLICY "Students can write reviews for their bookings"
   ON reviews FOR INSERT
-  WITH CHECK (auth.uid() = student_id);
+  WITH CHECK (
+    auth.uid() = student_id
+    AND EXISTS (
+      SELECT 1
+      FROM bookings b
+      JOIN teachers t ON t.id = b.expert_id
+      WHERE b.id = reviews.booking_id
+        AND b.user_id = reviews.student_id
+        AND b.status = 'completed'
+        AND t.user_id = reviews.expert_id
+    )
+  );
+
+-- Expert can add a single public reply after review is created
+CREATE POLICY "Experts can reply to reviews"
+  ON reviews FOR UPDATE
+  USING (auth.uid() = expert_id)
+  WITH CHECK (auth.uid() = expert_id);
+
+-- Keep teacher aggregates in sync (rating_avg / review_count)
+CREATE OR REPLACE FUNCTION public.recompute_teacher_rating(p_teacher_user_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_count int;
+  v_avg numeric;
+BEGIN
+  SELECT COALESCE(COUNT(*), 0)::int, COALESCE(AVG(rating), 0)
+  INTO v_count, v_avg
+  FROM public.reviews
+  WHERE expert_id = p_teacher_user_id;
+
+  UPDATE public.teachers
+  SET review_count = v_count,
+      rating_avg = v_avg,
+      updated_at = NOW()
+  WHERE user_id = p_teacher_user_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.handle_review_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    PERFORM public.recompute_teacher_rating(NEW.expert_id);
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    PERFORM public.recompute_teacher_rating(OLD.expert_id);
+    RETURN OLD;
+  ELSE
+    RETURN NEW;
+  END IF;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_reviews_aggregate_insert ON public.reviews;
+CREATE TRIGGER trg_reviews_aggregate_insert
+AFTER INSERT ON public.reviews
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_review_change();
+
+DROP TRIGGER IF EXISTS trg_reviews_aggregate_delete ON public.reviews;
+CREATE TRIGGER trg_reviews_aggregate_delete
+AFTER DELETE ON public.reviews
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_review_change();
+
+-- Prevent editing rating/comment via update; experts may only change reply fields
+CREATE OR REPLACE FUNCTION public.enforce_review_reply_only()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    IF NEW.booking_id <> OLD.booking_id
+      OR NEW.expert_id <> OLD.expert_id
+      OR NEW.student_id <> OLD.student_id
+      OR NEW.rating <> OLD.rating
+      OR COALESCE(NEW.comment, '') <> COALESCE(OLD.comment, '')
+      OR NEW.created_at <> OLD.created_at
+    THEN
+      RAISE EXCEPTION 'Reviews cannot be edited after creation (reply fields only)';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_enforce_review_reply_only ON public.reviews;
+CREATE TRIGGER trg_enforce_review_reply_only
+BEFORE UPDATE ON public.reviews
+FOR EACH ROW
+EXECUTE FUNCTION public.enforce_review_reply_only();
+
+-- Bayesian ranking view (used for featured experts per category)
+CREATE OR REPLACE VIEW public.teacher_rankings AS
+WITH global_stats AS (
+  SELECT COALESCE(AVG(rating), 0)::numeric AS c
+  FROM public.reviews
+),
+base AS (
+  SELECT
+    t.id AS teacher_id,
+    t.user_id,
+    t.category,
+    t.review_count,
+    t.rating_avg,
+    gs.c,
+    8::numeric AS m
+  FROM public.teachers t
+  CROSS JOIN global_stats gs
+  WHERE t.is_public IS TRUE
+)
+SELECT
+  teacher_id,
+  user_id,
+  category,
+  review_count,
+  rating_avg,
+  (review_count::numeric / (review_count::numeric + m)) * rating_avg
+  + (m / (review_count::numeric + m)) * c AS bayesian_score
+FROM base;
 
 -- ============================================================
 -- STEP 6: LEGAL PRACTICE MODULE (Matters, Documents, Time)

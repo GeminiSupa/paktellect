@@ -28,7 +28,8 @@ export default function StudentLegalFiles() {
       try {
         const { data: m, error: mErr } = await supabase
           .from("matters")
-          .select("id, title, status, created_at, teacher:teachers(id, profiles!teachers_user_id_fkey(full_name))")
+          // Avoid relying on a specific FK constraint name (schema-cache mismatch can break embeds).
+          .select("id, title, status, created_at, teacher:teachers(id, profiles(full_name))")
           .eq("client_id", user.id)
           .order("created_at", { ascending: false })
         if (mErr) throw mErr
@@ -43,7 +44,8 @@ export default function StudentLegalFiles() {
         setPendingSigs(sigCount || 0)
       } catch (err) {
         console.error(err)
-        toast.error("Failed to load legal files")
+        const message = err instanceof Error ? err.message : "Failed to load legal files"
+        toast.error(message)
       } finally {
         setIsLoading(false)
       }

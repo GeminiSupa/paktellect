@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
 import { 
@@ -16,7 +16,8 @@ import {
   Zap,
   ChevronRight,
   Layout,
-  ArrowUpRight
+  ArrowUpRight,
+  X
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -46,23 +47,46 @@ export default function StudentDashboard() {
 
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set())
+
+  const [isReviewOpen, setIsReviewOpen] = useState(false)
+  const [reviewBookingId, setReviewBookingId] = useState<string | null>(null)
+  const [reviewExpertId, setReviewExpertId] = useState<string | null>(null)
+  const [reviewRating, setReviewRating] = useState<number>(5)
+  const [reviewComment, setReviewComment] = useState<string>("")
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+
+  const bookingById = useMemo(() => {
+    const map = new Map<string, Booking>()
+    bookings.forEach((b) => map.set(b.id, b))
+    return map
+  }, [bookings])
 
   useEffect(() => {
-    if (!user) {
+    const userId = user?.id
+    if (!userId) {
         router.push("/login")
         return
     }
 
-    async function loadBookings() {
+    async function loadBookings(currentUserId: string) {
       setIsLoading(true)
       try {
         const { data } = await supabase
           .from("bookings")
           .select("*, teachers!bookings_expert_id_fkey(category, user_id, profiles!teachers_user_id_fkey(full_name, avatar_url))")
-          .eq("user_id", user?.id)
+          .eq("user_id", currentUserId)
           .order("booking_date", { ascending: false })
 
         setBookings(data || [])
+
+        const { data: r, error: rErr } = await supabase
+          .from("reviews")
+          .select("booking_id")
+          .eq("student_id", currentUserId)
+        if (!rErr && r) {
+          setReviewedBookingIds(new Set(r.map((x) => x.booking_id as string)))
+        }
       } catch (err) {
         console.error(err)
       } finally {
@@ -70,33 +94,64 @@ export default function StudentDashboard() {
       }
     }
 
-    loadBookings()
+    loadBookings(userId)
   }, [user, router])
 
-  const handleReview = async (bookingId: string, expertUserId?: string | null) => {
+  const openReview = (bookingId: string, expertUserId?: string | null) => {
     if (!expertUserId) {
       toast.error("Couldn't find expert profile for this booking.")
       return
     }
-    const rating = prompt("Rate your experience (1-5):", "5")
-    const comment = prompt("Leave a short comment:")
-    
-    if (!rating || isNaN(Number(rating))) return
+    const booking = bookingById.get(bookingId)
+    if (!booking || booking.status !== "completed") {
+      toast.error("You can only review after the service is completed.")
+      return
+    }
+    if (reviewedBookingIds.has(bookingId)) {
+      toast.info("You already reviewed this booking.")
+      return
+    }
+    setReviewBookingId(bookingId)
+    setReviewExpertId(expertUserId)
+    setReviewRating(5)
+    setReviewComment("")
+    setIsReviewOpen(true)
+  }
 
+  const submitReview = async () => {
+    if (!user || !reviewBookingId || !reviewExpertId) return
+    const booking = bookingById.get(reviewBookingId)
+    if (!booking || booking.status !== "completed") {
+      toast.error("You can only review after the service is completed.")
+      return
+    }
+    if (reviewedBookingIds.has(reviewBookingId)) {
+      toast.info("You already reviewed this booking.")
+      return
+    }
+    if (!Number.isFinite(reviewRating) || reviewRating < 1 || reviewRating > 5) {
+      toast.error("Select a rating from 1 to 5.")
+      return
+    }
+    setIsSubmittingReview(true)
     try {
-      const { error } = await supabase.from('reviews').insert([{
-        booking_id: bookingId,
-        expert_id: expertUserId,
-        student_id: user?.id,
-        rating: Number(rating),
-        comment: comment
-      }])
-
+      const { error } = await supabase.from("reviews").insert({
+        booking_id: reviewBookingId,
+        expert_id: reviewExpertId,
+        student_id: user.id,
+        rating: reviewRating,
+        comment: reviewComment.trim() ? reviewComment.trim() : null,
+      })
       if (error) throw error
+      setReviewedBookingIds((prev) => new Set([...prev, reviewBookingId]))
       toast.success("Thank you for your review!")
+      setIsReviewOpen(false)
     } catch (err: unknown) {
+      console.error(err)
       const message = err instanceof Error ? err.message : "Failed to submit review"
       toast.error(message)
+    } finally {
+      setIsSubmittingReview(false)
     }
   }
 
@@ -112,6 +167,86 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-12 pb-20">
+      {isReviewOpen && (
+        <div className="fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+            onClick={() => (isSubmittingReview ? null : setIsReviewOpen(false))}
+          />
+          <div className="absolute inset-x-0 top-24 mx-auto w-[92%] max-w-lg">
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+              <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-6">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Review</p>
+                  <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Rate your session</h3>
+                  <p className="text-slate-600 dark:text-slate-300 font-medium mt-2">Only verified bookings can be reviewed.</p>
+                </div>
+                <button
+                  className="size-12 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center hover:border-primary transition-colors disabled:opacity-50"
+                  onClick={() => setIsReviewOpen(false)}
+                  disabled={isSubmittingReview}
+                  aria-label="Close review dialog"
+                >
+                  <X className="size-5 text-slate-500" />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-6">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Rating</p>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setReviewRating(n)}
+                        className={`size-12 rounded-2xl border transition-all flex items-center justify-center ${
+                          reviewRating >= n
+                            ? "bg-orange-500/10 border-orange-500/20 text-orange-600"
+                            : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400"
+                        }`}
+                        aria-label={`Set rating ${n}`}
+                      >
+                        <Star className={`size-5 ${reviewRating >= n ? "fill-orange-500 text-orange-500" : ""}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Comment (optional)</p>
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    className="w-full min-h-[120px] rounded-[1.6rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/10"
+                    placeholder="Share what went well and what could be improved…"
+                    disabled={isSubmittingReview}
+                  />
+                </div>
+              </div>
+
+              <div className="p-8 pt-0 flex gap-3">
+                <Button
+                  variant="outline"
+                  className="h-14 px-6 rounded-2xl border-slate-200 font-black"
+                  onClick={() => setIsReviewOpen(false)}
+                  disabled={isSubmittingReview}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="h-14 px-6 rounded-2xl bg-primary text-white font-black grow"
+                  onClick={submitReview}
+                  disabled={isSubmittingReview}
+                >
+                  {isSubmittingReview ? <Loader2 className="size-4 animate-spin" /> : null}
+                  Submit review
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Dynamic Member Header */}
       <motion.div 
@@ -120,7 +255,7 @@ export default function StudentDashboard() {
         className="relative h-[480px] rounded-[3rem] overflow-hidden bg-slate-950 flex shadow-2xl shadow-emerald-900/40"
       >
         <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/60 to-transparent z-10" />
+            <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/60 to-transparent z-10" />
             <Image
               src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
               alt="Architecture"
@@ -134,7 +269,7 @@ export default function StudentDashboard() {
         <div className="relative z-20 flex flex-col justify-center px-10 md:px-20 max-w-4xl text-white">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-white/10 mb-8 self-start">
              <Zap className="size-3 text-primary fill-primary" />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100">Premium Member</span>
+             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100">Member</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-none">
             Scale your <br /> <span className="text-primary">ambitions,</span> {user?.user_metadata?.full_name?.split(' ')[0] || 'Member'}.
@@ -150,20 +285,7 @@ export default function StudentDashboard() {
           </div>
         </div>
         
-        <div className="absolute bottom-10 right-10 z-20 hidden lg:flex gap-4">
-             <div className="glass p-6 rounded-3xl border border-white/10 backdrop-blur-2xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Total Managed Capital</p>
-                <p className="text-3xl font-black">$42,500.00</p>
-             </div>
-             <div className="glass p-6 rounded-3xl border border-white/10 backdrop-blur-2xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Professional Network</p>
-                <div className="flex -space-x-4">
-                    {[1,2,3,4].map(i => (
-                        <div key={i} className="size-10 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-[10px] font-black">EX</div>
-                    ))}
-                </div>
-             </div>
-        </div>
+        {/* Removed hardcoded “capital/network” demo widgets; we only show real user data. */}
       </motion.div>
 
       {/* Wellness & Service Timeline */}
@@ -255,8 +377,12 @@ export default function StudentDashboard() {
                             
                             <div className="flex gap-4">
                             {booking.status === 'completed' ? (
-                                <Button onClick={() => handleReview(booking.id, booking.teachers?.user_id)} className="flex-1 bg-orange-600 hover:bg-orange-700 text-white h-16 rounded-[1.5rem] font-black shadow-xl shadow-orange-500/20">
-                                    Finalize: Leave Review
+                                <Button
+                                  onClick={() => openReview(booking.id, booking.teachers?.user_id)}
+                                  disabled={reviewedBookingIds.has(booking.id)}
+                                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white h-16 rounded-[1.5rem] font-black shadow-xl shadow-orange-500/20 disabled:opacity-60"
+                                >
+                                    {reviewedBookingIds.has(booking.id) ? "Reviewed" : "Leave Review"}
                                 </Button>
                             ) : (
                                 <Link href={`/dashboard/messages/${booking.id}`} className="flex-1">
@@ -265,7 +391,7 @@ export default function StudentDashboard() {
                                 </Button>
                                 </Link>
                             )}
-                            <Button variant="outline" className="size-[64px] rounded-[1.5rem] border-slate-200 dark:border-slate-800 flex items-center justify-center p-0 hover:bg-slate-50 dark:hover:bg-slate-950 transition-all flex-shrink-0">
+                            <Button variant="outline" className="size-[64px] rounded-[1.5rem] border-slate-200 dark:border-slate-800 flex items-center justify-center p-0 hover:bg-slate-50 dark:hover:bg-slate-950 transition-all shrink-0">
                                 <ArrowUpRight className="size-6 text-slate-400 transition-transform group-hover:rotate-45" />
                             </Button>
                             </div>
