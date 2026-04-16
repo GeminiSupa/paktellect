@@ -12,7 +12,7 @@ export default function StudentDashboardLayout({
     <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 flex flex-col font-sans">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-12 grow flex flex-col md:flex-row gap-10 mt-24">
+      <div className="container mx-auto px-4 py-12 grow flex flex-col md:flex-row gap-10 mt-32 md:mt-28">
         {/* Sidebar Navigation */}
         <aside className="w-full md:w-80 shrink-0">
           <nav className="bg-secondary text-white rounded-[2.5rem] p-8 sticky top-32 shadow-2xl shadow-slate-900/20">

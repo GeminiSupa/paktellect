@@ -32,7 +32,7 @@ export function Features() {
   ]
 
   return (
-    <section id="features" className="py-32 bg-[#fdfdfe] dark:bg-slate-950 overflow-hidden">
+    <section id="features" className="py-32 bg-[#fdfdfe] dark:bg-slate-950 overflow-hidden scroll-mt-32 md:scroll-mt-40">
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row items-center justify-between mb-24 gap-12">
           <div className="max-w-2xl">

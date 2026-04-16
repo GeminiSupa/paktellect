@@ -58,6 +58,9 @@ export default function SignupPage() {
           data: {
             full_name: data.fullName,
             role: data.role,
+            ...(data.role === "expert"
+              ? { expert_category: data.category || "Academic" }
+              : {}),
             device_id_hash: deviceId,
           },
         },
@@ -65,13 +68,16 @@ export default function SignupPage() {
 
       if (error) throw error
 
-      if (authData.user && data.role === "expert") {
+      if (authData.user && data.role === "expert" && authData.session) {
         const { error: tErr } = await supabase.from('teachers').insert([{ 
             user_id: authData.user.id,
             category: data.category || 'Academic',
             is_public: false,
         }])
-        if (tErr) console.warn("Could not create expert record immediately:", tErr)
+        if (tErr) {
+          console.error("Could not create expert record immediately:", tErr)
+          throw new Error(tErr.message || "Failed to create expert profile")
+        }
       }
 
       if (authData.session) {
@@ -100,7 +106,7 @@ export default function SignupPage() {
   return (
       <Card className="border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
       <CardHeader className="space-y-1 p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-        <CardTitle className="text-3xl font-black tracking-tighter">Create an account</CardTitle>
+        <CardTitle className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">Create an account</CardTitle>
         <CardDescription className="font-medium text-slate-600 dark:text-slate-300">
           Join the PAKTELLECT professional network today.
         </CardDescription>

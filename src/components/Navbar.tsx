@@ -12,12 +12,20 @@ import Image from "next/image"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const { user } = useStore()
+  const { user, setUser } = useStore()
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? undefined
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    toast.success("Signed out successfully")
+    try {
+      const { error } = await supabase.auth.signOut({ scope: "global" })
+      if (error) throw error
+      setUser(null)
+      toast.success("Signed out successfully")
+    } catch (err: unknown) {
+      console.error(err)
+      const message = err instanceof Error ? err.message : "Failed to sign out"
+      toast.error(message)
+    }
   }
 
   return (

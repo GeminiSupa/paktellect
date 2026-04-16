@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { getDeviceId } from "@/lib/fingerprint"
+import { ensureExpertTeacherRow } from "@/lib/ensureExpertTeacher"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -45,6 +46,11 @@ export default function LoginPage() {
 
       if (error) throw error
 
+      const ensured = await ensureExpertTeacherRow(authData.user)
+      if (ensured.status === "error") {
+        throw new Error(ensured.message)
+      }
+
       // Device Limit Check Logic
       // In a real app, you would check this deviceId against a 'user_devices' table in Supabase
       console.log("Device Fingerprint:", deviceId);
@@ -66,9 +72,9 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
+      <Card className="border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
       <CardHeader className="space-y-1 p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-        <CardTitle className="text-3xl font-black tracking-tighter">Sign in</CardTitle>
+        <CardTitle className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">Sign in</CardTitle>
         <CardDescription className="font-medium text-slate-600 dark:text-slate-300">
           Enter your credentials to access your secure profile.
         </CardDescription>

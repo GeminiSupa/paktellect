@@ -124,9 +124,16 @@ export default function TeacherSettings() {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    router.push('/')
+    try {
+      const { error } = await supabase.auth.signOut({ scope: "global" })
+      if (error) throw error
+      setUser(null)
+      router.push("/")
+      router.refresh()
+    } catch (err: unknown) {
+      console.error(err)
+      toast.error("Failed to sign out. Please try again.")
+    }
   }
 
   if (isLoading) return (
@@ -146,7 +153,7 @@ export default function TeacherSettings() {
              <span className="text-[10px] font-black uppercase tracking-widest leading-none">Practice Shield Active</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-white mb-4 leading-none">Security & Preferences</h1>
-          <p className="text-slate-500 font-medium text-xl leading-relaxed">Manage your professional standing, discovery settings, and security protocols.</p>
+          <p className="text-slate-600 dark:text-slate-300 font-medium text-xl leading-relaxed">Manage your professional standing, discovery settings, and security protocols.</p>
         </div>
       </div>
 
@@ -160,7 +167,7 @@ export default function TeacherSettings() {
                         <Globe className="size-6 text-primary" />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black tracking-tight">Discovery & Logistics</h3>
+                        <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Discovery & Logistics</h3>
                         <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">Global Practice Settings</p>
                     </div>
                 </div>
@@ -278,7 +285,7 @@ export default function TeacherSettings() {
                     <Key className="size-6 text-orange-600" />
                 </div>
                 <div>
-                    <h3 className="text-2xl font-black tracking-tight">Access Control</h3>
+                    <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Access Control</h3>
                     <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">Security Protocols</p>
                 </div>
             </div>

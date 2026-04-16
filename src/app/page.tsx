@@ -91,8 +91,8 @@ export default function Home() {
             <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-[0.9] text-slate-900 dark:text-white">
               Connect with <br /> <span className="text-primary">top 1% globally.</span>
             </h2>
-            <p className="text-xl text-slate-500 font-medium leading-relaxed">From clinical specialists to legal counselors, access the world&apos;s most trusted minds.</p>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-6">
+            <p className="text-xl text-slate-600 dark:text-slate-300 font-medium leading-relaxed">From clinical specialists to legal counselors, access the world&apos;s most trusted minds.</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300 mt-6">
               Featured rankings use verified reviews (min {MIN_REVIEWS}).
             </p>
           </div>
@@ -107,7 +107,7 @@ export default function Home() {
         {isLoading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4">
             <Loader2 className="animate-spin text-primary/20 size-12" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Loading Experts...</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Loading Experts...</p>
           </div>
         ) : (
           <div className="space-y-16">
@@ -127,8 +127,8 @@ export default function Home() {
 
                   {experts.length === 0 ? (
                     <div className="premium-card p-10 text-center">
-                      <p className="text-slate-500 font-bold">Not enough verified reviews yet.</p>
-                      <p className="text-sm text-slate-500 mt-2 font-medium">Once experts receive {MIN_REVIEWS}+ verified reviews, they’ll appear here.</p>
+                      <p className="text-slate-600 dark:text-slate-300 font-bold">Not enough verified reviews yet.</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 font-medium">Once experts receive {MIN_REVIEWS}+ verified reviews, they&apos;ll appear here.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">

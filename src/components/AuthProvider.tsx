@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 import { useStore } from "@/store/useStore"
+import { ensureExpertTeacherRow } from "@/lib/ensureExpertTeacher"
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setIsLoading } = useStore()
@@ -14,6 +15,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (session?.user) {
+        const ensured = await ensureExpertTeacherRow(session.user)
+        if (ensured.status === "error") {
+          console.error("Expert profile provisioning failed:", ensured.message)
+        }
         setUser({
           id: session.user.id,
           email: session.user.email!,
@@ -30,6 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen to Auth State Changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
+        const ensured = await ensureExpertTeacherRow(session.user)
+        if (ensured.status === "error") {
+          console.error("Expert profile provisioning failed:", ensured.message)
+        }
         setUser({
           id: session.user.id,
           email: session.user.email!,

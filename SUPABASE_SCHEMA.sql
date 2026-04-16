@@ -77,12 +77,23 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_role text;
 BEGIN
+  -- Normalize auth metadata roles into profiles.role.
+  -- Canonical values: 'student' | 'expert'
+  v_role := COALESCE(NEW.raw_user_meta_data->>'role', 'student');
+  IF v_role IN ('expert', 'teacher', 'tutor') THEN
+    v_role := 'expert';
+  ELSE
+    v_role := 'student';
+  END IF;
+
   INSERT INTO public.profiles (id, full_name, role, avatar_url, device_id_hash, updated_at)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NULL),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'student'),
+    v_role,
     COALESCE(NEW.raw_user_meta_data->>'avatar_url', NULL),
     COALESCE(NEW.raw_user_meta_data->>'device_id_hash', NULL),
     NOW()
@@ -359,6 +370,58 @@ END $$;
 -- ============================================================
 DO $$
 BEGIN
+    -- Profiles.role (older databases may have been created before this column existed;
+    -- CREATE TABLE IF NOT EXISTS does not add new columns to an existing table.)
+    IF NOT EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'profiles'
+        AND column_name = 'role'
+    ) THEN
+      ALTER TABLE public.profiles
+        ADD COLUMN role TEXT NOT NULL DEFAULT 'student';
+    END IF;
+
+    -- Profiles: ensure CHECK constraint matches canonical roles ('student' | 'expert')
+    -- Drop any existing CHECK constraint on profiles.role (name varies by Postgres defaults)
+    IF EXISTS (
+      SELECT 1
+      FROM pg_constraint c
+      JOIN pg_class t ON t.oid = c.conrelid
+      JOIN pg_namespace n ON n.oid = t.relnamespace
+      WHERE n.nspname = 'public'
+        AND t.relname = 'profiles'
+        AND c.contype = 'c'
+        AND pg_get_constraintdef(c.oid) ILIKE '%role%'
+    ) THEN
+      EXECUTE (
+        SELECT format('ALTER TABLE public.profiles DROP CONSTRAINT %I', c.conname)
+        FROM pg_constraint c
+        JOIN pg_class t ON t.oid = c.conrelid
+        JOIN pg_namespace n ON n.oid = t.relnamespace
+        WHERE n.nspname = 'public'
+          AND t.relname = 'profiles'
+          AND c.contype = 'c'
+          AND pg_get_constraintdef(c.oid) ILIKE '%role%'
+        LIMIT 1
+      );
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1
+      FROM pg_constraint c
+      JOIN pg_class t ON t.oid = c.conrelid
+      JOIN pg_namespace n ON n.oid = t.relnamespace
+      WHERE n.nspname = 'public'
+        AND t.relname = 'profiles'
+        AND c.contype = 'c'
+        AND c.conname = 'profiles_role_allowed'
+    ) THEN
+      ALTER TABLE public.profiles
+        ADD CONSTRAINT profiles_role_allowed CHECK (role IN ('student', 'expert'));
+    END IF;
+
     -- Teachers: category (required for rankings + domain requirements)
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='category') THEN
         ALTER TABLE teachers ADD COLUMN category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health'));

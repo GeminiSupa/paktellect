@@ -32,7 +32,7 @@ export function Pricing() {
   ]
 
   return (
-    <section id="pricing" className="py-32 bg-slate-50 dark:bg-slate-950/50 overflow-hidden">
+    <section id="pricing" className="py-32 bg-slate-50 dark:bg-slate-950/50 overflow-hidden scroll-mt-32 md:scroll-mt-40">
       <div className="container mx-auto px-6">
         <div className="text-center mb-24">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/5 border border-emerald-500/10 mb-6 font-black text-[10px] uppercase tracking-widest text-primary">

@@ -75,8 +75,17 @@ export default function StudentSettings() {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
+    try {
+      const { error } = await supabase.auth.signOut({ scope: "global" })
+      if (error) throw error
+      setUser(null)
+      router.push("/login")
+      router.refresh()
+    } catch (err: unknown) {
+      console.error(err)
+      const message = err instanceof Error ? err.message : "Failed to sign out"
+      toast.error(message)
+    }
   }
 
   return (
@@ -85,7 +94,7 @@ export default function StudentSettings() {
         <div className="mb-10 border-b border-slate-100 dark:border-slate-800 pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div>
             <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Account Settings</h1>
-            <p className="text-slate-500 font-medium">Manage your learning identity and security preferences.</p>
+            <p className="text-slate-600 dark:text-slate-300 font-medium">Manage your learning identity and security preferences.</p>
           </div>
           
           {/* Avatar */}
@@ -105,7 +114,7 @@ export default function StudentSettings() {
             </div>
             <div>
               <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-1">Profile Photo</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">JPG, PNG or WEBP. Max 2MB.</p>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-widest">JPG, PNG or WEBP. Max 2MB.</p>
             </div>
           </div>
         </div>
@@ -117,16 +126,16 @@ export default function StudentSettings() {
               <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <User className="size-5 text-primary" />
               </div>
-              <h3 className="font-black text-xl tracking-tight">Identity</h3>
+              <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-white">Identity</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block">Display Name</label>
+                <label className="text-[10px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-[0.2em] mb-2 block">Display Name</label>
                 <div className="flex gap-3">
                   <input
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="flex-1 h-12 px-5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                    className="flex-1 h-12 px-5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                     placeholder="Your full name"
                   />
                   <button
@@ -140,10 +149,10 @@ export default function StudentSettings() {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block">Email Address</label>
-                <div className="h-12 px-5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center gap-2 text-sm font-bold text-slate-500">
-                  <Mail className="size-4 text-slate-400" />
-                  {user?.email}
+                <label className="text-[10px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-[0.2em] mb-2 block">Email Address</label>
+                <div className="h-12 px-5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                  <Mail className="size-4 text-slate-400 dark:text-slate-500" />
+                  <span className="truncate">{user?.email}</span>
                 </div>
               </div>
             </div>
@@ -155,7 +164,7 @@ export default function StudentSettings() {
               <div className="size-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
                 <Shield className="size-5 text-rose-500" />
               </div>
-              <h3 className="font-black text-xl tracking-tight">Security</h3>
+              <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-white">Security</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button

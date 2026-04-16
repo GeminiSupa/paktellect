@@ -80,7 +80,7 @@ export default function AvailabilityPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white mb-2 leading-none">Practice Availability</h1>
-          <p className="text-slate-500 font-medium">Define your hours and session capacity.</p>
+          <p className="text-slate-600 dark:text-slate-300 font-medium">Define your hours and session capacity.</p>
         </div>
         <Button onClick={saveAvailability} disabled={isSaving} className="h-14 px-10 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black shadow-xl shadow-emerald-500/20">
           {isSaving ? <Loader2 className="animate-spin size-4 mr-2" /> : <ShieldCheck className="size-4 mr-2" />}
@@ -92,7 +92,7 @@ export default function AvailabilityPage() {
         <div className="lg:col-span-2 space-y-6">
             <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none">
                 <div className="flex items-center justify-between mb-10">
-                    <h3 className="font-black text-xl tracking-tight">Active Recurring Slots</h3>
+                    <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-white">Active Recurring Slots</h3>
                     <Button onClick={addSlot} variant="outline" className="h-10 px-4 rounded-xl border-slate-200 font-black text-[10px] uppercase tracking-widest gap-2">
                         <Plus className="size-3" /> New Slot
                     </Button>
