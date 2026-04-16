@@ -22,7 +22,7 @@ export default function StudentDashboardLayout({
             </div>
             <ul className="space-y-4">
               <li>
-                <Link href="/dashboard/student" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/student" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                   <div className="size-10 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-primary transition-colors shadow-lg">
                     <LayoutDashboard className="size-5" />
                   </div>
@@ -30,7 +30,7 @@ export default function StudentDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/experts" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/experts" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                   <div className="size-10 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-primary transition-colors shadow-lg">
                     <BookOpen className="size-5" />
                   </div>
@@ -38,7 +38,7 @@ export default function StudentDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/student/payments" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/student/payments" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                   <div className="size-10 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-primary transition-colors shadow-lg">
                     <CreditCard className="size-5" />
                   </div>
@@ -46,7 +46,7 @@ export default function StudentDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/student/legal" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/student/legal" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                   <div className="size-10 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-primary transition-colors shadow-lg">
                     <Scale className="size-5" />
                   </div>
@@ -54,7 +54,7 @@ export default function StudentDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/student/settings" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/student/settings" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                   <div className="size-10 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-primary transition-colors shadow-lg">
                     <Settings className="size-5" />
                   </div>

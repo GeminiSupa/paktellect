@@ -68,7 +68,8 @@ export default function SignupPage() {
       if (authData.user && data.role === "expert") {
         const { error: tErr } = await supabase.from('teachers').insert([{ 
             user_id: authData.user.id,
-            category: data.category || 'Academic'
+            category: data.category || 'Academic',
+            is_public: false,
         }])
         if (tErr) console.warn("Could not create expert record immediately:", tErr)
       }
@@ -97,29 +98,29 @@ export default function SignupPage() {
   ]
 
   return (
-    <Card className="border-none shadow-2xl bg-white dark:bg-slate-800 rounded-[2rem] overflow-hidden">
-      <CardHeader className="space-y-1 p-8 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+      <Card className="border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
+      <CardHeader className="space-y-1 p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <CardTitle className="text-3xl font-black tracking-tighter">Create an account</CardTitle>
-        <CardDescription className="font-medium text-slate-500">
-          Join the Hayy professional network today.
+        <CardDescription className="font-medium text-slate-600 dark:text-slate-300">
+          Join the PAKTELLECT professional network today.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="grid gap-6 p-8">
           <div className="grid gap-3">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Account Type</label>
-            <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300">Account Type</label>
+            <div className="flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl">
               <button 
                 type="button" 
                 onClick={() => setValue("role", "student")}
-                className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${selectedRole === "student" ? "bg-white dark:bg-slate-800 shadow-xl text-primary" : "text-slate-500 hover:text-slate-700"}`}
+                className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${selectedRole === "student" ? "bg-white dark:bg-slate-800 shadow-xl text-primary" : "text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white"}`}
               >
                 Consumer
               </button>
               <button 
                 type="button" 
                 onClick={() => setValue("role", "expert")}
-                className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${selectedRole === "expert" ? "bg-white dark:bg-slate-800 shadow-xl text-primary" : "text-slate-500 hover:text-slate-700"}`}
+                className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${selectedRole === "expert" ? "bg-white dark:bg-slate-800 shadow-xl text-primary" : "text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white"}`}
               >
                 Expert
               </button>
@@ -132,7 +133,7 @@ export default function SignupPage() {
                animate={{ opacity: 1, y: 0 }}
                className="grid gap-3"
             >
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Professional Domain</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300">Professional Domain</label>
                 <div className="grid grid-cols-2 gap-2">
                     {categoryIcons.map((cat) => (
                         <button
@@ -142,7 +143,7 @@ export default function SignupPage() {
                             className={`flex items-center gap-3 p-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
                                 selectedCategory === cat.id 
                                     ? "bg-primary text-white border-primary shadow-lg shadow-emerald-500/20" 
-                                    : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-500"
+                                    : "bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200"
                             }`}
                         >
                             {cat.icon}
@@ -154,11 +155,11 @@ export default function SignupPage() {
           )}
           
           <div className="grid gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400" htmlFor="fullName">Full Name</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300" htmlFor="fullName">Full Name</label>
             <Input
               id="fullName"
               placeholder="John Doe"
-              className="h-14 rounded-xl border-slate-100 dark:border-slate-800 focus:ring-primary"
+              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
               disabled={isLoading}
               {...register("fullName")}
             />
@@ -167,12 +168,12 @@ export default function SignupPage() {
             )}
           </div>
           <div className="grid gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400" htmlFor="email">Email Address</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300" htmlFor="email">Email Address</label>
             <Input
               id="email"
               type="email"
               placeholder="name@example.com"
-              className="h-14 rounded-xl border-slate-100 dark:border-slate-800 focus:ring-primary"
+              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
               disabled={isLoading}
               {...register("email")}
             />
@@ -181,11 +182,11 @@ export default function SignupPage() {
             )}
           </div>
           <div className="grid gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400" htmlFor="password">Security Password</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300" htmlFor="password">Security Password</label>
             <Input
               id="password"
               type="password"
-              className="h-14 rounded-xl border-slate-100 dark:border-slate-800 focus:ring-primary"
+              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
               disabled={isLoading}
               {...register("password")}
             />
@@ -199,7 +200,7 @@ export default function SignupPage() {
             {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
             Create Secure Account
           </Button>
-          <p className="text-center text-sm font-medium text-slate-500">
+          <p className="text-center text-sm font-medium text-slate-600 dark:text-slate-300">
             Already have an account?{" "}
             <Link href="/login" className="text-primary font-bold hover:underline">
               Sign in

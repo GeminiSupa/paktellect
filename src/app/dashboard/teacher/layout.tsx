@@ -17,12 +17,12 @@ export default function TeacherDashboardLayout({
         <aside className="w-full md:w-80 shrink-0">
           <nav className="bg-secondary text-white rounded-[2.5rem] p-6 sticky top-32 shadow-2xl shadow-slate-900/20">
             <div className="mb-10 px-6 py-4 bg-slate-800/50 rounded-2xl border border-white/10">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Teacher Dashboard</p>
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Teacher Dashboard</p>
               <h3 className="text-xl font-black tracking-tighter text-white">Management Suite</h3>
             </div>
             <ul className="space-y-3">
                <li>
-                <Link href="/dashboard/teacher" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                   <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <LayoutDashboard className="size-5" />
                   </div>
@@ -30,7 +30,7 @@ export default function TeacherDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/teacher/bookings" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher/bookings" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                    <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <Calendar className="size-5" />
                   </div>
@@ -38,7 +38,7 @@ export default function TeacherDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/teacher/bookings?status=pending" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher/bookings?status=pending" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                    <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <Users className="size-5" />
                   </div>
@@ -46,7 +46,7 @@ export default function TeacherDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/teacher/messages" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher/messages" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                    <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <MessageSquare className="size-5" />
                   </div>
@@ -54,7 +54,7 @@ export default function TeacherDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/teacher/legal" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher/legal" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                    <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <Scale className="size-5" />
                   </div>
@@ -62,7 +62,7 @@ export default function TeacherDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/teacher/earnings" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher/earnings" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                    <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <DollarSign className="size-5" />
                   </div>
@@ -70,7 +70,7 @@ export default function TeacherDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/teacher/profile" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher/profile" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                    <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <User className="size-5" />
                   </div>
@@ -78,7 +78,7 @@ export default function TeacherDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/teacher/availability" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher/availability" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                    <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <Clock className="size-5" />
                   </div>
@@ -86,7 +86,7 @@ export default function TeacherDashboardLayout({
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/teacher/settings" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                <Link href="/dashboard/teacher/settings" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
                    <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <Settings className="size-5" />
                   </div>

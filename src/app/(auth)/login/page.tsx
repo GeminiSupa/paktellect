@@ -66,22 +66,22 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="border-none shadow-2xl bg-white dark:bg-slate-800 rounded-[2rem] overflow-hidden">
-      <CardHeader className="space-y-1 p-8 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+    <Card className="border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
+      <CardHeader className="space-y-1 p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <CardTitle className="text-3xl font-black tracking-tighter">Sign in</CardTitle>
-        <CardDescription className="font-medium text-slate-500">
+        <CardDescription className="font-medium text-slate-600 dark:text-slate-300">
           Enter your credentials to access your secure profile.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="grid gap-6 p-8">
           <div className="grid gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400" htmlFor="email">Email Address</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300" htmlFor="email">Email Address</label>
             <Input
               id="email"
               type="email"
               placeholder="name@example.com"
-              className="h-14 rounded-xl border-slate-100 dark:border-slate-800 focus:ring-primary"
+              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
               disabled={isLoading}
               {...register("email")}
             />
@@ -91,7 +91,7 @@ export default function LoginPage() {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400" htmlFor="password">Security Password</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300" htmlFor="password">Security Password</label>
               <Link href="#" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">
                 Forgot password?
               </Link>
@@ -99,7 +99,7 @@ export default function LoginPage() {
             <Input
               id="password"
               type="password"
-              className="h-14 rounded-xl border-slate-100 dark:border-slate-800 focus:ring-primary"
+              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
               disabled={isLoading}
               {...register("password")}
             />
@@ -113,7 +113,7 @@ export default function LoginPage() {
             {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
             Secure Login
           </Button>
-          <p className="text-center text-sm font-medium text-slate-500">
+          <p className="text-center text-sm font-medium text-slate-600 dark:text-slate-300">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-primary font-bold hover:underline">
               Sign up today

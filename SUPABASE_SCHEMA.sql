@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS teachers (
   review_count INT DEFAULT 0,
   is_online BOOLEAN DEFAULT false,
   available_slots JSONB DEFAULT '[]'::jsonb,
-  is_public BOOLEAN DEFAULT true,
+  is_public BOOLEAN DEFAULT false,
   auto_accept_bookings BOOLEAN DEFAULT false,
   timezone TEXT DEFAULT 'UTC',
   session_buffer INT DEFAULT 15,
@@ -350,7 +350,7 @@ BEGIN
         ALTER TABLE teachers ADD COLUMN session_buffer INT DEFAULT 15;
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='is_public') THEN
-        ALTER TABLE teachers ADD COLUMN is_public BOOLEAN DEFAULT true;
+        ALTER TABLE teachers ADD COLUMN is_public BOOLEAN DEFAULT false;
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='auto_accept_bookings') THEN
         ALTER TABLE teachers ADD COLUMN auto_accept_bookings BOOLEAN DEFAULT false;
