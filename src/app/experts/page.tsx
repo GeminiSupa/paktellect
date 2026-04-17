@@ -27,17 +27,18 @@ function ExpertsContent() {
   type ExpertCard = {
     id: string
     name: string
-    role: string
-    company: string
-    rating: number
+    headline?: string | null
+    rating: number | null
     reviews: number
-    rate: number
+    rate: number | null
     image?: string | null
     isVerified: boolean
     category: string
     specialty?: string | null
     isOnline: boolean
     colorClass: string
+    locationLabel?: string | null
+    tags?: string[]
   }
 
   const [experts, setExperts] = useState<ExpertCard[]>([])
@@ -61,20 +62,24 @@ function ExpertsContent() {
     async function fetchExperts() {
       setIsLoading(true)
       try {
-        const { data: teachers, error: tErr } = await supabase.from('teachers').select('*, is_online')
+        const { data: teachers, error: tErr } = await supabase
+          .from("teachers")
+          .select("id, user_id, category, specialty, headline, hourly_rate, rating_avg, review_count, is_online, is_verified, profile_pic_url, academic_subjects, legal_practice_areas, mental_modalities, wellness_specialties")
         if (tErr) throw tErr
 
         if (teachers && teachers.length > 0) {
            const userIds = teachers.map(t => t.user_id)
            const { data: profiles, error: pErr } = await supabase
              .from('profiles')
-             .select('id, full_name')
+             .select('id, full_name, city, country')
              .in('id', userIds)
              
            if (pErr) throw pErr
 
            const combined = teachers.map((t) => {
                const profile = profiles?.find(p => p.id === t.user_id)
+               const locationLabel =
+                 [profile?.city, profile?.country].filter(Boolean).join(", ") || null
                const colors: Record<string, string> = {
                  'Academic': 'accent-blue',
                  'Legal': 'accent-orange',
@@ -83,18 +88,27 @@ function ExpertsContent() {
                }
                return {
                    id: t.id,
-                   name: profile?.full_name || "Anonymous Expert",
-                   role: t.qualifications?.split(',')[0] || "Professional Expert",
-                   company: t.qualifications?.split(',')[1]?.trim() || "Independent Practice",
-                   rating: t.rating_avg || 5.0,
-                   reviews: t.review_count || 0,
-                   rate: t.hourly_rate || 50,
+                   name: profile?.full_name || "Unnamed Expert",
+                   headline: t.headline ?? null,
+                   rating: t.rating_avg ?? null,
+                   reviews: t.review_count ?? 0,
+                   rate: t.hourly_rate ?? null,
                    image: t.profile_pic_url,
                    isVerified: Boolean(t.is_verified),
                    category: t.category || 'Academic',
                    specialty: t.specialty,
-                   isOnline: t.is_online || false,
-                   colorClass: colors[t.category] || 'accent-blue'
+                   isOnline: Boolean(t.is_online),
+                   colorClass: colors[t.category] || 'accent-blue',
+                   locationLabel,
+                   tags: (
+                     t.category === "Legal"
+                       ? (Array.isArray(t.legal_practice_areas) ? t.legal_practice_areas : [])
+                       : t.category === "Mental Health"
+                         ? (Array.isArray(t.mental_modalities) ? t.mental_modalities : [])
+                         : t.category === "Wellness"
+                           ? (Array.isArray(t.wellness_specialties) ? t.wellness_specialties : [])
+                           : (Array.isArray(t.academic_subjects) ? t.academic_subjects : [])
+                   ).filter(Boolean).slice(0, 3) as string[]
                }
            })
            setExperts(combined)
@@ -148,14 +162,14 @@ function ExpertsContent() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 border border-slate-200/50 dark:border-white/5">
             <Globe className="size-3 text-primary animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 dark:text-slate-200">
                 Verified Global Expert Directory
             </span>
           </div>
           <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 text-slate-950 dark:text-white leading-[0.85]">
             World-class talent, <br /> <span className="text-primary">vetted for you.</span>
           </h1>
-          <p className="text-xl md:text-2xl text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl font-medium">
+          <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl font-medium">
             Book 1:1 sessions with industry leaders in law, medicine, and technology. 
             Experience the standard of excellence.
           </p>
@@ -172,7 +186,7 @@ function ExpertsContent() {
                             className={`px-8 h-12 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
                                 selectedCategory === cat 
                                     ? "bg-slate-950 text-white shadow-xl translate-y-[-2px]" 
-                                    : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                    : "text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                             }`}
                         >
                             {cat}
@@ -187,7 +201,7 @@ function ExpertsContent() {
                         placeholder="Search by legal specialty, medical domain, or academic topic..." 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-14 pl-14 pr-8 rounded-2xl border-0 bg-transparent focus:ring-0 font-bold text-sm text-slate-900 dark:text-white"
+                        className="w-full h-14 pl-14 pr-8 rounded-2xl border-0 bg-transparent focus:ring-0 font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                 </div>
                 <Button className="h-14 px-10 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black shadow-xl shadow-emerald-500/20">
@@ -229,9 +243,15 @@ function ExpertsContent() {
                                     )}
                                 </div>
                                 <div className="flex flex-col items-end gap-3">
-                                    <div className="bg-slate-950 dark:bg-primary text-white px-6 py-3 rounded-2xl text-lg font-black shadow-2xl shadow-emerald-500/20">
-                                        ${expert.rate}<span className="text-[10px] opacity-70 ml-1">/hr</span>
-                                    </div>
+                                    {typeof expert.rate === "number" && expert.rate > 0 ? (
+                                      <div className="bg-slate-950 dark:bg-primary text-white px-6 py-3 rounded-2xl text-lg font-black shadow-2xl shadow-emerald-500/20">
+                                          ${expert.rate}<span className="text-[10px] opacity-70 ml-1">/hr</span>
+                                      </div>
+                                    ) : (
+                                      <div className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                                        Rate not set
+                                      </div>
+                                    )}
                                     {expert.isVerified && (
                                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest shadow-sm shadow-emerald-500/10">
                                             <ShieldCheck className="size-3" />
@@ -256,36 +276,66 @@ function ExpertsContent() {
                                 </div>
                                 <h3 className="text-3xl font-black text-slate-950 dark:text-white tracking-tighter mb-2 group-hover:text-primary transition-colors duration-500">{expert.name}</h3>
                                 <div className="space-y-1 mb-10">
-                                    <p className="text-slate-500 dark:text-slate-400 font-bold text-sm italic group-hover:not-italic transition-all duration-500">
-                                        {expert.role}
-                                    </p>
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{expert.company}</p>
+                                    {expert.headline ? (
+                                      <p className="text-slate-600 dark:text-slate-300 font-bold text-sm italic group-hover:not-italic transition-all duration-500">
+                                          {expert.headline}
+                                      </p>
+                                    ) : (
+                                      <p className="text-slate-500 dark:text-slate-400 font-bold text-sm italic">
+                                          Profile headline not set
+                                      </p>
+                                    )}
                                     {expert.specialty && (
                                         <p className="inline-block mt-4 px-3 py-1 bg-emerald-500/5 dark:bg-emerald-500/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg">
                                             {expert.specialty}
                                         </p>
                                     )}
+                                    {expert.tags && expert.tags.length > 0 ? (
+                                      <div className="mt-4 flex flex-wrap gap-2">
+                                        {expert.tags.map((t) => (
+                                          <span
+                                            key={t}
+                                            className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700"
+                                          >
+                                            {t}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    ) : null}
                                 </div>
                                 
                                 <div className="flex items-center justify-between py-6 border-t border-slate-100 dark:border-white/5 text-xs font-black uppercase tracking-widest text-slate-400 mb-8">
                                     <div className="flex items-center gap-2">
                                         <Star className="size-4 text-orange-400 fill-orange-400" />
-                                        <span className="text-slate-950 dark:text-white">{expert.rating}</span>
-                                        <span className="opacity-50">({expert.reviews})</span>
+                                        {typeof expert.rating === "number" && expert.reviews > 0 ? (
+                                          <>
+                                            <span className="text-slate-950 dark:text-white">{expert.rating.toFixed(1)}</span>
+                                            <span className="opacity-50">({expert.reviews})</span>
+                                          </>
+                                        ) : (
+                                          <span className="text-slate-600 dark:text-slate-300">New</span>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Globe className="size-4" />
-                                        <span>London, UK</span>
+                                        <span className="text-slate-600 dark:text-slate-300">{expert.locationLabel || "Remote"}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <Link href={`/book/${expert.id}`}>
-                                <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-lg transition-all group-hover:scale-[1.02] shadow-xl shadow-emerald-500/20 group-hover:shadow-emerald-500/40">
-                                    Initiate Session
-                                    <ExternalLink className="size-5 ml-3 opacity-50" />
-                                </Button>
-                            </Link>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <Link href={`/book/${expert.id}`}>
+                                  <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-[12px] uppercase tracking-widest transition-all group-hover:scale-[1.02] shadow-xl shadow-emerald-500/20 group-hover:shadow-emerald-500/40">
+                                      Book
+                                      <ExternalLink className="size-5 ml-2 opacity-50" />
+                                  </Button>
+                              </Link>
+                              <Link href={`/dashboard/student/offers?expertId=${encodeURIComponent(expert.id)}`}>
+                                  <Button variant="outline" className="w-full h-14 rounded-2xl font-black text-[12px] uppercase tracking-widest">
+                                      Send Offer
+                                  </Button>
+                              </Link>
+                            </div>
                         </div>
                     </motion.div>
                 ))}
@@ -298,7 +348,7 @@ function ExpertsContent() {
 
 export default function ExpertsDirectory() {
   return (
-    <main className="min-h-screen bg-[#fdfdfe] dark:bg-card-foreground flex flex-col font-sans selection:bg-primary selection:text-white">
+    <main className="min-h-screen bg-[#fdfdfe] dark:bg-slate-950 flex flex-col font-sans selection:bg-primary selection:text-white">
       <Navbar />
       <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="animate-spin size-20 text-primary/20" /></div>}>
         <ExpertsContent />

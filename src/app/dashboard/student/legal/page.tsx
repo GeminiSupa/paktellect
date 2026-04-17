@@ -78,7 +78,7 @@ export default function StudentLegalFiles() {
               <Scale className="size-3" /> Legal Portal
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 dark:text-white">Your Legal Files</h1>
-            <p className="text-slate-500 font-medium">View documents and complete signature requests securely.</p>
+            <p className="text-slate-600 dark:text-slate-300 font-medium">View documents and complete signature requests securely.</p>
           </div>
           <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 min-w-[240px]">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Pending Signatures</p>
@@ -100,7 +100,7 @@ export default function StudentLegalFiles() {
           <div className="py-20 text-center">
             <FileText className="size-12 text-slate-300 mx-auto mb-4" />
             <h3 className="text-lg font-black text-slate-900 dark:text-white">No legal matters yet</h3>
-            <p className="text-slate-500 font-medium mt-2">When a lawyer opens a matter for your booking, it will appear here.</p>
+            <p className="text-slate-600 dark:text-slate-300 font-medium mt-2">When a lawyer opens a matter for your booking, it will appear here.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-50 dark:divide-slate-800">

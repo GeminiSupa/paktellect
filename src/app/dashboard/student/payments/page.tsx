@@ -60,7 +60,7 @@ export default function StudentPayments() {
 
   return (
     <div className="space-y-10">
-      <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-10 md:p-14 text-white relative overflow-hidden shadow-2xl shadow-blue-900/40">
+      <div className="bg-linear-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-10 md:p-14 text-white relative overflow-hidden shadow-2xl shadow-blue-900/40">
         <div className="absolute top-0 right-0 size-80 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
@@ -83,15 +83,15 @@ export default function StudentPayments() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 flex flex-col justify-center group relative overflow-hidden transition-all hover:scale-[1.02]">
-           <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2 group-hover:text-blue-600 transition-colors">Career Investment</p>
+           <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 group-hover:text-blue-600 transition-colors">Career Investment</p>
            <h3 className="text-4xl font-black text-slate-900 dark:text-white">${stats.total.toFixed(2)}</h3>
-           <p className="text-[10px] font-bold text-slate-400 mt-2">Total value of sessions booked</p>
+           <p className="text-[10px] font-bold text-slate-500 dark:text-slate-300 mt-2">Total value of sessions booked</p>
            <History className="absolute -bottom-6 -right-6 size-32 text-slate-50 dark:text-slate-950 pointer-events-none" />
         </div>
         <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 flex flex-col justify-center group relative overflow-hidden transition-all hover:scale-[1.02]">
-           <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2 group-hover:text-green-600 transition-colors">Released Funds</p>
+           <p className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-2 group-hover:text-green-600 transition-colors">Released Funds</p>
            <h3 className="text-4xl font-black text-slate-900 dark:text-white">${stats.released.toFixed(2)}</h3>
-           <p className="text-[10px] font-bold text-slate-400 mt-2">Successfully completed sessions</p>
+           <p className="text-[10px] font-bold text-slate-500 dark:text-slate-300 mt-2">Successfully completed sessions</p>
            <CheckCircle2 className="absolute -bottom-6 -right-6 size-32 text-slate-50 dark:text-slate-950 pointer-events-none" />
         </div>
       </div>
@@ -113,7 +113,7 @@ export default function StudentPayments() {
           <div className="text-center py-24">
             <CreditCard className="size-12 text-slate-300 mx-auto mb-4" />
             <h3 className="text-xl font-black text-slate-900 dark:text-white">No transactions</h3>
-            <p className="text-slate-500 mt-2">You haven&apos;t made any payments yet. Find an expert to start!</p>
+            <p className="text-slate-600 dark:text-slate-300 mt-2">You haven&apos;t made any payments yet. Find an expert to start!</p>
           </div>
         ) : (
           <div className="overflow-x-auto no-scrollbar">

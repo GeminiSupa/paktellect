@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS profiles (
   full_name TEXT,
   role TEXT DEFAULT 'student' CHECK (role IN ('student', 'expert')),
   avatar_url TEXT,
+  city TEXT,
+  country TEXT,
   device_id_hash TEXT,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -124,6 +126,7 @@ CREATE TABLE IF NOT EXISTS teachers (
   profile_pic_url TEXT,
   category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health')),
   specialty TEXT,
+  headline TEXT,
   -- Category-specific fields (required before going public)
   legal_bar_number TEXT,
   legal_jurisdiction TEXT,
@@ -278,6 +281,36 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
+-- 5b. BOOKING OFFERS (Negotiation: time + price)
+CREATE TABLE IF NOT EXISTS booking_offers (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  expert_teacher_id UUID REFERENCES teachers(id) ON DELETE CASCADE NOT NULL,
+  expert_user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  student_user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  status TEXT NOT NULL DEFAULT 'proposed'
+    CHECK (status IN ('proposed', 'countered', 'accepted', 'rejected', 'expired', 'cancelled')),
+  proposed_start TIMESTAMP WITH TIME ZONE NOT NULL,
+  duration_minutes INT NOT NULL CHECK (duration_minutes > 0 AND duration_minutes <= 480),
+  proposed_hourly_rate NUMERIC NOT NULL CHECK (proposed_hourly_rate >= 0),
+  currency TEXT NOT NULL DEFAULT 'PKR',
+  message TEXT,
+  last_actor_id UUID REFERENCES auth.users ON DELETE SET NULL,
+  booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE booking_offers ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS booking_offer_events (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  offer_id UUID REFERENCES booking_offers(id) ON DELETE CASCADE NOT NULL,
+  actor_id UUID REFERENCES auth.users ON DELETE SET NULL,
+  event_type TEXT NOT NULL,
+  meta JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE booking_offer_events ENABLE ROW LEVEL SECURITY;
+
 -- Ensure PostgREST join support for `profiles!transactions_payee_id_fkey(...)` etc.
 DO $$
 BEGIN
@@ -383,6 +416,20 @@ BEGIN
         ADD COLUMN role TEXT NOT NULL DEFAULT 'student';
     END IF;
 
+    -- Profiles: location fields for directory display
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'city'
+    ) THEN
+      ALTER TABLE public.profiles ADD COLUMN city TEXT;
+    END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'country'
+    ) THEN
+      ALTER TABLE public.profiles ADD COLUMN country TEXT;
+    END IF;
+
     -- Profiles: ensure CHECK constraint matches canonical roles ('student' | 'expert')
     -- Drop any existing CHECK constraint on profiles.role (name varies by Postgres defaults)
     IF EXISTS (
@@ -441,6 +488,9 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='available_slots') THEN
         ALTER TABLE teachers ADD COLUMN available_slots JSONB DEFAULT '[]'::jsonb;
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='headline') THEN
+        ALTER TABLE teachers ADD COLUMN headline TEXT;
+    END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='is_online') THEN
         ALTER TABLE teachers ADD COLUMN is_online BOOLEAN DEFAULT false;
     END IF;
@@ -472,6 +522,9 @@ CREATE POLICY "Public profiles are viewable by everyone"
 
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- PUBLIC REVIEWS VIEW
+-- Policy is created after the view is defined (see below).
 
 -- TEACHERS
 CREATE POLICY "Public teachers are viewable by everyone"
@@ -543,9 +596,74 @@ CREATE POLICY "Users can update their own transactions"
   ON transactions FOR UPDATE
   USING (auth.uid() = payee_id);
 
+-- BOOKING OFFERS
+DROP POLICY IF EXISTS "Participants can view their booking offers" ON booking_offers;
+DROP POLICY IF EXISTS "Students can create offers" ON booking_offers;
+DROP POLICY IF EXISTS "Participants can update their offers" ON booking_offers;
+
+CREATE POLICY "Participants can view their booking offers"
+  ON booking_offers FOR SELECT
+  USING (auth.uid() = student_user_id OR auth.uid() = expert_user_id);
+
+CREATE POLICY "Students can create offers"
+  ON booking_offers FOR INSERT
+  WITH CHECK (auth.uid() = student_user_id);
+
+CREATE POLICY "Participants can update their offers"
+  ON booking_offers FOR UPDATE
+  USING (auth.uid() = student_user_id OR auth.uid() = expert_user_id)
+  WITH CHECK (auth.uid() = student_user_id OR auth.uid() = expert_user_id);
+
+-- BOOKING OFFER EVENTS
+DROP POLICY IF EXISTS "Participants can view offer events" ON booking_offer_events;
+DROP POLICY IF EXISTS "Participants can add offer events" ON booking_offer_events;
+
+CREATE POLICY "Participants can view offer events"
+  ON booking_offer_events FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM booking_offers o
+      WHERE o.id = booking_offer_events.offer_id
+        AND (auth.uid() = o.student_user_id OR auth.uid() = o.expert_user_id)
+    )
+  );
+
+CREATE POLICY "Participants can add offer events"
+  ON booking_offer_events FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM booking_offers o
+      WHERE o.id = booking_offer_events.offer_id
+        AND (auth.uid() = o.student_user_id OR auth.uid() = o.expert_user_id)
+    )
+  );
+
 -- REVIEWS
-CREATE POLICY "Reviews are viewable by everyone"
-  ON reviews FOR SELECT USING (true);
+-- Public can read reviews only for completed bookings of public experts.
+-- Participants (student/expert) can always read their own review rows.
+DROP POLICY IF EXISTS "Reviews are viewable by everyone" ON reviews;
+
+CREATE POLICY "Public can view completed reviews for public experts"
+  ON reviews FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM bookings b
+      JOIN teachers t ON t.id = b.expert_id
+      WHERE b.id = reviews.booking_id
+        AND b.status = 'completed'
+        AND t.is_public = true
+        AND t.user_id = reviews.expert_id
+    )
+  );
+
+CREATE POLICY "Students can view their own reviews"
+  ON reviews FOR SELECT
+  USING (auth.uid() = student_id);
+
+CREATE POLICY "Experts can view reviews about them"
+  ON reviews FOR SELECT
+  USING (auth.uid() = expert_id);
 
 CREATE POLICY "Students can write reviews for their bookings"
   ON reviews FOR INSERT
@@ -589,6 +707,60 @@ BEGIN
       rating_avg = v_avg,
       updated_at = NOW()
   WHERE user_id = p_teacher_user_id;
+END;
+$$;
+
+-- Accept offer -> create booking + escrow transaction, link back to offer
+CREATE OR REPLACE FUNCTION public.accept_booking_offer(p_offer_id uuid)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  o public.booking_offers;
+  v_booking_id uuid;
+  v_date date;
+  v_time time;
+BEGIN
+  SELECT * INTO o
+  FROM public.booking_offers
+  WHERE id = p_offer_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Offer not found';
+  END IF;
+
+  IF auth.uid() IS NULL OR auth.uid() <> o.expert_user_id THEN
+    RAISE EXCEPTION 'Only the expert can accept this offer';
+  END IF;
+
+  IF o.status NOT IN ('proposed', 'countered') THEN
+    RAISE EXCEPTION 'Offer is not in an acceptable state';
+  END IF;
+
+  v_date := (o.proposed_start AT TIME ZONE 'UTC')::date;
+  v_time := (o.proposed_start AT TIME ZONE 'UTC')::time;
+
+  INSERT INTO public.bookings (expert_id, user_id, booking_date, booking_time, video_link, topic, status)
+  VALUES (o.expert_teacher_id, o.student_user_id, v_date, v_time, 'pending', COALESCE(o.message, 'Offer accepted'), 'pending')
+  RETURNING id INTO v_booking_id;
+
+  INSERT INTO public.transactions (booking_id, payer_id, payee_id, amount, status)
+  VALUES (v_booking_id, o.student_user_id, o.expert_user_id, o.proposed_hourly_rate, 'held');
+
+  UPDATE public.booking_offers
+  SET status = 'accepted',
+      booking_id = v_booking_id,
+      last_actor_id = auth.uid(),
+      updated_at = NOW()
+  WHERE id = p_offer_id;
+
+  INSERT INTO public.booking_offer_events (offer_id, actor_id, event_type, meta)
+  VALUES (p_offer_id, auth.uid(), 'accepted', jsonb_build_object('booking_id', v_booking_id));
+
+  RETURN v_booking_id;
 END;
 $$;
 
@@ -678,6 +850,33 @@ SELECT
   (review_count::numeric / (review_count::numeric + m)) * rating_avg
   + (m / (review_count::numeric + m)) * c AS bayesian_score
 FROM base;
+
+-- Public reviews view (safe fields only; no student_id exposure)
+CREATE OR REPLACE VIEW public.public_reviews AS
+SELECT
+  r.id,
+  r.booking_id,
+  r.expert_id,
+  r.rating,
+  r.comment,
+  r.expert_reply,
+  r.expert_replied_at,
+  r.created_at,
+  p.full_name AS student_name
+FROM public.reviews r
+JOIN public.bookings b ON b.id = r.booking_id
+JOIN public.teachers t ON t.id = b.expert_id
+LEFT JOIN public.profiles p ON p.id = r.student_id
+WHERE b.status = 'completed'
+  AND t.is_public IS TRUE
+  AND t.user_id = r.expert_id;
+
+-- RLS for public_reviews view (must be after view exists)
+ALTER VIEW public.public_reviews SET (security_barrier = true);
+-- Views do not support RLS. Safety is enforced by:
+-- - the view only exposing safe fields (no student_id)
+-- - underlying table RLS (reviews policy already restricts public rows)
+GRANT SELECT ON public.public_reviews TO anon, authenticated;
 
 -- ============================================================
 -- STEP 6: LEGAL PRACTICE MODULE (Matters, Documents, Time)

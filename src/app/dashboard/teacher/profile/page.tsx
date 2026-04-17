@@ -14,9 +14,12 @@ export default function TeacherProfile() {
   const [portfolioItems, setPortfolioItems] = useState<{ id: string, type: 'image' | 'link', content: string }[]>([])
   const [category, setCategory] = useState<string>("Academic")
   const [qualifications, setQualifications] = useState("")
+  const [headline, setHeadline] = useState("")
   const [bio, setBio] = useState("")
-  const [rate, setRate] = useState("100")
+  const [rate, setRate] = useState("")
   const [specialty, setSpecialty] = useState("")
+  const [city, setCity] = useState("")
+  const [country, setCountry] = useState("")
   // Category-specific fields
   const [legalBarNumber, setLegalBarNumber] = useState("")
   const [legalJurisdiction, setLegalJurisdiction] = useState("")
@@ -67,7 +70,8 @@ export default function TeacherProfile() {
         setCategory(data.category || "Academic")
         setBio(data.bio || "")
         setQualifications(data.qualifications || "")
-        setRate(data.hourly_rate?.toString() || "100")
+        setHeadline(data.headline || "")
+        setRate(data.hourly_rate != null && Number(data.hourly_rate) > 0 ? String(data.hourly_rate) : "")
         setAvatar(data.profile_pic_url || null)
         setSpecialty(data.specialty || "")
         setLegalBarNumber(data.legal_bar_number || "")
@@ -89,6 +93,21 @@ export default function TeacherProfile() {
       setIsLoading(false)
     }
     loadProfile()
+  }, [user])
+
+  useEffect(() => {
+    async function loadLocation() {
+      if (!user) return
+      try {
+        const { data, error } = await supabase.from("profiles").select("city, country").eq("id", user.id).single()
+        if (error) throw error
+        setCity((data?.city as string | null) || "")
+        setCountry((data?.country as string | null) || "")
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    loadLocation()
   }, [user])
 
   useEffect(() => {
@@ -204,7 +223,8 @@ export default function TeacherProfile() {
                 user_id: user.id,
                 bio,
                 qualifications,
-                hourly_rate: parseFloat(rate) || 0,
+                headline: headline.trim() ? headline.trim() : null,
+                hourly_rate: rate.trim() ? parseFloat(rate) : null,
                 profile_pic_url: avatar,
                 specialty,
                 legal_bar_number: legalBarNumber || null,
@@ -224,6 +244,16 @@ export default function TeacherProfile() {
             }, { onConflict: 'user_id' })
             
         if (error) throw error
+
+        const { error: pErr } = await supabase
+          .from("profiles")
+          .update({
+            city: city.trim() ? city.trim() : null,
+            country: country.trim() ? country.trim() : null,
+          })
+          .eq("id", user.id)
+        if (pErr) throw pErr
+
         toast.success("Professional profile established")
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to save profile"
@@ -292,6 +322,19 @@ export default function TeacherProfile() {
                 </div>
                 <div className="md:col-span-4 space-y-6">
                    <div>
+                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Public Headline</label>
+                    <div className="relative group">
+                      <MessageSquarePlus className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5 group-hover:scale-110 transition-transform" />
+                      <input
+                        type="text"
+                        placeholder="e.g. Corporate lawyer • M&A, startups, contracts"
+                        className="w-full pl-14 pr-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
+                        value={headline}
+                        onChange={(e) => setHeadline(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Hourly Advisory Rate</label>
                     <div className="relative group">
                       <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5 group-hover:scale-110 transition-transform" />
@@ -300,6 +343,7 @@ export default function TeacherProfile() {
                         className="w-full pl-14 pr-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-xl font-black tracking-tight transition-all"
                         value={rate}
                         onChange={(e) => setRate(e.target.value)}
+                        placeholder="Leave blank to negotiate"
                       />
                     </div>
                   </div>
@@ -314,6 +358,29 @@ export default function TeacherProfile() {
                     />
                   </div>
                 </div>
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div>
+                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">City</label>
+                 <input
+                   type="text"
+                   placeholder="e.g. Lahore"
+                   className="w-full px-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
+                   value={city}
+                   onChange={(e) => setCity(e.target.value)}
+                 />
+               </div>
+               <div>
+                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Country</label>
+                 <input
+                   type="text"
+                   placeholder="e.g. Pakistan"
+                   className="w-full px-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
+                   value={country}
+                   onChange={(e) => setCountry(e.target.value)}
+                 />
+               </div>
              </div>
 
              <div>
