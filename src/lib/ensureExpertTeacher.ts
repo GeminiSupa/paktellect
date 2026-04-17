@@ -38,16 +38,19 @@ export async function ensureExpertTeacherRow(user: User | null): Promise<EnsureE
 
   if (existing?.id) return { status: "ok" }
 
-  const { error: insertErr } = await supabase.from("teachers").insert([
+  // INSERT can race with signup or a parallel session; unique on user_id → use upsert DO NOTHING.
+  const { error: upsertErr } = await supabase.from("teachers").upsert(
     {
       user_id: user.id,
       category: readExpertCategory(user),
       is_public: false,
     },
-  ])
+    { onConflict: "user_id", ignoreDuplicates: true }
+  )
 
-  if (insertErr) {
-    return { status: "error", message: insertErr.message || "Failed to create expert profile" }
+  if (upsertErr) {
+    if (upsertErr.code === "23505") return { status: "ok" }
+    return { status: "error", message: upsertErr.message || "Failed to create expert profile" }
   }
 
   return { status: "ok" }

@@ -69,12 +69,15 @@ export default function SignupPage() {
       if (error) throw error
 
       if (authData.user && data.role === "expert" && authData.session) {
-        const { error: tErr } = await supabase.from('teachers').insert([{ 
+        const { error: tErr } = await supabase.from("teachers").upsert(
+          {
             user_id: authData.user.id,
-            category: data.category || 'Academic',
+            category: data.category || "Academic",
             is_public: false,
-        }])
-        if (tErr) {
+          },
+          { onConflict: "user_id", ignoreDuplicates: true }
+        )
+        if (tErr && tErr.code !== "23505") {
           console.error("Could not create expert record immediately:", tErr)
           throw new Error(tErr.message || "Failed to create expert profile")
         }
