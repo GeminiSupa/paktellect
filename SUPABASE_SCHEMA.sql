@@ -534,7 +534,9 @@ CREATE POLICY "Teachers can insert their own profile"
   ON teachers FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Teachers can update their own profile"
-  ON teachers FOR UPDATE USING (auth.uid() = user_id);
+  ON teachers FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- BOOKINGS
 -- expert_id is now UUID — compare directly with auth.uid()
@@ -642,6 +644,9 @@ CREATE POLICY "Participants can add offer events"
 -- Public can read reviews only for completed bookings of public experts.
 -- Participants (student/expert) can always read their own review rows.
 DROP POLICY IF EXISTS "Reviews are viewable by everyone" ON reviews;
+DROP POLICY IF EXISTS "Public can view completed reviews for public experts" ON reviews;
+DROP POLICY IF EXISTS "Students can view their own reviews" ON reviews;
+DROP POLICY IF EXISTS "Experts can view reviews about them" ON reviews;
 
 CREATE POLICY "Public can view completed reviews for public experts"
   ON reviews FOR SELECT

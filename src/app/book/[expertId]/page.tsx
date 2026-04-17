@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { Loader2, Calendar, Video, Clock, ShieldCheck } from "lucide-react"
+import { Loader2, Calendar, Video, Clock, ShieldCheck, MessageSquare } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -33,6 +33,9 @@ export default function BookingPage() {
     company: string
     rate: number
   } | null>(null)
+  const [isContactOpen, setIsContactOpen] = useState(false)
+  const [contactMessage, setContactMessage] = useState("")
+  const [isSendingContact, setIsSendingContact] = useState(false)
   const params = useParams()
   const router = useRouter()
   const expertId = params.expertId
@@ -141,6 +144,63 @@ export default function BookingPage() {
     }
   }
 
+  const startContact = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error("Please sign in to contact this expert")
+        router.push("/login")
+        return
+      }
+      if (!expert) return
+
+      const text = contactMessage.trim()
+      if (!text) {
+        toast.error("Write a message first")
+        return
+      }
+
+      setIsSendingContact(true)
+
+      const now = new Date()
+      const bookingDate = now.toISOString().slice(0, 10)
+      const bookingTime = now.toTimeString().slice(0, 8)
+
+      const { data: booking, error: bErr } = await supabase
+        .from("bookings")
+        .insert({
+          expert_id: expert.id,
+          user_id: user.id,
+          booking_date: bookingDate,
+          booking_time: bookingTime,
+          video_link: "pending",
+          topic: "Inquiry (no payment yet)",
+          status: "pending",
+        })
+        .select()
+        .single()
+      if (bErr) throw bErr
+
+      const { error: mErr } = await supabase.from("messages").insert({
+        booking_id: booking.id,
+        sender_id: user.id,
+        content: text,
+      })
+      if (mErr) throw mErr
+
+      toast.success("Message sent")
+      setIsContactOpen(false)
+      setContactMessage("")
+      router.push(`/dashboard/messages/${booking.id}`)
+    } catch (err: unknown) {
+      console.error(err)
+      const msg = err instanceof Error ? err.message : "Failed to contact expert"
+      toast.error(msg)
+    } finally {
+      setIsSendingContact(false)
+    }
+  }
+
   if (!expert) return <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]"><Loader2 className="animate-spin text-primary size-10" /></div>
 
   const rateIsSet = typeof expert.rate === "number" && expert.rate > 0
@@ -187,6 +247,25 @@ export default function BookingPage() {
                 </p>
               </div>
 
+              {/* Contact (no payment) */}
+              <div className="premium-card p-10 mb-10">
+                <p className="text-slate-900 dark:text-white font-black text-2xl tracking-tight mb-2">
+                  Contact first (no payment)
+                </p>
+                <p className="text-slate-600 dark:text-slate-300 font-medium mb-6">
+                  Send a message to confirm scope and availability before holding funds in escrow.
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => setIsContactOpen(true)}
+                  variant="outline"
+                  className="h-14 px-8 rounded-2xl font-black"
+                >
+                  <MessageSquare className="size-4" />
+                  Message expert
+                </Button>
+              </div>
+
               <div className="premium-card p-10 mb-10">
                 <p className="text-slate-900 dark:text-white font-black text-2xl tracking-tight mb-2">
                   Negotiate time and price
@@ -214,6 +293,59 @@ export default function BookingPage() {
                       Send offer
                     </Button>
                   </Link>
+                </div>
+              ) : null}
+
+              {isContactOpen ? (
+                <div className="fixed inset-0 z-50">
+                  <div
+                    className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+                    onClick={() => (isSendingContact ? null : setIsContactOpen(false))}
+                  />
+                  <div className="absolute inset-x-0 top-24 mx-auto w-[92%] max-w-lg">
+                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+                      <div className="p-8 border-b border-slate-100 dark:border-slate-800">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300 mb-2">
+                          Message expert
+                        </p>
+                        <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                          Ask a question before paying
+                        </h3>
+                        <p className="text-slate-600 dark:text-slate-300 font-medium mt-2">
+                          Keep communication on-platform to stay protected.
+                        </p>
+                      </div>
+                      <div className="p-8 space-y-4">
+                        <textarea
+                          value={contactMessage}
+                          onChange={(e) => setContactMessage(e.target.value)}
+                          className="w-full min-h-[140px] rounded-[1.6rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/10"
+                          placeholder="Hi! I’d like to confirm your availability for next week and clarify the scope..."
+                          disabled={isSendingContact}
+                        />
+                        <div className="flex gap-3 justify-end">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-12 px-6 rounded-2xl font-black"
+                            onClick={() => setIsContactOpen(false)}
+                            disabled={isSendingContact}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            className="h-12 px-6 rounded-2xl bg-primary text-white font-black"
+                            onClick={startContact}
+                            disabled={isSendingContact}
+                          >
+                            {isSendingContact ? <Loader2 className="size-4 animate-spin" /> : null}
+                            Send
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : null}
 

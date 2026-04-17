@@ -58,7 +58,7 @@ export default function TeacherEarnings() {
 
   const handleWithdraw = () => {
     if (stats.available === 0) {
-      toast.error("No available funds to withdraw.")
+      toast.info("No released funds yet. Complete sessions to unlock withdrawals.")
       return
     }
     toast.success("Withdrawal initiated! Funds will arrive in 2-3 business days.")
@@ -82,7 +82,7 @@ export default function TeacherEarnings() {
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 w-full lg:w-[380px] text-center shadow-2xl">
             <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Available for Withdrawal</p>
             <h3 className="text-6xl font-black mb-8 text-primary tracking-tighter">${stats.available.toFixed(2)}</h3>
-            <Button onClick={handleWithdraw} className="w-full h-20 bg-primary hover:bg-emerald-700 text-white font-black text-lg rounded-3xl shadow-2xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-95">
+            <Button onClick={handleWithdraw} disabled={stats.available === 0} className="w-full h-20 bg-primary hover:bg-emerald-700 text-white font-black text-lg rounded-3xl shadow-2xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:hover:scale-100">
               Initiate Withdrawal
             </Button>
             <p className="text-[10px] text-slate-500 font-bold mt-6 uppercase tracking-widest italic opacity-60">Payouts typically arrive in 48-72 hours</p>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
@@ -26,7 +26,7 @@ type OfferRow = {
   updated_at: string
 }
 
-export default function StudentOffersPage() {
+function StudentOffersContent() {
   const { user } = useStore()
   const searchParams = useSearchParams()
   const expertTeacherId = searchParams.get("expertId")
@@ -316,6 +316,23 @@ export default function StudentOffersPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function StudentOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+          <Loader2 className="animate-spin text-primary size-10" />
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">
+            Loading Offers...
+          </p>
+        </div>
+      }
+    >
+      <StudentOffersContent />
+    </Suspense>
   )
 }
 

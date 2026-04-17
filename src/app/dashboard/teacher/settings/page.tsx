@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/Button"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useRef } from "react"
 
 export default function TeacherSettings() {
   const { user, setUser } = useStore()
@@ -30,6 +31,9 @@ export default function TeacherSettings() {
   const [isLoading, setIsLoading] = useState(true)
   const [teacherId, setTeacherId] = useState<string | null>(null)
   const [teacherFieldsOk, setTeacherFieldsOk] = useState<boolean>(true)
+  const credentialInputRef = useRef<HTMLInputElement | null>(null)
+  const [isUploadingCred, setIsUploadingCred] = useState(false)
+  const [credentialFileName, setCredentialFileName] = useState<string | null>(null)
   
   // Settings State
   const [settings, setSettings] = useState({
@@ -103,9 +107,10 @@ export default function TeacherSettings() {
       
       if (error) throw error
       toast.success(`${key.replace(/_/g, ' ')} updated successfully`)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err)
-      toast.error("Failed to synchronize settings")
+      const msg = err instanceof Error ? err.message : "Failed to synchronize settings"
+      toast.error(msg)
     }
   }
 
@@ -133,6 +138,24 @@ export default function TeacherSettings() {
     } catch (err: unknown) {
       console.error(err)
       toast.error("Failed to sign out. Please try again.")
+    }
+  }
+
+  const uploadCredential = async (file: File) => {
+    if (!user) return
+    setIsUploadingCred(true)
+    try {
+      const ext = file.name.split(".").pop() || "pdf"
+      const filePath = `${user.id}/credential-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage.from("portfolios").upload(filePath, file, { upsert: true })
+      if (upErr) throw upErr
+      setCredentialFileName(file.name)
+      toast.success("Credential uploaded")
+    } catch (err: unknown) {
+      console.error(err)
+      toast.error(err instanceof Error ? err.message : "Failed to upload credential")
+    } finally {
+      setIsUploadingCred(false)
     }
   }
 
@@ -261,18 +284,37 @@ export default function TeacherSettings() {
                     <h4 className="text-xl font-black tracking-tight">Clinical Credentials</h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="p-6 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center group hover:border-primary transition-all cursor-pointer">
+                    <button
+                        type="button"
+                        onClick={() => credentialInputRef.current?.click()}
+                        disabled={isUploadingCred}
+                        className="p-6 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center group hover:border-primary transition-all disabled:opacity-60"
+                    >
                         <Upload className="size-6 text-slate-300 mb-2 group-hover:text-primary transition-colors" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white">Upload Degree/ID</span>
-                    </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
+                          {isUploadingCred ? "Uploading..." : "Upload Degree/ID"}
+                        </span>
+                        <input
+                          ref={credentialInputRef}
+                          type="file"
+                          accept=".pdf,image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0]
+                            if (f) void uploadCredential(f)
+                          }}
+                        />
+                    </button>
                     <div className="p-6 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                             <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                                 <CheckCircle2 className="size-4 text-emerald-600" />
                             </div>
-                            <span className="text-xs font-bold">identity_verified.pdf</span>
+                            <span className="text-xs font-bold truncate">
+                              {credentialFileName || "No credential uploaded yet"}
+                            </span>
                         </div>
-                        <Trash2 className="size-4 text-slate-300 hover:text-rose-500 cursor-pointer" />
+                        <Trash2 className="size-4 text-slate-300 hover:text-rose-500 cursor-not-allowed opacity-60" />
                     </div>
                 </div>
             </div>

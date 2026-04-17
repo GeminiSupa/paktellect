@@ -65,9 +65,10 @@ export default function AvailabilityPage() {
       
       if (error) throw error
       toast.success("Availability updated successfully")
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err)
-      toast.error("Failed to save availability")
+      const msg = err instanceof Error ? err.message : "Failed to save availability"
+      toast.error(msg)
     } finally {
       setIsSaving(false)
     }

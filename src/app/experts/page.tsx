@@ -134,9 +134,10 @@ function ExpertsContent() {
         const term = searchTerm.toLowerCase()
         filtered = filtered.filter(exp => 
             exp.name.toLowerCase().includes(term) || 
-            exp.role.toLowerCase().includes(term) || 
-            exp.company.toLowerCase().includes(term) ||
-            exp.specialty?.toLowerCase().includes(term)
+            (exp.headline || "").toLowerCase().includes(term) ||
+            (exp.specialty || "").toLowerCase().includes(term) ||
+            (exp.locationLabel || "").toLowerCase().includes(term) ||
+            (exp.tags || []).some((t) => t.toLowerCase().includes(term))
         )
     }
 
