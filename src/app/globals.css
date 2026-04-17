@@ -47,8 +47,8 @@
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
+  --border: #94a3b8; /* Increased contrast for better visibility (Slate 400) */
+  --input: #cbd5e1; /* Slate 300 for input fields */
   --ring: #0d9488;
   --radius: 2rem;
   --sidebar-bg: #0f172a;
@@ -56,10 +56,10 @@
 }
 
 .dark {
-  --background: #0a0a0a;
+  --background: #0b0f1a; /* Deep Navy-Black to reduce halation */
   --foreground: #f8fafc;
-  --card: #121212;
-  --card-foreground: #e5e5e5;
+  --card: #151b2b;
+  --card-foreground: #f1f5f9;
   --popover: #121212;
   --popover-foreground: #f8fafc;
   --primary: #5eead4;
@@ -72,10 +72,10 @@
   --accent-foreground: #f8fafc;
   --destructive: #7f1d1d;
   --destructive-foreground: #f8fafc;
-  --border: #2a2a2a;
-  --input: #252525;
+  --border: #1e293b; /* Optimized for navigation depth */
+  --input: #1e293b;
   --ring: #5eead4;
-  --sidebar-bg: #0a0a0a;
+  --sidebar-bg: #0b0f1a;
 }
 
 @layer base {
@@ -113,7 +113,7 @@
 }
 
 .premium-card {
-    @apply bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-500;
+    @apply bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-500 p-6 md:p-14;
 }
 
 .text-gradient-premium {

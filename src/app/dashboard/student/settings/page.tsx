@@ -7,6 +7,7 @@ import { Shield, Key, User, Loader2, Camera, CheckCircle2, LogOut, Mail } from "
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { Input } from "@/components/ui/Input"
 
 export default function StudentSettings() {
   const { user, setUser } = useStore()
@@ -90,95 +91,126 @@ export default function StudentSettings() {
 
   return (
     <div className="max-w-4xl space-y-8 pb-20">
-      <div className="bg-white dark:bg-slate-950 p-10 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50">
-        <div className="mb-10 border-b border-slate-100 dark:border-slate-800 pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+      <div className="bg-white dark:bg-card p-6 sm:p-10 rounded-[2.5rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/50 dark:shadow-black/40">
+        <div className="mb-10 border-b border-slate-200 dark:border-border pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Account Settings</h1>
-            <p className="text-slate-600 dark:text-slate-300 font-medium">Manage your learning identity and security preferences.</p>
+            <h1 className="text-3xl font-black text-slate-900 dark:text-foreground mb-2 tracking-tight">Account Settings</h1>
+            <p className="text-slate-600 dark:text-muted-foreground font-medium leading-relaxed">
+              Manage your learning identity and security preferences.
+            </p>
           </div>
           
           {/* Avatar */}
-          <div className="flex items-center gap-6 group">
-            <div className="relative size-24 rounded-[2rem] bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shadow-inner group-hover:border-primary transition-colors">
+          <div className="flex items-center gap-6 group w-full md:w-auto min-w-0">
+            <div className="relative size-24 shrink-0 rounded-[2rem] bg-slate-50 dark:bg-muted border-2 border-dashed border-slate-300 dark:border-slate-500 flex items-center justify-center overflow-hidden shadow-inner group-hover:border-primary transition-colors">
               {isUploading ? (
                 <Loader2 className="animate-spin text-primary size-8" />
               ) : avatarUrl ? (
                 <Image src={avatarUrl} alt="Avatar" fill className="object-cover" sizes="96px" />
               ) : (
-                <User className="size-10 text-slate-300" />
+                <User className="size-10 text-slate-400 dark:text-muted-foreground" />
               )}
-              <label className="absolute inset-0 bg-slate-950/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity backdrop-blur-[2px]">
+              <label className="absolute inset-0 bg-slate-950/50 dark:bg-black/55 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity backdrop-blur-[2px]">
                 <Camera className="size-6 text-white" />
                 <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={isUploading} />
               </label>
             </div>
-            <div>
-              <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-1">Profile Photo</p>
-              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-widest">JPG, PNG or WEBP. Max 2MB.</p>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-slate-900 dark:text-foreground mb-1.5 tracking-tight">
+                Profile photo
+              </p>
+              <p className="text-xs font-medium text-slate-600 dark:text-muted-foreground leading-snug">
+                JPG, PNG, or WebP · max 2&nbsp;MB
+              </p>
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
           {/* Identity */}
-          <div className="p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="p-6 sm:p-8 rounded-[2rem] border border-slate-200 dark:border-border bg-slate-50/80 dark:bg-muted/40">
             <div className="flex items-center gap-4 mb-6">
-              <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <User className="size-5 text-primary" />
+              <div
+                className="size-10 rounded-xl flex items-center justify-center border border-teal-500/35 bg-teal-500/15 dark:bg-teal-400/20 dark:border-teal-400/40"
+                aria-hidden
+              >
+                <User className="size-5 text-teal-700 dark:text-teal-300" />
               </div>
-              <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-white">Identity</h3>
+              <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-foreground">Identity</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-[0.2em] mb-2 block">Display Name</label>
-                <div className="flex gap-3">
-                  <input
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2.5">
+                <label
+                  htmlFor="student-display-name"
+                  className="text-xs font-semibold text-slate-700 dark:text-slate-200 tracking-wide block"
+                >
+                  Display name
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Input
+                    id="student-display-name"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="flex-1 h-12 px-5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                    className="flex-1 h-12 px-5 rounded-xl text-sm font-semibold border-slate-300 dark:border-slate-500 bg-white dark:bg-background"
                     placeholder="Your full name"
                   />
                   <button
+                    type="button"
                     onClick={handleSaveName}
                     disabled={isSavingName}
-                    className="h-12 px-5 rounded-xl bg-primary text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="h-12 px-5 rounded-xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
                   >
                     {isSavingName ? <Loader2 className="animate-spin size-4" /> : <CheckCircle2 className="size-4" />}
                     Save
                   </button>
                 </div>
               </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-[0.2em] mb-2 block">Email Address</label>
-                <div className="h-12 px-5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
-                  <Mail className="size-4 text-slate-400 dark:text-slate-500" />
-                  <span className="truncate">{user?.email}</span>
+              <div className="space-y-2.5">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 tracking-wide block">
+                  Email address
+                </span>
+                <div
+                  className="min-h-12 px-5 py-3 rounded-xl bg-slate-100 dark:bg-background border border-slate-300 dark:border-slate-500 flex items-center gap-3 text-sm font-semibold text-slate-800 dark:text-foreground"
+                  role="group"
+                  aria-label="Account email (read only)"
+                >
+                  <Mail className="size-4 shrink-0 text-slate-600 dark:text-slate-300" />
+                  <span className="truncate [text-decoration:none] underline-offset-0 decoration-transparent select-text">
+                    {user?.email ?? "—"}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Security */}
-          <div className="p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="p-6 sm:p-8 rounded-[2rem] border border-slate-200 dark:border-border bg-slate-50/80 dark:bg-muted/40">
             <div className="flex items-center gap-4 mb-6">
-              <div className="size-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
-                <Shield className="size-5 text-rose-500" />
+              <div
+                className="size-10 rounded-xl flex items-center justify-center border border-rose-500/35 bg-rose-500/12 dark:bg-rose-500/20"
+                aria-hidden
+              >
+                <Shield className="size-5 text-rose-600 dark:text-rose-400" />
               </div>
-              <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-white">Security</h3>
+              <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-foreground">Security</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
+                type="button"
                 onClick={handlePasswordReset}
-                className="h-14 px-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-between text-sm font-black transition-all hover:border-primary group"
+                className="h-14 px-6 rounded-2xl bg-white dark:bg-background border border-slate-200 dark:border-slate-500 flex items-center justify-between text-sm font-bold transition-all hover:border-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring group"
               >
-                <span className="text-slate-600 dark:text-slate-400 group-hover:text-primary">Change Password</span>
-                <Key className="size-4 text-slate-400 group-hover:text-primary" />
+                <span className="text-slate-800 dark:text-slate-100 group-hover:text-primary">Change password</span>
+                <Key className="size-4 text-slate-600 dark:text-slate-300 group-hover:text-primary shrink-0" />
               </button>
-              <button className="h-14 px-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-between text-sm font-black transition-all hover:border-primary group">
-                <span className="text-slate-600 dark:text-slate-400 group-hover:text-primary">Email Alerts</span>
-                <div className="flex items-center gap-2">
-                  <div className="size-2 bg-primary rounded-full animate-pulse"></div>
-                  <span className="text-primary text-[10px] uppercase tracking-widest">Active</span>
+              <button
+                type="button"
+                className="h-14 px-6 rounded-2xl bg-white dark:bg-background border border-slate-200 dark:border-slate-500 flex items-center justify-between text-sm font-bold transition-all hover:border-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring group"
+              >
+                <span className="text-slate-800 dark:text-slate-100 group-hover:text-primary">Email alerts</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="size-2 bg-primary rounded-full animate-pulse" />
+                  <span className="text-primary text-xs font-semibold">Active</span>
                 </div>
               </button>
             </div>

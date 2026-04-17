@@ -118,10 +118,12 @@ export default function SignupPage() {
         <CardContent className="grid gap-6 p-8">
           <div className="grid gap-3">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300">Account Type</label>
-            <div className="flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl">
+            <div className="flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl" role="radiogroup" aria-label="Select account type">
               <button 
                 type="button" 
                 onClick={() => setValue("role", "student")}
+                role="radio"
+                aria-checked={selectedRole === "student"}
                 className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${selectedRole === "student" ? "bg-white dark:bg-slate-800 shadow-xl text-primary" : "text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white"}`}
               >
                 Consumer
@@ -129,6 +131,8 @@ export default function SignupPage() {
               <button 
                 type="button" 
                 onClick={() => setValue("role", "expert")}
+                role="radio"
+                aria-checked={selectedRole === "expert"}
                 className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${selectedRole === "expert" ? "bg-white dark:bg-slate-800 shadow-xl text-primary" : "text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white"}`}
               >
                 Expert
@@ -143,12 +147,14 @@ export default function SignupPage() {
                className="grid gap-3"
             >
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300">Professional Domain</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Select professional domain">
                     {categoryIcons.map((cat) => (
                         <button
                             key={cat.id}
                             type="button"
                             onClick={() => setValue("category", cat.id)}
+                            role="radio"
+                            aria-checked={selectedCategory === cat.id}
                             className={`flex items-center gap-3 p-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
                                 selectedCategory === cat.id 
                                     ? "bg-primary text-white border-primary shadow-lg shadow-emerald-500/20" 

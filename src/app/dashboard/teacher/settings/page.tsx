@@ -169,14 +169,18 @@ export default function TeacherSettings() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-32">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-100 dark:border-slate-800 pb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-200 dark:border-border pb-12">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white shadow-2xl mb-6">
-             <Shield className="size-4 text-primary" />
-             <span className="text-[10px] font-black uppercase tracking-widest leading-none">Practice Shield Active</span>
+            <Shield className="size-4 text-primary" />
+            <span className="text-xs font-bold tracking-wide leading-none">Practice shield active</span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-white mb-4 leading-none">Security & Preferences</h1>
-          <p className="text-slate-600 dark:text-slate-300 font-medium text-xl leading-relaxed">Manage your professional standing, discovery settings, and security protocols.</p>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-foreground mb-4 leading-none">
+            Security & Preferences
+          </h1>
+          <p className="text-slate-600 dark:text-muted-foreground font-medium text-xl leading-relaxed">
+            Manage your professional standing, discovery settings, and security protocols.
+          </p>
         </div>
       </div>
 
@@ -190,8 +194,8 @@ export default function TeacherSettings() {
                         <Globe className="size-6 text-primary" />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Discovery & Logistics</h3>
-                        <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">Global Practice Settings</p>
+                        <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-foreground">Discovery & Logistics</h3>
+                        <p className="text-xs font-medium text-slate-600 dark:text-muted-foreground tracking-wide">Global practice settings</p>
                     </div>
                 </div>
                 <Link href={teacherId ? `/book/${teacherId}` : "/dashboard/teacher/profile"} target="_blank">
@@ -203,39 +207,41 @@ export default function TeacherSettings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="p-10 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none group hover:border-primary transition-all">
+                <div className="p-10 bg-white dark:bg-card rounded-[3rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-black/40 group hover:border-primary transition-all">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h4 className="font-black text-xl mb-1 flex items-center gap-2">Public Profile</h4>
-                            <p className="text-xs font-medium text-slate-500 italic">Toggle visibility in global directory</p>
+                            <h4 className="font-black text-xl mb-1 flex items-center gap-2 text-slate-900 dark:text-foreground">Public Profile</h4>
+                            <p className="text-sm font-medium text-slate-600 dark:text-muted-foreground">Toggle visibility in the expert directory</p>
                         </div>
                         <button 
                             onClick={() => handleUpdateSetting('is_public', !settings.is_public)}
+                            aria-label={settings.is_public ? "Deactivate public profile" : "Activate public profile"}
                             className={`relative w-16 h-9 rounded-full transition-all duration-300 ${settings.is_public ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}
                         >
                             <div className={`absolute top-1.5 left-1.5 size-6 bg-white rounded-full shadow-lg transition-transform duration-300 ${settings.is_public ? 'translate-x-7' : ''}`} />
                         </button>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-slate-600 dark:text-muted-foreground">
                         {settings.is_public ? <Eye className="size-3 text-primary" /> : <EyeOff className="size-3" />}
                         {settings.is_public ? 'Currently Discoverable' : 'Hidden from Directory'}
                     </div>
                 </div>
 
-                <div className="p-10 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none group hover:border-primary transition-all">
+                <div className="p-10 bg-white dark:bg-card rounded-[3rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-black/40 group hover:border-primary transition-all">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h4 className="font-black text-xl mb-1 flex items-center gap-2">Auto-Confirmation</h4>
-                            <p className="text-xs font-medium text-slate-500 italic">Immediate session approval</p>
+                            <h4 className="font-black text-xl mb-1 flex items-center gap-2 text-slate-900 dark:text-foreground">Auto-confirmation</h4>
+                            <p className="text-sm font-medium text-slate-600 dark:text-muted-foreground">Automatically accept new bookings</p>
                         </div>
                         <button 
                             onClick={() => handleUpdateSetting('auto_accept_bookings', !settings.auto_accept_bookings)}
+                            aria-label={settings.auto_accept_bookings ? "Disable auto-confirmation" : "Enable auto-confirmation"}
                             className={`relative w-16 h-9 rounded-full transition-all duration-300 ${settings.auto_accept_bookings ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}
                         >
                             <div className={`absolute top-1.5 left-1.5 size-6 bg-white rounded-full shadow-lg transition-transform duration-300 ${settings.auto_accept_bookings ? 'translate-x-7' : ''}`} />
                         </button>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-slate-600 dark:text-muted-foreground">
                         <Zap className={`size-3 ${settings.auto_accept_bookings ? 'text-primary fill-primary' : ''}`} />
                         {settings.auto_accept_bookings ? 'Instant Response Active' : 'Manual Review Required'}
                     </div>
@@ -244,11 +250,14 @@ export default function TeacherSettings() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2 leading-none">Practice Timezone</label>
+                    <label htmlFor="timezone-select" className="block text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-200 px-2 leading-none">
+                      Practice timezone
+                    </label>
                     <select 
+                        id="timezone-select"
                         value={settings.timezone}
                         onChange={(e) => handleUpdateSetting('timezone', e.target.value)}
-                        className="w-full h-16 px-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-black text-sm focus:ring-4 focus:ring-primary/10 appearance-none transition-all shadow-inner"
+                        className="w-full h-16 px-8 rounded-2xl bg-white dark:bg-background border border-slate-300 dark:border-slate-500 font-bold text-sm text-slate-900 dark:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring appearance-none transition-all shadow-inner"
                     >
                         <option value="UTC">Universal Coordinated (UTC)</option>
                         <option value="PKT">Pakistan Standard (PKT)</option>
@@ -259,13 +268,16 @@ export default function TeacherSettings() {
                 </div>
 
                 <div className="space-y-4">
-                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2 leading-none">Session Buffer (Minutes)</label>
+                    <label htmlFor="buffer-select" className="block text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-200 px-2 leading-none">
+                      Session buffer (minutes)
+                    </label>
                     <div className="relative group">
-                        <Clock className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5" />
+                        <Clock className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5" aria-hidden />
                         <select 
+                            id="buffer-select"
                             value={settings.session_buffer}
                             onChange={(e) => handleUpdateSetting('session_buffer', parseInt(e.target.value))}
-                            className="w-full h-16 pl-14 pr-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-black text-sm focus:ring-4 focus:ring-primary/10 appearance-none transition-all shadow-inner"
+                            className="w-full h-14 pl-14 pr-8 rounded-2xl bg-white dark:bg-background border border-slate-300 dark:border-slate-500 font-bold text-sm text-slate-900 dark:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring appearance-none transition-all shadow-inner"
                         >
                             {[0, 10, 15, 30, 45, 60].map(mins => (
                                 <option key={mins} value={mins}>{mins} Minutes</option>
@@ -276,23 +288,26 @@ export default function TeacherSettings() {
             </div>
 
             {/* NEW: CLINICAL VERIFICATION SECTION */}
-            <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none">
+            <div className="bg-white dark:bg-card p-10 rounded-[3rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-black/40">
                 <div className="flex items-center gap-3 mb-8">
-                    <div className="size-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                        <ShieldCheck className="size-5 text-blue-600" />
+                    <div className="size-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                        <ShieldCheck className="size-5 text-blue-700 dark:text-blue-300" />
                     </div>
-                    <h4 className="text-xl font-black tracking-tight">Clinical Credentials</h4>
+                    <h4 className="text-xl font-black tracking-tight text-slate-900 dark:text-foreground">Clinical Credentials</h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <button
                         type="button"
                         onClick={() => credentialInputRef.current?.click()}
                         disabled={isUploadingCred}
-                        className="p-6 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center group hover:border-primary transition-all disabled:opacity-60"
+                        className="p-6 border-2 border-dashed border-slate-300 dark:border-slate-500 rounded-2xl flex flex-col items-center justify-center text-center group hover:border-primary transition-all disabled:opacity-60 bg-slate-50/70 dark:bg-muted/35"
                     >
-                        <Upload className="size-6 text-slate-300 mb-2 group-hover:text-primary transition-colors" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
+                        <Upload className="size-6 text-slate-500 dark:text-slate-300 mb-2 group-hover:text-primary transition-colors" />
+                        <span className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-foreground">
                           {isUploadingCred ? "Uploading..." : "Upload Degree/ID"}
+                        </span>
+                        <span className="mt-1 text-xs text-slate-600 dark:text-muted-foreground">
+                          PDF or image
                         </span>
                         <input
                           ref={credentialInputRef}
@@ -305,16 +320,16 @@ export default function TeacherSettings() {
                           }}
                         />
                     </button>
-                    <div className="p-6 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
+                    <div className="p-6 border border-slate-200 dark:border-slate-500 rounded-2xl bg-slate-50/70 dark:bg-background flex items-center justify-between">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                                 <CheckCircle2 className="size-4 text-emerald-600" />
                             </div>
-                            <span className="text-xs font-bold truncate">
+                            <span className="text-sm font-semibold text-slate-900 dark:text-foreground truncate">
                               {credentialFileName || "No credential uploaded yet"}
                             </span>
                         </div>
-                        <Trash2 className="size-4 text-slate-300 hover:text-rose-500 cursor-not-allowed opacity-60" />
+                        <Trash2 className="size-4 text-slate-400 dark:text-slate-500 hover:text-rose-500 cursor-not-allowed opacity-60" />
                     </div>
                 </div>
             </div>
@@ -327,8 +342,8 @@ export default function TeacherSettings() {
                     <Key className="size-6 text-orange-600" />
                 </div>
                 <div>
-                    <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Access Control</h3>
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">Security Protocols</p>
+                    <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-foreground">Access Control</h3>
+                    <p className="text-xs font-medium text-slate-600 dark:text-muted-foreground tracking-wide">Security protocols</p>
                 </div>
             </div>
 

@@ -177,7 +177,7 @@ function ExpertsContent() {
         </motion.div>
 
         {/* Filter Bar */}
-        <div className="sticky top-28 z-40 mb-20">
+        <div className="sticky top-32 z-40 mb-20">
             <div className="glass p-3 rounded-[2.5rem] border border-slate-200/50 dark:border-white/10 shadow-2xl shadow-emerald-950/5 flex flex-col md:flex-row gap-4">
                 <div className="flex flex-wrap gap-2 p-1">
                     {categories.map((cat) => (
@@ -202,6 +202,7 @@ function ExpertsContent() {
                         placeholder="Search by legal specialty, medical domain, or academic topic..." 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        aria-label="Search expert directory"
                         className="w-full h-14 pl-14 pr-8 rounded-2xl border-0 bg-transparent focus:ring-0 font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                 </div>

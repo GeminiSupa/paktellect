@@ -85,6 +85,7 @@ export function Navbar() {
         <button 
           className="md:hidden size-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-2xl"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Close configuration menu" : "Open configuration menu"}
         >
           {isOpen ? <X className="size-6" /> : <Menu className="size-6" />}
         </button>
