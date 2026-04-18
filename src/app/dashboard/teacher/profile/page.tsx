@@ -487,7 +487,7 @@ export default function TeacherProfile() {
           </section>
 
           {/* Reviews & replies */}
-          <section className="space-y-8">
+          <section id="reviews" className="space-y-8 scroll-mt-28">
             <div className="flex items-center gap-3">
               <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
                 <Star className="size-5 text-orange-600 fill-orange-600" />
