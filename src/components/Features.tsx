@@ -32,26 +32,27 @@ export function Features() {
   ]
 
   return (
-    <section id="features" className="py-32 bg-[#fdfdfe] dark:bg-slate-950 overflow-hidden scroll-mt-32 md:scroll-mt-40">
+    <section id="features" className="py-24 md:py-32 bg-background scroll-mt-32 md:scroll-mt-40">
       <div className="container mx-auto px-6">
-        <div className="flex flex-col lg:flex-row items-center justify-between mb-24 gap-12">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/5 border border-emerald-500/10 mb-6 font-black text-[10px] uppercase tracking-widest text-primary">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-10 lg:gap-14 mb-20 md:mb-24">
+          <div className="max-w-2xl w-full">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6 font-black text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-300">
                 <Cpu className="size-3" /> System Architecture
             </div>
-            <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-none text-slate-950 dark:text-white">
-                Engineered for <br /> <span className="text-primary">Total Trust.</span>
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-[1.05] text-foreground">
+                Engineered for <br />{" "}
+                <span className="text-emerald-600 dark:text-emerald-300">Total Trust.</span>
             </h2>
-            <p className="text-xl text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
+            <p className="text-lg sm:text-xl text-muted-foreground font-medium leading-relaxed">
                 Elite professional services require elite infrastructure. 
                 We&apos;ve built the most secure platform for global expert consultations.
             </p>
           </div>
-          <div className="flex-1 w-full lg:w-auto h-40 glass rounded-[2.5rem] border border-white/20 shadow-2xl flex items-center justify-center p-8">
-             <div className="flex items-center gap-12 text-slate-900 dark:text-white">
-                <span className="font-black text-4xl tracking-tighter">TRUST+</span>
-                <span className="font-black text-4xl tracking-tighter">SECURE.</span>
-                <span className="font-black text-4xl tracking-tighter">PAKTELLECT.</span>
+          <div className="w-full lg:flex-1 lg:max-w-xl rounded-[2.5rem] border border-border bg-muted/60 dark:bg-muted/40 shadow-lg px-4 py-8 sm:p-10 mt-2 lg:mt-0">
+             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 sm:gap-x-10 text-foreground text-center sm:text-left">
+                <span className="font-black text-2xl sm:text-3xl md:text-4xl tracking-tight whitespace-nowrap">TRUST+</span>
+                <span className="font-black text-2xl sm:text-3xl md:text-4xl tracking-tight whitespace-nowrap">SECURE.</span>
+                <span className="font-black text-2xl sm:text-3xl md:text-4xl tracking-tight whitespace-nowrap">PAKTELLECT.</span>
              </div>
           </div>
         </div>

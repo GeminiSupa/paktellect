@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react"
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
+import { ensureExpertTeacherRow } from "@/lib/ensureExpertTeacher"
 import { Button } from "@/components/ui/Button"
 import { Loader2, Plus, Clock, Trash2, ShieldCheck, Calendar as CalendarIcon } from "lucide-react"
 import { toast } from "sonner"
+import type { User } from "@supabase/supabase-js"
 
 export default function AvailabilityPage() {
   const { user } = useStore()
@@ -25,8 +27,23 @@ export default function AvailabilityPage() {
           .single()
         if (error) console.error(error)
         
-        if (data?.available_slots) {
-          setSlots(data.available_slots)
+        if (data?.available_slots != null) {
+          const raw = data.available_slots
+          let parsed: unknown = []
+          try {
+            parsed = Array.isArray(raw) ? raw : typeof raw === "string" ? JSON.parse(raw) : []
+          } catch {
+            parsed = []
+          }
+          const list = Array.isArray(parsed) ? parsed : []
+          setSlots(
+            list.map((s: Record<string, unknown>) => ({
+              id: String(s.id ?? crypto.randomUUID()),
+              day: String(s.day ?? "Monday"),
+              time: String(s.time ?? "09:00 AM"),
+              active: s.active !== false,
+            }))
+          )
         }
       } catch (err) {
         console.error("Failed to load availability", err)
@@ -55,19 +72,48 @@ export default function AvailabilityPage() {
     if (!user) return
     setIsSaving(true)
     try {
-      const { error } = await supabase
-        .from('teachers')
-        .upsert({ 
-          user_id: user.id,
-          available_slots: slots,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' })
-      
+      const slotsPayload = slots.map((s) => ({
+        id: s.id,
+        day: s.day,
+        time: s.time,
+        active: s.active,
+      }))
+
+      const updatedAt = new Date().toISOString()
+
+      const runUpdate = () =>
+        supabase
+          .from("teachers")
+          .update({
+            available_slots: slotsPayload,
+            updated_at: updatedAt,
+          })
+          .eq("user_id", user.id)
+          .select("id")
+
+      let { data: updatedRows, error } = await runUpdate()
+
       if (error) throw error
+
+      if (!updatedRows?.length) {
+        const ensured = await ensureExpertTeacherRow(user as User)
+        if (ensured.status === "error") throw new Error(ensured.message)
+        const retry = await runUpdate()
+        error = retry.error
+        updatedRows = retry.data
+        if (error) throw error
+        if (!updatedRows?.length) {
+          throw new Error("Could not find your expert profile. Try signing out and back in.")
+        }
+      }
+
       toast.success("Availability updated successfully")
     } catch (err: unknown) {
       console.error(err)
-      const msg = err instanceof Error ? err.message : "Failed to save availability"
+      const msg =
+        err && typeof err === "object" && "message" in err && typeof (err as { message: unknown }).message === "string"
+          ? (err as { message: string }).message
+          : "Failed to save availability"
       toast.error(msg)
     } finally {
       setIsSaving(false)

@@ -29,7 +29,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl z-50 glass rounded-[2.5rem] border border-white/20 shadow-2xl shadow-emerald-900/10">
+    <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl z-50 rounded-[2.5rem] border border-border bg-background/95 dark:bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-white/10">
       <div className="container mx-auto px-8 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative size-12 rounded-3xl overflow-hidden shadow-xl shadow-emerald-500/20 transition-transform group-hover:scale-110 group-active:scale-95 duration-500 bg-white/50">

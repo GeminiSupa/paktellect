@@ -309,13 +309,13 @@ export default function TeacherOverview() {
 
 function StatsModule({ icon, label, value, subValue }: { icon: React.ReactNode; label: string; value: string; subValue: string }) {
     return (
-        <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none group transition-all hover:border-primary">
-            <div className="size-14 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center border border-slate-100 dark:border-white/5 mb-8 group-hover:bg-primary group-hover:text-white transition-all">
+        <div className="bg-white dark:bg-slate-900 p-8 sm:p-10 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none group transition-all hover:border-primary min-w-0 overflow-hidden">
+            <div className="size-14 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center border border-slate-100 dark:border-white/5 mb-6 sm:mb-8 group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                 {icon}
             </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">{label}</p>
-            <h3 className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white mb-2">{value}</h3>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{subValue}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2 truncate">{label}</p>
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter text-slate-900 dark:text-white mb-2 tabular-nums wrap-break-word leading-tight">{value}</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-snug">{subValue}</p>
         </div>
     )
 }
