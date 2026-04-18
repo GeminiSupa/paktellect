@@ -62,6 +62,11 @@ export default function StudentDashboard() {
     return map
   }, [bookings])
 
+  const confirmedBookingCount = useMemo(
+    () => bookings.filter((b) => b.status === "confirmed").length,
+    [bookings]
+  )
+
   useEffect(() => {
     const userId = user?.id
     if (!userId) {
@@ -248,38 +253,49 @@ export default function StudentDashboard() {
         </div>
       )}
       
-      {/* Dynamic Member Header */}
+      {/* Dynamic Member Header — colors are fixed for this dark photo surface; do not use text-primary (theme primary is dark in light mode). */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative h-[480px] rounded-[3rem] overflow-hidden bg-slate-950 flex shadow-2xl shadow-emerald-900/40"
+        className="relative min-h-[min(100vw,520px)] sm:min-h-[440px] md:h-[480px] rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-slate-950 flex shadow-2xl shadow-emerald-900/40 isolate"
       >
         <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/60 to-transparent z-10" />
+            {/* Strong scrim so copy stays readable if the image is bright or fails to load */}
+            <div
+              className="absolute inset-0 z-10 bg-linear-to-br from-slate-950 via-slate-950/92 to-slate-950/75"
+              aria-hidden
+            />
+            <div className="absolute inset-0 z-11 bg-linear-to-t from-black/55 via-transparent to-black/25 pointer-events-none" aria-hidden />
             <Image
               src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
-              alt="Architecture"
+              alt=""
               fill
-              className="object-cover opacity-60"
-              sizes="100vw"
+              className="object-cover object-center opacity-55 saturate-[0.85]"
+              sizes="(max-width: 768px) 100vw, min(896px, 70vw)"
               priority
             />
         </div>
 
-        <div className="relative z-20 flex flex-col justify-center px-10 md:px-20 max-w-4xl text-white">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-white/10 mb-8 self-start">
-             <Zap className="size-3 text-primary fill-primary" />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100">Member</span>
+        <div className="relative z-20 flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-16 py-12 md:py-0 max-w-4xl text-white w-full">
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6 sm:mb-8 self-start shadow-lg shadow-black/20">
+             <Zap className="size-3.5 text-teal-300 fill-teal-300 shrink-0" aria-hidden />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/95">Member</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-none">
-            Scale your <br /> <span className="text-primary">ambitions,</span> {user?.user_metadata?.full_name?.split(' ')[0] || 'Member'}.
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-5 md:mb-6 tracking-tighter leading-[1.05] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.55)]">
+            Scale your{" "}
+            <span className="text-teal-300 [text-shadow:0_1px_18px_rgba(20,184,166,0.35)]">ambitions,</span>
+            <br className="sm:hidden" />
+            <span className="sm:ml-1"> {user?.user_metadata?.full_name?.split(' ')[0] || "Member"}.</span>
           </h1>
-          <p className="text-indigo-100/70 mb-12 text-xl max-w-lg font-medium">You have {bookings.filter(b => b.status === 'confirmed').length} elite professionals awaiting your next session.</p>
+          <p className="text-white/90 mb-10 md:mb-12 text-lg sm:text-xl max-w-xl font-medium leading-relaxed">
+            You have {confirmedBookingCount} elite{" "}
+            {confirmedBookingCount === 1 ? "professional" : "professionals"} awaiting your next session.
+          </p>
           <div className="flex flex-wrap gap-4">
             <Link href="/experts">
-                <Button className="h-16 px-10 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-lg shadow-2xl shadow-emerald-500/20 border-t border-white/20 transition-all hover:scale-105">
+                <Button className="h-14 sm:h-16 px-8 sm:px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-base sm:text-lg shadow-2xl shadow-black/30 border border-white/10 transition-all hover:scale-[1.02]">
                     Explore New Services
-                    <ChevronRight className="size-6 ml-2" />
+                    <ChevronRight className="size-5 sm:size-6 ml-2" />
                 </Button>
             </Link>
           </div>
