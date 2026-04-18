@@ -211,7 +211,7 @@ function StudentOffersContent() {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full h-14 px-5 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm font-bold"
+                className="w-full h-14 px-5 rounded-2xl bg-background border border-border text-foreground text-sm font-bold"
                 disabled={isSubmitting}
               >
                 <option value="PKR">PKR</option>

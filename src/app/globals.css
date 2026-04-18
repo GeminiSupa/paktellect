@@ -55,6 +55,38 @@
   --sidebar-foreground: #f8fafc;
 }
 
+/*
+  Tailwind v4’s default `dark:` variant follows prefers-color-scheme, not `.dark` on <html>.
+  Without mirroring these tokens into the same condition, OS dark mode gets `dark:text-white`
+  while --background/--foreground stay on the light palette → white-on-white text.
+  Keep this block in sync with `.dark` below.
+*/
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0f1a;
+    --foreground: #f8fafc;
+    --card: #151b2b;
+    --card-foreground: #f1f5f9;
+    --popover: #121212;
+    --popover-foreground: #f8fafc;
+    --primary: #5eead4;
+    --primary-foreground: #0a0a0a;
+    --secondary: #1a1a1a;
+    --secondary-foreground: #f8fafc;
+    --muted: #1f1f1f;
+    --muted-foreground: #d1d5db;
+    --accent: #3b82f6;
+    --accent-foreground: #f8fafc;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #f8fafc;
+    --border: #1e293b;
+    --input: #1e293b;
+    --ring: #5eead4;
+    --sidebar-bg: #0b0f1a;
+    color-scheme: dark;
+  }
+}
+
 .dark {
   --background: #0b0f1a; /* Deep Navy-Black to reduce halation */
   --foreground: #f8fafc;
@@ -76,16 +108,29 @@
   --input: #1e293b;
   --ring: #5eead4;
   --sidebar-bg: #0b0f1a;
+  color-scheme: dark;
 }
 
 @layer base {
   * {
     border-color: var(--border);
   }
+  :root {
+    color-scheme: light;
+  }
   body {
     background-color: var(--background);
     color: var(--foreground);
     @apply antialiased tracking-tight;
+  }
+  /* Native selects/options follow canvas colors on some browsers; tie to theme tokens. */
+  select {
+    color: var(--foreground);
+    background-color: var(--background);
+  }
+  option {
+    color: var(--foreground);
+    background-color: var(--card);
   }
 }
 
@@ -149,8 +194,10 @@
 }
 
 /* Hayy specific card accents */
+.accent-blue { @apply bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20; }
 .accent-orange { @apply bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20; }
 .accent-emerald { @apply bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20; }
 .accent-teal { @apply bg-teal-50 text-teal-600 border-teal-100 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/20; }
 .accent-rose { @apply bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20; }
+.accent-pink { @apply bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20; }
 

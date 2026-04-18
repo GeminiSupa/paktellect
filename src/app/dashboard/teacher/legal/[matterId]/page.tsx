@@ -453,7 +453,7 @@ export default function MatterDetailPage() {
               <select
                 value={sigDocId}
                 onChange={(e) => setSigDocId(e.target.value)}
-                className="w-full h-12 px-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-bold text-sm"
+                className="w-full h-12 px-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-bold text-sm text-foreground"
               >
                 <option value="">Select…</option>
                 {sigEligibleDocs.map((d) => (

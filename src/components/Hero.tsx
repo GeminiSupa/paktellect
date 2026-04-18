@@ -67,7 +67,9 @@ export function Hero() {
             
             <h1 className="text-6xl md:text-[7.5rem] font-black tracking-tighter mb-12 leading-[0.85] text-white">
               Professional excellence, <br /> 
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 via-teal-400 to-cyan-400">within your reach.</span>
+              <span className="text-emerald-300">
+                within your reach.
+              </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-slate-200 mb-16 max-w-3xl mx-auto leading-relaxed font-medium">

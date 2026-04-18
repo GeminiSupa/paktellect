@@ -262,10 +262,10 @@ function ExpertsContent() {
                 Verified Global Expert Directory
             </span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 text-slate-950 dark:text-white leading-[0.85]">
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 text-foreground leading-[0.85]">
             World-class talent, <br /> <span className="text-primary">vetted for you.</span>
           </h1>
-          <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl font-medium">
+          <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl font-medium">
             Book 1:1 sessions with industry leaders in law, medicine, and technology. 
             Experience the standard of excellence.
           </p>
