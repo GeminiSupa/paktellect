@@ -45,6 +45,7 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-10">
           <div className="flex items-center gap-8 text-sm font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">
             {user?.user_metadata?.role !== 'expert' && <Link href="/experts" className="hover:text-primary transition-colors">Directory</Link>}
+            <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
             <Link href="#features" className="hover:text-primary transition-colors">Safety</Link>
             <Link href="#how-it-works" className="hover:text-primary transition-colors">Trust</Link>
           </div>
@@ -99,6 +100,7 @@ export function Navbar() {
         <div className="container mx-auto px-8 flex flex-col gap-6">
           <div className="flex flex-col gap-4 text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">
             {user?.user_metadata?.role !== 'expert' && <Link href="/experts" onClick={() => setIsOpen(false)}>Directory</Link>}
+            <Link href="/contact" onClick={() => setIsOpen(false)}>Contact</Link>
             <Link href="#features" onClick={() => setIsOpen(false)}>Safety Protocol</Link>
             <Link href="#how-it-works" onClick={() => setIsOpen(false)}>Escrow Flow</Link>
           </div>

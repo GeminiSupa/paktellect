@@ -43,6 +43,7 @@ function ExpertsContent() {
 
   const [experts, setExperts] = useState<ExpertCard[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
   const [activeExperts, setActiveExperts] = useState<ExpertCard[]>([])
@@ -61,61 +62,127 @@ function ExpertsContent() {
   useEffect(() => {
     async function fetchExperts() {
       setIsLoading(true)
+      setLoadError(null)
       try {
-        const { data: teachers, error: tErr } = await supabase
-          .from("teachers")
-          .select("id, user_id, category, specialty, headline, hourly_rate, rating_avg, review_count, is_online, is_verified, profile_pic_url, academic_subjects, legal_practice_areas, mental_modalities, wellness_specialties")
-        if (tErr) throw tErr
+        // Single query with embedded profiles avoids a second round-trip and PostgREST edge cases on `.in()`.
+        // Only list experts who opted into the public directory.
+        const selectWithProfile = `
+          id,
+          user_id,
+          category,
+          specialty,
+          headline,
+          hourly_rate,
+          rating_avg,
+          review_count,
+          is_online,
+          is_verified,
+          profile_pic_url,
+          academic_subjects,
+          legal_practice_areas,
+          mental_modalities,
+          wellness_specialties,
+          profiles!teachers_user_id_fkey ( full_name, city, country )
+        `
 
-        if (teachers && teachers.length > 0) {
-           const userIds = teachers.map(t => t.user_id)
-           const { data: profiles, error: pErr } = await supabase
-             .from('profiles')
-             .select('id, full_name, city, country')
-             .in('id', userIds)
-             
-           if (pErr) throw pErr
-
-           const combined = teachers.map((t) => {
-               const profile = profiles?.find(p => p.id === t.user_id)
-               const locationLabel =
-                 [profile?.city, profile?.country].filter(Boolean).join(", ") || null
-               const colors: Record<string, string> = {
-                 'Academic': 'accent-blue',
-                 'Legal': 'accent-orange',
-                 'Wellness': 'accent-teal',
-                 'Mental Health': 'accent-pink'
-               }
-               return {
-                   id: t.id,
-                   name: profile?.full_name || "Unnamed Expert",
-                   headline: t.headline ?? null,
-                   rating: t.rating_avg ?? null,
-                   reviews: t.review_count ?? 0,
-                   rate: t.hourly_rate ?? null,
-                   image: t.profile_pic_url,
-                   isVerified: Boolean(t.is_verified),
-                   category: t.category || 'Academic',
-                   specialty: t.specialty,
-                   isOnline: Boolean(t.is_online),
-                   colorClass: colors[t.category] || 'accent-blue',
-                   locationLabel,
-                   tags: (
-                     t.category === "Legal"
-                       ? (Array.isArray(t.legal_practice_areas) ? t.legal_practice_areas : [])
-                       : t.category === "Mental Health"
-                         ? (Array.isArray(t.mental_modalities) ? t.mental_modalities : [])
-                         : t.category === "Wellness"
-                           ? (Array.isArray(t.wellness_specialties) ? t.wellness_specialties : [])
-                           : (Array.isArray(t.academic_subjects) ? t.academic_subjects : [])
-                   ).filter(Boolean).slice(0, 3) as string[]
-               }
-           })
-           setExperts(combined)
+        type ProfileEmbed = { full_name?: string | null; city?: string | null; country?: string | null } | null
+        type TeacherRow = {
+          id: string
+          user_id: string
+          category?: string | null
+          specialty?: string | null
+          headline?: string | null
+          hourly_rate?: number | null
+          rating_avg?: number | null
+          review_count?: number | null
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          profile_pic_url?: string | null
+          academic_subjects?: unknown
+          legal_practice_areas?: unknown
+          mental_modalities?: unknown
+          wellness_specialties?: unknown
+          profiles?: ProfileEmbed
         }
+
+        const colors: Record<string, string> = {
+          Academic: "accent-blue",
+          Legal: "accent-orange",
+          Wellness: "accent-teal",
+          "Mental Health": "accent-pink",
+        }
+
+        function mapTeacherToCard(t: TeacherRow, profile: ProfileEmbed | undefined): ExpertCard {
+          const p = profile ?? t.profiles
+          const locationLabel = [p?.city, p?.country].filter(Boolean).join(", ") || null
+          return {
+            id: t.id,
+            name: p?.full_name || "Unnamed Expert",
+            headline: t.headline ?? null,
+            rating: t.rating_avg ?? null,
+            reviews: t.review_count ?? 0,
+            rate: t.hourly_rate ?? null,
+            image: t.profile_pic_url,
+            isVerified: Boolean(t.is_verified),
+            category: t.category || "Academic",
+            specialty: t.specialty,
+            isOnline: Boolean(t.is_online),
+            colorClass: colors[t.category || "Academic"] || "accent-blue",
+            locationLabel,
+            tags: (
+              t.category === "Legal"
+                ? (Array.isArray(t.legal_practice_areas) ? t.legal_practice_areas : [])
+                : t.category === "Mental Health"
+                  ? (Array.isArray(t.mental_modalities) ? t.mental_modalities : [])
+                  : t.category === "Wellness"
+                    ? (Array.isArray(t.wellness_specialties) ? t.wellness_specialties : [])
+                    : Array.isArray(t.academic_subjects)
+                      ? t.academic_subjects
+                      : []
+            )
+              .filter(Boolean)
+              .slice(0, 3) as string[],
+          }
+        }
+
+        const primary = await supabase.from("teachers").select(selectWithProfile).eq("is_public", true)
+
+        let rows: TeacherRow[] = (primary.data ?? []) as TeacherRow[]
+
+        if (primary.error) {
+          const minimal = await supabase
+            .from("teachers")
+            .select(
+              "id, user_id, category, specialty, headline, hourly_rate, rating_avg, review_count, is_online, is_verified, profile_pic_url, academic_subjects, legal_practice_areas, mental_modalities, wellness_specialties"
+            )
+            .eq("is_public", true)
+          if (minimal.error) throw minimal.error
+          const base = (minimal.data ?? []) as TeacherRow[]
+          const userIds = [...new Set(base.map((t) => t.user_id))]
+          const profileById = new Map<string, ProfileEmbed>()
+          if (userIds.length > 0) {
+            const { data: profs, error: pErr } = await supabase
+              .from("profiles")
+              .select("id, full_name, city, country")
+              .in("id", userIds)
+            if (pErr) throw pErr
+            for (const row of profs ?? []) {
+              profileById.set(row.id as string, {
+                full_name: row.full_name as string | null,
+                city: row.city as string | null,
+                country: row.country as string | null,
+              })
+            }
+          }
+          rows = base.map((t) => ({ ...t, profiles: profileById.get(t.user_id) ?? null }))
+        }
+
+        setExperts(rows.map((t) => mapTeacherToCard(t, t.profiles ?? undefined)))
       } catch (err: unknown) {
         console.error(err)
-        toast.error("Failed to load experts.")
+        const message = err instanceof Error ? err.message : "Failed to load experts."
+        setLoadError(message)
+        toast.error("Could not load the expert directory. Please refresh.")
       } finally {
         setIsLoading(false)
       }
@@ -156,6 +223,23 @@ function ExpertsContent() {
 
   return (
     <div className="container mx-auto px-6 pt-48 pb-32 grow">
+        {loadError && !isLoading && (
+          <div
+            role="alert"
+            className="mb-10 rounded-2xl border border-destructive/40 bg-destructive/10 px-5 py-4 text-sm text-foreground"
+          >
+            <p className="font-semibold mb-1">We couldn&apos;t load the directory</p>
+            <p className="text-muted-foreground mb-3">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="text-sm font-bold text-primary hover:underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -350,7 +434,7 @@ function ExpertsContent() {
 
 export default function ExpertsDirectory() {
   return (
-    <main className="min-h-screen bg-[#fdfdfe] dark:bg-slate-950 flex flex-col font-sans selection:bg-primary selection:text-white">
+    <main className="min-h-screen bg-background flex flex-col font-sans selection:bg-primary selection:text-primary-foreground">
       <Navbar />
       <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="animate-spin size-20 text-primary/20" /></div>}>
         <ExpertsContent />

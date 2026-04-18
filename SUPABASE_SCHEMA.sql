@@ -856,6 +856,9 @@ SELECT
   + (m / (review_count::numeric + m)) * c AS bayesian_score
 FROM base;
 
+-- Landing page / API: anon must be able to read rankings (view respects underlying table RLS).
+GRANT SELECT ON public.teacher_rankings TO anon, authenticated;
+
 -- Public reviews view (safe fields only; no student_id exposure)
 CREATE OR REPLACE VIEW public.public_reviews AS
 SELECT

@@ -33,31 +33,54 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    async function loadFeaturedForCategory(category: (typeof FEATURE_CATEGORIES)[number]): Promise<FeaturedExpert[]> {
+      const teacherSelect =
+        "id, category, qualifications, rating_avg, review_count, is_online, profile_pic_url, profiles!teachers_user_id_fkey(full_name)"
+
+      const { data: ranked, error: rErr } = await supabase
+        .from("teacher_rankings")
+        .select("teacher_id, review_count, rating_avg, bayesian_score")
+        .eq("category", category)
+        .gte("review_count", MIN_REVIEWS)
+        .order("bayesian_score", { ascending: false })
+        .limit(3)
+
+      if (!rErr && ranked && ranked.length > 0) {
+        const teacherIds = ranked.map((x) => x.teacher_id as string)
+        const { data: teachers, error: tErr } = await supabase
+          .from("teachers")
+          .select(teacherSelect)
+          .in("id", teacherIds)
+        if (!tErr && teachers && teachers.length > 0) {
+          const byId = new Map((teachers as FeaturedExpert[]).map((t) => [t.id as string, t]))
+          return teacherIds.map((id) => byId.get(id)).filter(Boolean) as FeaturedExpert[]
+        }
+        if (tErr) console.warn("teacher_rankings ok but teachers fetch failed", tErr)
+      } else if (rErr) {
+        console.warn("teacher_rankings unavailable, using fallback", rErr)
+      }
+
+      const { data: fallback, error: fErr } = await supabase
+        .from("teachers")
+        .select(teacherSelect)
+        .eq("category", category)
+        .eq("is_public", true)
+        .order("review_count", { ascending: false })
+        .limit(3)
+
+      if (fErr) {
+        console.error("Featured experts fallback failed", fErr)
+        return []
+      }
+      return (fallback ?? []) as FeaturedExpert[]
+    }
+
     async function fetchFeatured() {
       try {
         const results = await Promise.all(
           categories.map(async (category) => {
-            const { data: ranked, error: rErr } = await supabase
-              .from("teacher_rankings")
-              .select("teacher_id, review_count, rating_avg, bayesian_score")
-              .eq("category", category)
-              .gte("review_count", MIN_REVIEWS)
-              .order("bayesian_score", { ascending: false })
-              .limit(3)
-            if (rErr) throw rErr
-
-            const teacherIds = (ranked || []).map((x) => x.teacher_id as string)
-            if (teacherIds.length === 0) return [category, [] as FeaturedExpert[]] as const
-
-            const { data: teachers, error: tErr } = await supabase
-              .from("teachers")
-              .select("id, category, qualifications, rating_avg, review_count, is_online, profile_pic_url, profiles(full_name)")
-              .in("id", teacherIds)
-            if (tErr) throw tErr
-
-            const byId = new Map((teachers || []).map((t) => [t.id as string, t as FeaturedExpert]))
-            const ordered = teacherIds.map((id) => byId.get(id)).filter(Boolean) as FeaturedExpert[]
-            return [category, ordered] as const
+            const list = await loadFeaturedForCategory(category)
+            return [category, list] as const
           })
         )
 
@@ -76,7 +99,7 @@ export default function Home() {
   }, [categories])
 
   return (
-    <main className="min-h-screen bg-[#fdfdfe] dark:bg-slate-950 selection:bg-primary selection:text-white">
+    <main className="min-h-screen bg-background selection:bg-primary selection:text-primary-foreground">
       <Navbar />
       <Hero />
       <Features />
@@ -134,8 +157,8 @@ export default function Home() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                       {experts.map((expert) => (
                         <Link key={expert.id} href={`/book/${expert.id}`} className="group relative">
-                          <div className="premium-card p-1 bg-white dark:bg-slate-900 overflow-hidden h-full flex flex-col">
-                            <div className="aspect-4/3 rounded-[2rem] bg-slate-50 dark:bg-slate-800 mb-8 overflow-hidden relative shadow-inner">
+                          <div className="premium-card p-1 bg-card overflow-hidden h-full flex flex-col border-border">
+                            <div className="aspect-4/3 rounded-[2rem] bg-muted mb-8 overflow-hidden relative shadow-inner">
                               <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-transparent z-10" />
                               <div className="absolute top-6 left-6 z-20">
                                 <span className="px-3 py-1.5 rounded-xl glass border border-white/10 text-[10px] font-black uppercase tracking-widest text-white shadow-2xl">
@@ -164,23 +187,23 @@ export default function Home() {
                             </div>
                             <div className="p-8 pt-0 grow flex flex-col">
                               <div className="grow">
-                                <h3 className="font-black text-3xl tracking-tighter mb-2 text-slate-900 dark:text-white transition-colors group-hover:text-primary leading-tight">
+                                <h3 className="font-black text-3xl tracking-tighter mb-2 text-foreground transition-colors group-hover:text-primary leading-tight">
                                   {expert.profiles?.full_name}
                                 </h3>
-                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-8 flex items-center gap-2">
                                   <BriefcaseIcon className="size-3" />
                                   {expert.qualifications?.split(",")[0]}
                                 </p>
                               </div>
-                              <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-6">
-                                <div className="flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white">
+                              <div className="flex items-center justify-between border-t border-border pt-6">
+                                <div className="flex items-center gap-2 text-sm font-black text-foreground">
                                   <Star className="size-4 text-orange-500 fill-orange-500" />
                                   <span>{expert.rating_avg || "0.0"}</span>
                                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                                     ({expert.review_count || 0})
                                   </span>
                                 </div>
-                                <div className="px-6 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:bg-primary group-hover:text-white flex items-center transition-all">
+                                <div className="px-6 h-12 rounded-xl bg-muted text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground flex items-center transition-all">
                                   Initiate Session
                                 </div>
                               </div>
