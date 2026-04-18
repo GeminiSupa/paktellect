@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar"
 import { Footer } from "@/components/Footer"
 import Link from "next/link"
-import { LayoutDashboard, User, Calendar, Settings, DollarSign, Users, MessageSquare, Clock, Scale, Handshake } from "lucide-react"
+import { LayoutDashboard, User, Calendar, Settings, DollarSign, Users, MessageSquare, Clock, Scale, Handshake, BookOpen } from "lucide-react"
 
 export default function TeacherDashboardLayout({
   children,
@@ -99,6 +99,14 @@ export default function TeacherDashboardLayout({
                     <Settings className="size-5" />
                   </div>
                   Settings
+                </Link>
+              </li>
+              <li>
+                <Link href="/manual/expert" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                   <div className="size-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-colors">
+                    <BookOpen className="size-5" />
+                  </div>
+                  Expert manual
                 </Link>
               </li>
             </ul>

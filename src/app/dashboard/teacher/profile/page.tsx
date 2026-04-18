@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/Button"
-import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera, Star, MessageSquarePlus } from "lucide-react"
+import Link from "next/link"
+import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera, Star, MessageSquarePlus, CheckCircle2, AlertCircle, BookOpen } from "lucide-react"
+import { validateExpertProfileBasics } from "@/lib/expertProfileBasics"
 import { supabase } from "@/lib/supabase"
 import { useStore } from "@/store/useStore"
 import { toast } from "sonner"
@@ -38,6 +40,7 @@ export default function TeacherProfile() {
   const [academicCredentials, setAcademicCredentials] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
   type ReviewRow = {
     id: string
     booking_id: string
@@ -212,6 +215,43 @@ export default function TeacherProfile() {
         toast.error("Please login first")
         return
     }
+    const displayName = (user.user_metadata?.full_name as string | undefined)?.trim() ?? ""
+
+    const basics = validateExpertProfileBasics({
+      displayNameFromAccount: displayName,
+      category,
+      headline,
+      specialty,
+      rate,
+      city,
+      country,
+      bio,
+      qualifications,
+      legalBarNumber,
+      legalJurisdiction,
+      legalPracticeAreas,
+      mentalLicenseNumber,
+      mentalLicenseType,
+      mentalModalities,
+      wellnessCertification,
+      wellnessSpecialties,
+      wellnessApproach,
+      academicSubjects,
+      academicEducationLevel,
+      academicCredentials,
+    })
+
+    if (!basics.ok) {
+      setValidationErrors(basics.errors)
+      toast.error(
+        basics.errors.length <= 2
+          ? basics.errors.join(" ")
+          : `${basics.errors[0]} (+${basics.errors.length - 1} more — see list below)`
+      )
+      return
+    }
+    setValidationErrors([])
+
     setIsSaving(true)
     try {
         const toTextArray = (v: string) =>
@@ -221,6 +261,7 @@ export default function TeacherProfile() {
             .from('teachers')
             .upsert({
                 user_id: user.id,
+                category,
                 bio,
                 qualifications,
                 headline: headline.trim() ? headline.trim() : null,
@@ -254,7 +295,7 @@ export default function TeacherProfile() {
           .eq("id", user.id)
         if (pErr) throw pErr
 
-        toast.success("Professional profile established")
+        toast.success("Profile saved. Turn on “Public profile” in Settings when you’re ready for the directory.")
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to save profile"
         toast.error(message)
@@ -302,6 +343,56 @@ export default function TeacherProfile() {
         </div>
 
         <div className="space-y-12">
+          <section className="rounded-[2rem] border border-primary/25 bg-primary/5 dark:bg-primary/10 p-8 md:p-10 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-2">Client-facing preview</p>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">What clients see on Find Experts</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 font-medium leading-relaxed max-w-2xl">
+                  Your <strong className="text-foreground">name</strong> comes from your account display name (Settings). The directory shows{" "}
+                  <strong className="text-foreground">photo, headline, rate, location, specialty</strong>, category tags, and ratings after sessions.
+                </p>
+              </div>
+              <Link
+                href="/manual/expert"
+                className="inline-flex items-center gap-2 shrink-0 rounded-2xl border border-border bg-background px-5 py-3 text-xs font-bold text-foreground hover:border-primary transition-colors"
+              >
+                <BookOpen className="size-4 text-primary" />
+                Expert manual
+              </Link>
+            </div>
+            <ul className="grid sm:grid-cols-2 gap-3 text-sm text-slate-700 dark:text-slate-200">
+              {[
+                "Headline & specialty on each card",
+                "Hourly rate (Offers still allowed)",
+                "City / country as “Remote” fallback",
+                "Category tags (subjects, practice areas, etc.)",
+              ].map((line) => (
+                <li key={line} className="flex items-start gap-2">
+                  <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" aria-hidden />
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {validationErrors.length > 0 && (
+            <div
+              role="alert"
+              className="rounded-[2rem] border border-rose-500/40 bg-rose-500/10 px-6 py-5 text-sm text-rose-950 dark:text-rose-100"
+            >
+              <div className="flex items-center gap-2 font-bold mb-3">
+                <AlertCircle className="size-5 shrink-0" />
+                Complete these before saving
+              </div>
+              <ul className="list-disc pl-5 space-y-1.5 font-medium">
+                {validationErrors.map((e) => (
+                  <li key={e}>{e}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <section className="space-y-8">
              <div className="flex items-center gap-3">
                <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -600,7 +691,7 @@ export default function TeacherProfile() {
           <div className="pt-10 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-6">
             <Button onClick={handleSave} disabled={isSaving} className="h-16 px-12 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-lg shadow-2xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-95 gap-3">
                {isSaving ? <Loader2 className="animate-spin size-5" /> : <Save className="size-5" />}
-               Publish Clinical Profile
+               Save profile
             </Button>
           </div>
 

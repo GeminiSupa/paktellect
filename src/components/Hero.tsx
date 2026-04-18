@@ -171,7 +171,7 @@ function CategoryCard({
                 {icon}
             </div>
             <h3 className="font-black text-2xl text-white mb-2 tracking-tight">{label}</h3>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{count}</p>
+            <p className="text-[10px] font-black text-slate-200/90 uppercase tracking-widest leading-none">{count}</p>
         </div>
     </Link>
   )

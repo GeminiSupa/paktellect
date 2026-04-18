@@ -22,6 +22,21 @@ export default function HelpCenterPage() {
             Quick answers, safety guidance, and escrow rules—written for Pakistan-based professionals and clients.
           </p>
 
+          <div className="flex flex-wrap gap-4 mb-10">
+            <Link
+              href="/manual"
+              className="inline-flex items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm font-bold text-foreground hover:border-primary transition-colors"
+            >
+              User guide (clients)
+            </Link>
+            <Link
+              href="/manual/expert"
+              className="inline-flex items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm font-bold text-foreground hover:border-primary transition-colors"
+            >
+              Expert manual
+            </Link>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-14">
             <div className="premium-card p-10">
               <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">

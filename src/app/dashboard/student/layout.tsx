@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar"
 import { Footer } from "@/components/Footer"
 import Link from "next/link"
-import { LayoutDashboard, Settings, CreditCard, Scale, BookOpen, Handshake } from "lucide-react"
+import { LayoutDashboard, Settings, CreditCard, Scale, BookOpen, Handshake, BookMarked } from "lucide-react"
 
 export default function StudentDashboardLayout({
   children,
@@ -12,7 +12,7 @@ export default function StudentDashboardLayout({
     <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 flex flex-col font-sans">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-12 grow flex flex-col md:flex-row gap-10 mt-32 md:mt-28">
+      <div className="container mx-auto px-4 py-12 grow flex flex-col md:flex-row gap-10 mt-36 md:mt-32 relative z-0">
         {/* Sidebar Navigation */}
         <aside className="w-full md:w-80 shrink-0">
           <nav className="bg-secondary text-white rounded-[2.5rem] p-8 sticky top-32 shadow-2xl shadow-slate-900/20">
@@ -67,6 +67,14 @@ export default function StudentDashboardLayout({
                     <Settings className="size-5" />
                   </div>
                   Settings
+                </Link>
+              </li>
+              <li>
+                <Link href="/manual" className="flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-200 hover:text-white hover:bg-white/5 transition-all duration-300 font-bold group">
+                  <div className="size-10 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-primary transition-colors shadow-lg">
+                    <BookMarked className="size-5" />
+                  </div>
+                  User guide
                 </Link>
               </li>
             </ul>

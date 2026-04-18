@@ -105,17 +105,17 @@ export default function Home() {
       <Features />
       
       {/* Dynamic Experts Preview (best per category) */}
-      <section className="py-32 container mx-auto px-6 overflow-hidden">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-20 gap-8">
+      <section className="py-24 md:py-32 container mx-auto px-6 rounded-[3rem] bg-muted/50 dark:bg-muted/25 border border-border/60">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 md:mb-20 gap-8">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/5 border border-emerald-500/10 mb-6 font-black text-[10px] uppercase tracking-[0.2em] text-primary">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/25 mb-6 font-black text-[10px] uppercase tracking-[0.2em] text-emerald-800 dark:text-emerald-300">
                 <Globe className="size-3" /> Professional Ecosystem
             </div>
-            <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-[0.9] text-slate-900 dark:text-white">
+            <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-[0.9] text-foreground">
               Connect with <br /> <span className="text-primary">top 1% globally.</span>
             </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-300 font-medium leading-relaxed">From clinical specialists to legal counselors, access the world&apos;s most trusted minds.</p>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300 mt-6">
+            <p className="text-xl text-muted-foreground font-medium leading-relaxed">From clinical specialists to legal counselors, access the world&apos;s most trusted minds.</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-6">
               Featured rankings use verified reviews (min {MIN_REVIEWS}).
             </p>
           </div>
