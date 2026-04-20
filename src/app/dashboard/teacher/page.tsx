@@ -17,11 +17,20 @@ import {
   BadgeCheck,
   X,
   Sparkles,
+  Zap,
+  ShieldAlert,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ChevronRight,
+  AlertCircle
 } from "lucide-react"
 import { useEffect, useState, useMemo } from "react"
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
+import { validateExpertProfileBasics, ExpertProfileBasicsInput } from "@/lib/expertProfileBasics"
 
 const AVAIL_TIP_KEY = "paktellect_dismiss_avail_tip_v1"
 
@@ -29,6 +38,9 @@ export default function TeacherOverview() {
   const { user } = useStore()
   const [category, setCategory] = useState<string>("Academic")
   const [isOnline, setIsOnline] = useState(false)
+  const [isPublic, setIsPublic] = useState(false)
+  const [checklist, setChecklist] = useState<{ ok: boolean; errors: string[] }>({ ok: true, errors: [] })
+  
   type Session = {
     id: string
     booking_date: string
@@ -61,13 +73,44 @@ export default function TeacherOverview() {
       try {
         const { data: teacher } = await supabase
           .from("teachers")
-          .select("id, category, is_online")
+          .select(`
+            *,
+            profiles:user_id(full_name, city, country)
+          `)
           .eq("user_id", user.id)
           .single()
 
         if (teacher) {
-          setCategory(teacher.category)
-          setIsOnline(teacher.is_online)
+          setCategory(teacher.category || "Academic")
+          setIsOnline(teacher.is_online || false)
+          setIsPublic(teacher.is_public || false)
+
+          // Run checklist validation
+          const validationInput: ExpertProfileBasicsInput = {
+            displayNameFromAccount: teacher.profiles?.full_name || "",
+            category: teacher.category || "Academic",
+            headline: teacher.headline || "",
+            specialty: teacher.specialty || "",
+            rate: String(teacher.hourly_rate || ""),
+            city: teacher.profiles?.city || "",
+            country: teacher.profiles?.country || "",
+            bio: teacher.bio || "",
+            qualifications: teacher.qualifications || "",
+            legalBarNumber: teacher.legal_bar_number || "",
+            legalJurisdiction: teacher.legal_jurisdiction || "",
+            legalPracticeAreas: (teacher.legal_practice_areas || []).join(", "),
+            mentalLicenseNumber: teacher.mental_license_number || "",
+            mentalLicenseType: teacher.mental_license_type || "",
+            mentalModalities: (teacher.mental_modalities || []).join(", "),
+            wellnessCertification: teacher.wellness_certification || "",
+            wellnessSpecialties: (teacher.wellness_specialties || []).join(", "),
+            wellnessApproach: teacher.wellness_approach || "",
+            academicSubjects: (teacher.academic_subjects || []).join(", "),
+            academicEducationLevel: teacher.academic_education_level || "",
+            academicCredentials: teacher.academic_credentials || ""
+          }
+
+          setChecklist(validateExpertProfileBasics(validationInput))
 
           const today = new Date().toISOString().split("T")[0]
           const { data: sessions } = await supabase
@@ -204,6 +247,98 @@ export default function TeacherOverview() {
           How this dashboard works →
         </Link>
       </div>
+
+      {/* Visibility & Discovery Status Widget */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`rounded-[2rem] border p-8 flex flex-col justify-between transition-all duration-500 ${isPublic ? 'bg-emerald-500/5 border-emerald-500/20 shadow-lg shadow-emerald-500/5' : 'bg-orange-500/5 border-orange-500/20 shadow-lg shadow-orange-500/5'}`}>
+          <div className="flex items-start justify-between mb-8">
+            <div className={`p-4 rounded-2xl ${isPublic ? 'bg-emerald-500/20 text-emerald-600' : 'bg-orange-500/20 text-orange-600'}`}>
+              {isPublic ? <Eye className="size-8" /> : <EyeOff className="size-8" />}
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">Directory Status</p>
+              <h4 className={`text-xl font-black ${isPublic ? 'text-emerald-600' : 'text-orange-600'}`}>
+                {isPublic ? 'Visible to Consumers' : 'Hidden from Directory'}
+              </h4>
+            </div>
+          </div>
+          
+          {!isPublic && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/10 flex items-start gap-3">
+                <AlertCircle className="size-5 text-orange-600 shrink-0 mt-0.5" />
+                <p className="text-xs font-bold text-orange-700 leading-relaxed">
+                  Consumers cannot find you in the directory. You must complete your profile checklist and enable "Public Profile" in Settings.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                {checklist.errors.slice(0, 3).map((err, i) => (
+                  <div key={i} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-orange-600/70">
+                    <div className="size-1 bg-orange-400 rounded-full" />
+                    {err}
+                  </div>
+                ))}
+                {checklist.errors.length > 3 && (
+                  <p className="text-[10px] font-bold text-orange-500/60">+ {checklist.errors.length - 3} more requirements</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-8 flex gap-3">
+             <Link href="/dashboard/teacher/profile" className="flex-1">
+                <Button variant="outline" className={`w-full h-12 rounded-xl font-black text-xs border-current hover:bg-current hover:text-white transition-all ${isPublic ? 'text-emerald-600' : 'text-orange-600'}`}>
+                  {checklist.ok ? 'Refine Profile' : 'Complete Profile'}
+                </Button>
+             </Link>
+             <Link href="/dashboard/teacher/settings" className="flex-1">
+                <Button className={`w-full h-12 rounded-xl font-black text-xs text-white shadow-xl ${isPublic ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-500/20'}`}>
+                  {isPublic ? 'Sync Settings' : 'Go Public'}
+                </Button>
+             </Link>
+          </div>
+        </div>
+
+        <div className={`rounded-[2rem] border p-8 flex flex-col justify-between transition-all duration-500 ${isOnline ? 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5' : 'bg-slate-500/5 border-slate-500/20 shadow-lg shadow-slate-500/5'}`}>
+          <div className="flex items-start justify-between mb-8">
+            <div className={`p-4 rounded-2xl ${isOnline ? 'bg-primary/20 text-primary' : 'bg-slate-500/20 text-slate-500'}`}>
+              <ShieldCheck className="size-8" />
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">Session Status</p>
+              <h4 className={`text-xl font-black ${isOnline ? 'text-primary' : 'text-slate-500'}`}>
+                {isOnline ? 'Accepting Sessions' : 'Taking a Break'}
+              </h4>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+             <p className="text-xs font-bold text-muted-foreground leading-relaxed">
+               {isOnline 
+                 ? "You are currently marked as 'Online'. Your profile will show a green status badge and you can accept immediate session requests."
+                 : "You are currently 'Offline'. Consumers can still message you, but they will see that you are currently unavailable."}
+             </p>
+             {!isOnline && isPublic && (
+               <div className="p-4 rounded-xl bg-primary/10 border border-primary/10 flex items-center gap-3 animate-pulse">
+                  <Zap className="size-5 text-primary shrink-0" />
+                  <p className="text-xs font-bold text-primary">Go online to increase visibility by 3x</p>
+               </div>
+             )}
+          </div>
+
+          <button
+            onClick={toggleStatus}
+            className={`mt-8 w-full h-14 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-3 px-6 ${
+              isOnline
+                ? "bg-primary text-white shadow-xl shadow-primary/25 hover:scale-[1.02]"
+                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary/40"
+            }`}
+          >
+            <div className={`size-2.5 rounded-full ${isOnline ? 'bg-white animate-pulse' : 'bg-slate-400'}`} />
+            {isOnline ? "Switch to Offline Mode" : "Go Online Now"}
+          </button>
+        </div>
+      </section>
 
       {/* Today's agenda + tasks */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
