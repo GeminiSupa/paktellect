@@ -10,6 +10,16 @@ import Image from "next/image"
 export default function BlogListingPage() {
   const blogs = [
     {
+      slug: "why-lawyers-pakistan-register-online-2026",
+      title: "Why Every Lawyer in Pakistan Should Register on Online Tools Like Paktellect in 2026",
+      excerpt: "In today’s digital age, physical offices aren't enough. Discover why online visibility is the new standard for legal growth and client trust in Pakistan.",
+      date: "April 20, 2026",
+      category: "Digital Growth",
+      image: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop",
+      author: "Paktellect Insights",
+      isUrdu: false
+    },
+    {
       slug: "task-scheme-fraud-pakistan-2026",
       title: "پاکستان میں ٹاسک سکیم فراڈ 2026: وکیلوں کے لیے مکمل گائیڈ",
       excerpt: "کیا آپ کو بھی ریویو کرنے یا کلک کرنے پر پیسے ملنے کا پیغام ملا ہے؟ جانیں کہ یہ فراڈ کیسے کام کرتا ہے اور آپ خود کو اور اپنے کلائنٹس کو کیسے محفوظ رکھ سکتے ہیں۔",
