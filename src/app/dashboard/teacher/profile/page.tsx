@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/Button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera, Star, MessageSquarePlus, CheckCircle2, AlertCircle, BookOpen, Settings } from "lucide-react"
+import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera, Star, MessageSquarePlus, CheckCircle2, AlertCircle, BookOpen, Settings, EyeOff, ShieldCheck } from "lucide-react"
 import { validateExpertProfileBasics } from "@/lib/expertProfileBasics"
 import { supabase } from "@/lib/supabase"
 import { useStore } from "@/store/useStore"
@@ -24,6 +24,8 @@ export default function TeacherProfile() {
   const [specialty, setSpecialty] = useState("")
   const [city, setCity] = useState("")
   const [country, setCountry] = useState("")
+  const [fullName, setFullName] = useState("")
+  const [isPublic, setIsPublic] = useState(false)
   // Category-specific fields
   const [legalBarNumber, setLegalBarNumber] = useState("")
   const [legalJurisdiction, setLegalJurisdiction] = useState("")
@@ -94,6 +96,7 @@ export default function TeacherProfile() {
         if (data.portfolio_urls && Array.isArray(data.portfolio_urls)) {
             setPortfolioItems(data.portfolio_urls)
         }
+        setIsPublic(data.is_public || false)
       }
       setIsLoading(false)
     }
@@ -104,10 +107,11 @@ export default function TeacherProfile() {
     async function loadLocation() {
       if (!user) return
       try {
-        const { data, error } = await supabase.from("profiles").select("city, country").eq("id", user.id).single()
+        const { data, error } = await supabase.from("profiles").select("city, country, full_name").eq("id", user.id).single()
         if (error) throw error
         setCity((data?.city as string | null) || "")
         setCountry((data?.country as string | null) || "")
+        setFullName((data?.full_name as string | null) || (user.user_metadata?.full_name as string | null) || "")
       } catch (err) {
         console.error(err)
       }
@@ -217,10 +221,9 @@ export default function TeacherProfile() {
         toast.error("Please login first")
         return
     }
-    const displayName = (user.user_metadata?.full_name as string | undefined)?.trim() ?? ""
 
     const basics = validateExpertProfileBasics({
-      displayNameFromAccount: displayName,
+      displayNameFromAccount: fullName,
       category,
       headline,
       specialty,
@@ -283,6 +286,7 @@ export default function TeacherProfile() {
                 academic_education_level: academicEducationLevel || null,
                 academic_credentials: academicCredentials || null,
                 portfolio_urls: portfolioItems,
+                is_public: isPublic,
                 updated_at: new Date().toISOString()
             }, { onConflict: 'user_id' })
             
@@ -291,14 +295,29 @@ export default function TeacherProfile() {
         const { error: pErr } = await supabase
           .from("profiles")
           .update({
+            full_name: fullName.trim() || null,
             city: city.trim() ? city.trim() : null,
             country: country.trim() ? country.trim() : null,
           })
           .eq("id", user.id)
         if (pErr) throw pErr
 
-        toast.success("Profile saved. You're now Directory Ready!", {
-          description: "Enable 'Public Profile' in Settings to start appearing in searches.",
+        // Sync with Auth meta as well
+        await supabase.auth.updateUser({ data: { full_name: fullName.trim() } })
+        if (user) {
+          setUser({
+            ...user,
+            user_metadata: {
+              ...user.user_metadata,
+              full_name: fullName.trim()
+            }
+          })
+        }
+
+        toast.success(isPublic ? "Profile saved and Live!" : "Profile saved offline.", {
+          description: isPublic 
+            ? "Your profile is now visible to searching consumers." 
+            : "Direct link works, but you're hidden from the expert directory.",
           action: {
             label: "Go to Settings",
             onClick: () => router.push("/dashboard/teacher/settings")
@@ -334,11 +353,11 @@ export default function TeacherProfile() {
               </div>
               {validationErrors.length === 0 ? (
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 font-black text-[10px] uppercase tracking-widest text-emerald-600 animate-in fade-in zoom-in duration-1000">
-                  <CheckCircle2 className="size-3" /> Directory Ready
+                  <CheckCircle2 className="size-3" /> {isPublic ? 'Verified & Public' : 'Directory Ready'}
                 </div>
               ) : (
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 font-black text-[10px] uppercase tracking-widest text-orange-600">
-                  <AlertCircle className="size-3" /> Finish Details to go Public
+                  <AlertCircle className="size-3" /> Form Incomplete
                 </div>
               )}
             </div>
@@ -421,6 +440,32 @@ export default function TeacherProfile() {
                <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Core Competencies</h2>
              </div>
              
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                   <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Display Name (Publicly Visible)</label>
+                   <div className="relative group">
+                     <User className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5 group-hover:scale-110 transition-transform" />
+                     <input
+                       type="text"
+                       placeholder="e.g. Dr. Sarah Ahmed"
+                       className="w-full pl-14 pr-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
+                       value={fullName}
+                       onChange={(e) => setFullName(e.target.value)}
+                     />
+                   </div>
+                 </div>
+                 <div>
+                   <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Primary Specialty</label>
+                   <input 
+                     type="text" 
+                     placeholder="e.g. Clinical Psychology"
+                     className="w-full px-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
+                     value={specialty}
+                     onChange={(e) => setSpecialty(e.target.value)}
+                   />
+                 </div>
+             </div>
+             
              <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
                 <div className="md:col-span-8">
                   <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Professional Narrative (Bio)</label>
@@ -457,16 +502,6 @@ export default function TeacherProfile() {
                         placeholder="Leave blank to negotiate"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Primary Specialty</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Clinical Psychology"
-                      className="w-full px-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
-                      value={specialty}
-                      onChange={(e) => setSpecialty(e.target.value)}
-                    />
                   </div>
                 </div>
              </div>
@@ -580,7 +615,34 @@ export default function TeacherProfile() {
               <div className="size-10 rounded-xl bg-slate-900/5 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-slate-800">
                 <Briefcase className="size-5 text-slate-700 dark:text-slate-200" />
               </div>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Field Requirements (for Public Listing)</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Public Discovery</h2>
+            </div>
+
+            <div className="p-8 bg-primary/5 dark:bg-primary/10 rounded-[2rem] border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="max-w-xl">
+                    <h4 className="font-black text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                        {isPublic ? <Globe className="size-5 text-emerald-500" /> : <EyeOff className="size-5 text-slate-400" />}
+                        {isPublic ? 'Public Directory Active' : 'Private Profile Mode'}
+                    </h4>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mt-2">
+                        {isPublic 
+                            ? "Your profile is visible in the expert directory. Clients can find you and book sessions immediately." 
+                            : "Your profile is hidden from search results. Use this while you are still refining your portfolio."}
+                    </p>
+                </div>
+                <button 
+                    onClick={() => setIsPublic(!isPublic)}
+                    className={`relative w-20 h-10 rounded-full transition-all duration-300 ${isPublic ? 'bg-primary shadow-lg shadow-emerald-500/20' : 'bg-slate-300 dark:bg-slate-700'}`}
+                >
+                    <div className={`absolute top-1.5 left-1.5 size-7 bg-white rounded-full shadow-lg transition-transform duration-300 ${isPublic ? 'translate-x-10' : ''}`} />
+                </button>
+            </div>
+
+            <div className="flex items-center gap-3 pt-8">
+              <div className="size-10 rounded-xl bg-slate-900/5 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-slate-800">
+                <ShieldCheck className="size-5 text-slate-700 dark:text-slate-200" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Field Requirements</h2>
             </div>
 
             {category === "Legal" && (
