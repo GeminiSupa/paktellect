@@ -10,6 +10,16 @@ import Image from "next/image"
 export default function BlogListingPage() {
   const blogs = [
     {
+      slug: "allama-iqbal-khudi-vs-barelvi-thought-review",
+      title: "Allama Iqbal’s Concept of Khudi vs Barelvi Thought: A Philosophical Review",
+      excerpt: "Explore the dynamic relationship between Iqbal's selfhood philosophy and traditional Barelvi devotion, and how it shapes the modern lawyer.",
+      date: "April 21, 2026",
+      category: "Philosophy",
+      image: "https://images.unsplash.com/photo-1518331647614-7a1f04cd34cf?q=80&w=2069&auto=format&fit=crop",
+      author: "Paktellect Legal Intelligence",
+      isUrdu: false
+    },
+    {
       slug: "why-lawyers-pakistan-register-online-2026",
       title: "Why Every Lawyer in Pakistan Should Register on Online Tools Like Paktellect in 2026",
       excerpt: "In today’s digital age, physical offices aren't enough. Discover why online visibility is the new standard for legal growth and client trust in Pakistan.",
