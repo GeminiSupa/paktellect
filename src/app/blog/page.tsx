@@ -120,13 +120,6 @@ export default function BlogListingPage() {
             </motion.div>
           ))}
 
-          {/* Placeholder for future blogs */}
-          <div className="hidden lg:flex flex-col items-center justify-center p-10 border-2 border-dashed border-border rounded-[3rem] opacity-40 hover:opacity-100 transition-opacity">
-             <div className="size-16 rounded-[1.5rem] bg-muted flex items-center justify-center mb-6">
-                <Zap className="size-8 text-primary" />
-             </div>
-             <p className="text-sm font-black uppercase tracking-widest text-center">New insights <br />dropping soon</p>
-          </div>
         </div>
       </section>
 
