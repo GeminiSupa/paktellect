@@ -156,8 +156,9 @@ function ExpertsContent() {
 
         const microCols = "id, user_id, category, hourly_rate, profile_pic_url, is_public"
 
-        let teachers: TeacherRow[] | null = null
+        let teachers: TeacherRow[] = []
         let lastErr: { message?: string } | null = null
+        let hasFetchedAny = false
 
         for (const cols of [fullCols, slimCols, microCols]) {
           // Attempt 1: Targeted public filter
@@ -166,8 +167,9 @@ function ExpertsContent() {
             .select(cols)
             .eq("is_public", true)
 
-          if (!pubErr && pubData && pubData.length > 0) {
+          if (!pubErr && pubData) {
             teachers = pubData as unknown as TeacherRow[]
+            hasFetchedAny = true
             break
           }
 
@@ -178,17 +180,16 @@ function ExpertsContent() {
           
           if (!allErr && allData) {
             const filtered = (allData as unknown as TeacherRow[]).filter((t) => t.is_public === true)
-            if (filtered.length > 0) {
-              teachers = filtered
-              break
-            }
+            teachers = filtered
+            hasFetchedAny = true
+            break
           }
 
           lastErr = pubErr || allErr || { message: "No public experts found." }
         }
 
-        if (!teachers) {
-          throw new Error(lastErr?.message || "Could not load teachers.")
+        if (!hasFetchedAny && lastErr) {
+          throw new Error(lastErr.message || "Connection error.")
         }
 
         const profileById = await loadProfilesByUserIds(teachers.map((t) => t.user_id))
