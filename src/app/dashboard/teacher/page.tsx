@@ -53,6 +53,12 @@ export default function TeacherOverview() {
   const [counts, setCounts] = useState({ inquiries: 0, messages: 0 })
   const [nextSessionCountdown, setNextSessionCountdown] = useState<string | null>(null)
   const [availTipDismissed, setAvailTipDismissed] = useState(false)
+  const [metrics, setMetrics] = useState({
+    careerEarnings: 0,
+    ratingAvg: 0,
+    reviewCount: 0,
+    reliability: 100
+  })
 
   const messageLabel = useMemo(() => {
     if (counts.messages > 0) return `${counts.messages} unread`
@@ -144,6 +150,36 @@ export default function TeacherOverview() {
             unread = count || 0
           }
           setCounts((prev) => ({ ...prev, messages: unread }))
+
+          const { data: bookingRows } = await supabase.from("bookings").select("id").eq("expert_id", teacher.id)
+          const ids = bookingRows?.map((b) => b.id) || []
+          let unread = 0
+          if (ids.length > 0) {
+            const { count } = await supabase
+              .from("messages")
+              .select("*", { count: "exact", head: true })
+              .eq("is_read", false)
+              .neq("sender_id", user.id)
+              .in("booking_id", ids)
+            unread = count || 0
+          }
+          setCounts((prev) => ({ ...prev, messages: unread }))
+
+          // Fetch career earnings from transactions
+          const { data: txs } = await supabase
+            .from("transactions")
+            .select("amount")
+            .eq("payee_id", user.id)
+            .neq("status", "refunded")
+          
+          const totalEarnings = txs?.reduce((acc, t) => acc + Number(t.amount), 0) || 0
+
+          setMetrics({
+            careerEarnings: totalEarnings,
+            ratingAvg: Number(teacher.rating_avg || 0),
+            reviewCount: Number(teacher.review_count || 0),
+            reliability: 100 // Default for now
+          })
         }
       } catch (err) {
         console.error("Dashboard load failed", err)
@@ -500,8 +536,10 @@ export default function TeacherOverview() {
               </div>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2">Career earnings</p>
-                <p className="text-3xl md:text-4xl font-black tabular-nums text-foreground tracking-tighter">$12,450.00</p>
-                <p className="text-xs font-semibold text-muted-foreground mt-2">Verified revenue (demo figure — wire to live totals in Financials)</p>
+                <p className="text-3xl md:text-4xl font-black tabular-nums text-foreground tracking-tighter">
+                  ${metrics.careerEarnings.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-xs font-semibold text-muted-foreground mt-2">Verified revenue across all sessions</p>
               </div>
               <Link href="/dashboard/teacher/earnings" className="mt-4 inline-flex">
                 <span className="text-sm font-bold text-primary hover:underline">Open financials →</span>
@@ -511,13 +549,13 @@ export default function TeacherOverview() {
           <StatsModule
             icon={<Star className="size-6 text-foreground" />}
             label="Reputation"
-            value="4.96"
-            subValue="Based on 142 reviews"
+            value={metrics.ratingAvg > 0 ? metrics.ratingAvg.toFixed(2) : "New Pro"}
+            subValue={metrics.reviewCount > 0 ? `Based on ${metrics.reviewCount} reviews` : "Awaiting first review"}
           />
           <StatsModule
             icon={<BadgeCheck className="size-6 text-foreground" />}
             label="Reliability"
-            value="100%"
+            value={`${metrics.reliability}%`}
             subValue="On-time completion"
           />
         </div>
