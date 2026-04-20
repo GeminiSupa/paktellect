@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/Button"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera, Star, MessageSquarePlus, CheckCircle2, AlertCircle, BookOpen, Settings } from "lucide-react"
 import { validateExpertProfileBasics } from "@/lib/expertProfileBasics"
 import { supabase } from "@/lib/supabase"
@@ -12,6 +13,7 @@ import Image from "next/image"
 
 export default function TeacherProfile() {
   const { user, setUser } = useStore()
+  const router = useRouter()
   const [avatar, setAvatar] = useState<string | null>(null)
   const [portfolioItems, setPortfolioItems] = useState<{ id: string, type: 'image' | 'link', content: string }[]>([])
   const [category, setCategory] = useState<string>("Academic")
@@ -323,8 +325,8 @@ export default function TeacherProfile() {
 
   return (
     <div className="max-w-5xl space-y-10 pb-20">
-      <div className="bg-white dark:bg-slate-950 p-10 md:p-14 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/40">
-        <div className="mb-14 border-b border-slate-100 dark:border-slate-800 pb-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
+      <div className="bg-white dark:bg-slate-950 p-6 sm:p-10 md:p-14 rounded-[2rem] sm:rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/40 mx-4 sm:mx-0">
+        <div className="mb-8 sm:mb-14 border-b border-slate-100 dark:border-slate-800 pb-8 sm:pb-10 flex flex-col lg:flex-row justify-between items-center sm:items-start lg:items-center gap-10">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 font-black text-[10px] uppercase tracking-widest text-primary">
@@ -344,8 +346,8 @@ export default function TeacherProfile() {
             <p className="text-slate-500 text-lg font-medium max-w-xl">Elite professionals maintain high-fidelity profiles. Your portfolio is your bridge to new clients.</p>
           </div>
           
-          <div className="flex items-center gap-8 group">
-            <div className="relative size-32 rounded-[2.5rem] bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shadow-2xl transition-all group-hover:border-primary duration-500">
+          <div className="flex items-center gap-8 group shrink-0">
+            <div className="relative size-28 sm:size-32 rounded-[2.5rem] bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shadow-2xl transition-all group-hover:border-primary duration-500">
               {avatar ? (
                 <Image src={avatar} alt="Avatar" fill className="object-cover" sizes="128px" />
               ) : (
@@ -651,20 +653,20 @@ export default function TeacherProfile() {
           </section>
 
           <section className="space-y-8">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800 pb-6">
               <div className="flex items-center gap-3">
                 <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
                     <Globe className="size-5 text-orange-600" />
                 </div>
                 <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Portfolio & Evidence</h2>
               </div>
-              <div className="flex gap-4">
-                <Button variant="outline" size="sm" onClick={handleAddPortfolioLink} className="h-12 px-6 rounded-xl gap-2 font-black uppercase tracking-widest text-[10px] border-slate-200 hover:border-primary hover:text-primary transition-all">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button variant="outline" size="sm" onClick={handleAddPortfolioLink} className="flex-1 sm:flex-none h-12 px-6 rounded-xl gap-2 font-black uppercase tracking-widest text-[10px] border-slate-200 hover:border-primary hover:text-primary transition-all">
                   <LinkIcon className="size-3.5" />
                   Add Link
                 </Button>
-                <label className="cursor-pointer">
-                   <div className="h-12 px-6 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center gap-2 font-black uppercase tracking-widest text-[10px] hover:border-primary hover:text-primary transition-all">
+                <label className="flex-1 sm:flex-none cursor-pointer">
+                   <div className="h-12 px-6 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center sm:justify-start gap-2 font-black uppercase tracking-widest text-[10px] hover:border-primary hover:text-primary transition-all">
                       <ImageIcon className="size-3.5" />
                       Add Photo
                    </div>

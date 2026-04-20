@@ -340,14 +340,14 @@ export default function StudentDashboard() {
                 {bookings.map((booking, idx) => {
                     const theme = getCategoryTheme(booking.teachers?.category)
                     return (
-                        <motion.div 
-                            layout
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: idx * 0.1 }}
-                            key={booking.id} 
-                            className="premium-card p-10 hover:-translate-y-2 duration-500 group"
-                        >
+                            <motion.div 
+                                layout
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                                key={booking.id} 
+                                className="premium-card p-6 sm:p-10 hover:-translate-y-2 duration-500 group mx-4 sm:mx-0"
+                            >
                             <div className="flex justify-between items-start mb-10">
                             <div className="flex items-center gap-6">
                                 <div className="size-16 rounded-[1.8rem] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-3xl font-black text-slate-300 border border-slate-200 dark:border-slate-800 group-hover:scale-110 transition-transform duration-500">

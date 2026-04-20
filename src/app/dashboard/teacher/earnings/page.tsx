@@ -65,8 +65,8 @@ export default function TeacherEarnings() {
   }
 
   return (
-    <div className="space-y-10 pb-20">
-      <div className="bg-[#0f172a] rounded-[2.5rem] p-10 md:p-14 text-white relative overflow-hidden shadow-2xl shadow-emerald-900/20">
+    <div className="space-y-10 pb-20 px-4 sm:px-0">
+      <div className="bg-[#0f172a] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 md:p-14 text-white relative overflow-hidden shadow-2xl shadow-emerald-900/20">
         <div className="absolute top-0 right-0 size-80 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
         
         <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-10">
@@ -79,7 +79,7 @@ export default function TeacherEarnings() {
             <p className="text-slate-400 text-lg max-w-md font-medium">Manage your revenue, track pending escrow funds, and withdraw to your bank.</p>
           </div>
           
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 w-full lg:w-[380px] text-center shadow-2xl">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 w-full lg:w-[380px] text-center shadow-2xl">
             <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Available for Withdrawal</p>
             <h3 className="text-6xl font-black mb-8 text-primary tracking-tighter">${stats.available.toFixed(2)}</h3>
             <Button onClick={handleWithdraw} disabled={stats.available === 0} className="w-full h-20 bg-primary hover:bg-emerald-700 text-white font-black text-lg rounded-3xl shadow-2xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:hover:scale-100">
@@ -120,8 +120,8 @@ export default function TeacherEarnings() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 overflow-hidden">
-        <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-950 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 overflow-hidden">
+        <div className="px-6 py-6 sm:px-10 sm:py-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
            <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Transaction History</h2>
            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">All Times UTC</div>
         </div>
@@ -139,7 +139,7 @@ export default function TeacherEarnings() {
         ) : (
           <div className="divide-y divide-slate-50 dark:divide-slate-900">
             {transactions.map((tx) => (
-              <div key={tx.id} className="px-10 py-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors group">
+              <div key={tx.id} className="px-6 py-6 sm:px-10 sm:py-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors group">
                 <div className="flex items-center gap-6">
                   <div className={`size-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 ${
                     tx.status === 'released' ? 'bg-primary/10 text-primary border border-primary/20' :

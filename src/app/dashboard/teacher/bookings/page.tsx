@@ -83,7 +83,7 @@ export default function TeacherBookings() {
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="bg-white dark:bg-slate-900 p-10 md:p-14 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-emerald-500/5 dark:shadow-none">
+      <div className="bg-white dark:bg-slate-900 p-6 sm:p-10 md:p-14 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-emerald-500/5 dark:shadow-none mx-4 sm:mx-0">
         <div className="mb-10">
           <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2 leading-none">My Sessions</h1>
           <p className="text-slate-500 font-medium">Approve requests, manage session links, and track your service lifecycle.</p>

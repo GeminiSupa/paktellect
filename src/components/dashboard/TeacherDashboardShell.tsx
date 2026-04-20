@@ -34,7 +34,7 @@ export default function TeacherDashboardShell({ children }: { children: React.Re
       <div className="container mx-auto px-4 py-8 md:py-12 grow flex flex-col md:flex-row gap-6 md:gap-8 mt-28 md:mt-28 relative z-0">
         <aside className="hidden md:block w-full md:w-80 shrink-0">
           <nav
-            className="rounded-[2rem] p-6 sticky top-28 shadow-xl border text-white"
+            className="rounded-[2rem] p-6 sticky top-24 shadow-xl border text-white"
             style={{
               backgroundColor: "var(--sidebar-bg)",
               borderColor: "var(--border)",

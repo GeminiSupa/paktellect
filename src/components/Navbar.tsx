@@ -36,8 +36,8 @@ export function Navbar() {
   }
 
   return (
-    <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl z-50 rounded-[2.5rem] border border-border bg-background/95 dark:bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-white/10">
-      <div className="container mx-auto px-4 sm:px-8 h-18 sm:h-20 flex items-center justify-between gap-2">
+    <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[94%] sm:w-[92%] max-w-6xl z-50 rounded-[2rem] sm:rounded-[2.5rem] border border-border bg-background/95 dark:bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-white/10">
+      <div className="container mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
         <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
           <div className="relative size-10 sm:size-12 rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg shadow-emerald-500/15 transition-transform group-hover:scale-105 group-active:scale-95 duration-500 bg-white dark:bg-card ring-1 ring-border">
             <Image src="/logo1.png" alt="PAKTELLECT" fill className="object-contain p-1.5 sm:p-2" sizes="48px" priority />

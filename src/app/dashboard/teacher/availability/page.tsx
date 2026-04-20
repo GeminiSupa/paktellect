@@ -137,7 +137,7 @@ export default function AvailabilityPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none mx-4 sm:mx-0">
                 <div className="flex items-center justify-between mb-10">
                     <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-white">Active Recurring Slots</h3>
                     <Button onClick={addSlot} variant="outline" className="h-10 px-4 rounded-xl border-slate-200 font-black text-[10px] uppercase tracking-widest gap-2">
@@ -182,7 +182,7 @@ export default function AvailabilityPage() {
                 )}
             </div>
 
-            <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl">
+            <div className="bg-slate-900 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 text-white relative overflow-hidden shadow-2xl mx-4 sm:mx-0">
                  <div className="relative z-10">
                     <h4 className="text-xl font-black tracking-tight mb-4">Professional Disclaimer</h4>
                     <p className="text-slate-400 text-sm font-medium leading-relaxed max-w-xl">

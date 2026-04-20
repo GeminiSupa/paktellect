@@ -167,9 +167,9 @@ export default function TeacherSettings() {
   )
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-32">
+    <div className="max-w-4xl mx-auto space-y-12 pb-32 px-4 sm:px-0">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-200 dark:border-border pb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-200 dark:border-border pb-8 sm:pb-12">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white shadow-2xl mb-6">
             <Shield className="size-4 text-primary" />
@@ -207,7 +207,7 @@ export default function TeacherSettings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="p-10 bg-white dark:bg-card rounded-[3rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-black/40 group hover:border-primary transition-all">
+                <div className="p-6 sm:p-10 bg-white dark:bg-card rounded-[2rem] sm:rounded-[3rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-black/40 group hover:border-primary transition-all">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h4 className="font-black text-xl mb-1 flex items-center gap-2 text-slate-900 dark:text-foreground">Public Profile</h4>
@@ -296,7 +296,7 @@ export default function TeacherSettings() {
             </div>
 
             {/* NEW: CLINICAL VERIFICATION SECTION */}
-            <div className="bg-white dark:bg-card p-10 rounded-[3rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-black/40">
+            <div className="bg-white dark:bg-card p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-black/40">
                 <div className="flex items-center gap-3 mb-8">
                     <div className="size-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
                         <ShieldCheck className="size-5 text-blue-700 dark:text-blue-300" />
@@ -355,7 +355,7 @@ export default function TeacherSettings() {
                 </div>
             </div>
 
-            <div className="bg-slate-900 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl">
+            <div className="bg-slate-900 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 text-white relative overflow-hidden shadow-2xl">
                 <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                     <div className="space-y-6">
                         <h4 className="text-3xl font-black tracking-tighter">Hardened Security</h4>
@@ -395,7 +395,7 @@ export default function TeacherSettings() {
         </section>
 
         {/* DANGER ZONE */}
-        <section className="bg-rose-500/5 dark:bg-rose-500/10 p-12 rounded-[3.5rem] border border-rose-500/20 border-dashed">
+        <section className="bg-rose-500/5 dark:bg-rose-500/10 p-6 sm:p-12 rounded-[2rem] sm:rounded-[3.5rem] border border-rose-500/20 border-dashed">
             <h4 className="text-xl font-black text-rose-500 uppercase tracking-[0.2em] mb-8 text-center">Danger Zone</h4>
             <div className="flex flex-col sm:flex-row gap-6">
                 <Button onClick={handleSignOut} className="flex-1 h-16 rounded-[2rem] bg-slate-900 hover:bg-black text-white font-black text-sm uppercase tracking-widest gap-2 shadow-xl shadow-slate-950/20 transition-all">
