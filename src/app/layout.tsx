@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Nastaliq_Urdu } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -14,6 +14,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const notoUrdu = Noto_Nastaliq_Urdu({
+  variable: "--font-noto-urdu",
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+});
+
 export const metadata = {
   title: "PAKTELLECT | Expert Booking Platform",
   description: "Pakistan’s premium professional booking & escrow platform.",
@@ -27,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${notoUrdu.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>

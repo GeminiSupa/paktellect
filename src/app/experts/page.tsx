@@ -160,19 +160,31 @@ function ExpertsContent() {
         let lastErr: { message?: string } | null = null
 
         for (const cols of [fullCols, slimCols, microCols]) {
-          const pub = await supabase.from("teachers").select(cols).eq("is_public", true)
-          if (!pub.error && pub.data) {
-            teachers = pub.data as unknown as TeacherRow[]
-            break
-          }
-          lastErr = pub.error ?? { message: "Unknown error loading teachers" }
+          // Attempt 1: Targeted public filter
+          const { data: pubData, error: pubErr } = await supabase
+            .from("teachers")
+            .select(cols)
+            .eq("is_public", true)
 
-          const all = await supabase.from("teachers").select(cols)
-          if (!all.error && all.data) {
-            teachers = (all.data as unknown as TeacherRow[]).filter((t) => t.is_public === true)
+          if (!pubErr && pubData && pubData.length > 0) {
+            teachers = pubData as unknown as TeacherRow[]
             break
           }
-          if (all.error) lastErr = all.error
+
+          // Attempt 2: Fallback to all then filter (defense against specific PostgREST filter failures)
+          const { data: allData, error: allErr } = await supabase
+            .from("teachers")
+            .select(cols)
+          
+          if (!allErr && allData) {
+            const filtered = (allData as unknown as TeacherRow[]).filter((t) => t.is_public === true)
+            if (filtered.length > 0) {
+              teachers = filtered
+              break
+            }
+          }
+
+          lastErr = pubErr || allErr || { message: "No public experts found." }
         }
 
         if (!teachers) {

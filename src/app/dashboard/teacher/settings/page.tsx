@@ -37,7 +37,7 @@ export default function TeacherSettings() {
   
   // Settings State
   const [settings, setSettings] = useState({
-    is_public: true,
+    is_public: false,
     auto_accept_bookings: false,
     email_notifications: true,
     timezone: 'UTC',
@@ -70,7 +70,7 @@ export default function TeacherSettings() {
 
           setSettings(prev => ({
             ...prev,
-            is_public: data.is_public ?? true,
+            is_public: data.is_public ?? false,
             auto_accept_bookings: data.auto_accept_bookings ?? false,
             timezone: data.timezone ?? 'UTC',
             session_buffer: data.session_buffer ?? 15
@@ -221,9 +221,17 @@ export default function TeacherSettings() {
                             <div className={`absolute top-1.5 left-1.5 size-6 bg-white rounded-full shadow-lg transition-transform duration-300 ${settings.is_public ? 'translate-x-7' : ''}`} />
                         </button>
                     </div>
-                    <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-slate-600 dark:text-muted-foreground">
-                        {settings.is_public ? <Eye className="size-3 text-primary" /> : <EyeOff className="size-3" />}
-                        {settings.is_public ? 'Currently Discoverable' : 'Hidden from Directory'}
+                    <div className="flex flex-col gap-2">
+                        <div className={`flex items-center gap-2 text-xs font-semibold tracking-wide ${settings.is_public ? 'text-primary' : 'text-slate-600 dark:text-muted-foreground'}`}>
+                            {settings.is_public ? <Eye className="size-3" /> : <EyeOff className="size-3" />}
+                            {settings.is_public ? 'Currently Discoverable' : 'Hidden from Directory'}
+                        </div>
+                        {!settings.is_public && !teacherFieldsOk && (
+                            <div className="flex items-center gap-2 text-[10px] font-bold text-rose-500 animate-pulse">
+                                <Shield className="size-3" />
+                                Requirements missing in Profile
+                            </div>
+                        )}
                     </div>
                 </div>
 

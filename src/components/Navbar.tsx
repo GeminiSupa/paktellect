@@ -68,6 +68,9 @@ export function Navbar() {
                 <Link href="/contact" className="hover:text-primary transition-colors shrink-0">
                   Contact
                 </Link>
+                <Link href="/blog" className="hover:text-primary transition-colors shrink-0">
+                  Blog
+                </Link>
               </>
             ) : (
               <>
@@ -78,6 +81,9 @@ export function Navbar() {
                 )}
                 <Link href="/contact" className="hover:text-primary transition-colors">
                   Contact
+                </Link>
+                <Link href="/blog" className="hover:text-primary transition-colors">
+                  Blog
                 </Link>
                 <Link href="/manual" className="hover:text-primary transition-colors hidden lg:inline">
                   Guide
@@ -174,6 +180,9 @@ export function Navbar() {
                 <Link href="/escrow-protection" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
                   Escrow & trust
                 </Link>
+                <Link href="/blog" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
+                  Blog
+                </Link>
               </>
             ) : (
               <>
@@ -184,6 +193,9 @@ export function Navbar() {
                 )}
                 <Link href="/contact" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
                   Contact
+                </Link>
+                <Link href="/blog" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
+                  News & Blog
                 </Link>
                 <Link href="/manual" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
                   User guide

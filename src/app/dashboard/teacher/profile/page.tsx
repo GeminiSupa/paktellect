@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/Button"
 import Link from "next/link"
-import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera, Star, MessageSquarePlus, CheckCircle2, AlertCircle, BookOpen } from "lucide-react"
+import { X, Save, Image as ImageIcon, Link as LinkIcon, DollarSign, Loader2, User, Globe, Briefcase, Camera, Star, MessageSquarePlus, CheckCircle2, AlertCircle, BookOpen, Settings } from "lucide-react"
 import { validateExpertProfileBasics } from "@/lib/expertProfileBasics"
 import { supabase } from "@/lib/supabase"
 import { useStore } from "@/store/useStore"
@@ -295,7 +295,14 @@ export default function TeacherProfile() {
           .eq("id", user.id)
         if (pErr) throw pErr
 
-        toast.success("Profile saved. Turn on “Public profile” in Settings when you’re ready for the directory.")
+        toast.success("Profile saved. You're now Directory Ready!", {
+          description: "Enable 'Public Profile' in Settings to start appearing in searches.",
+          action: {
+            label: "Go to Settings",
+            onClick: () => router.push("/dashboard/teacher/settings")
+          },
+          duration: 10000
+        })
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to save profile"
         toast.error(message)
@@ -319,8 +326,19 @@ export default function TeacherProfile() {
       <div className="bg-white dark:bg-slate-950 p-10 md:p-14 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/40">
         <div className="mb-14 border-b border-slate-100 dark:border-slate-800 pb-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4 font-black text-[10px] uppercase tracking-widest text-primary">
-              <User className="size-3" /> Practice Identity
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 font-black text-[10px] uppercase tracking-widest text-primary">
+                <User className="size-3" /> Practice Identity
+              </div>
+              {validationErrors.length === 0 ? (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 font-black text-[10px] uppercase tracking-widest text-emerald-600 animate-in fade-in zoom-in duration-1000">
+                  <CheckCircle2 className="size-3" /> Directory Ready
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 font-black text-[10px] uppercase tracking-widest text-orange-600">
+                  <AlertCircle className="size-3" /> Finish Details to go Public
+                </div>
+              )}
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-3 tracking-tighter">Profile & Practice</h1>
             <p className="text-slate-500 text-lg font-medium max-w-xl">Elite professionals maintain high-fidelity profiles. Your portfolio is your bridge to new clients.</p>
@@ -688,8 +706,14 @@ export default function TeacherProfile() {
             )}
           </section>
 
-          <div className="pt-10 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-6">
-            <Button onClick={handleSave} disabled={isSaving} className="h-16 px-12 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-lg shadow-2xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-95 gap-3">
+          <div className="pt-10 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-end items-center gap-6">
+            {validationErrors.length === 0 && (
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                <Settings className="size-3.5" />
+                Next step: Enable visibility in <Link href="/dashboard/teacher/settings" className="text-primary hover:underline">Settings</Link>
+              </p>
+            )}
+            <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto h-16 px-12 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-lg shadow-2xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-95 gap-3">
                {isSaving ? <Loader2 className="animate-spin size-5" /> : <Save className="size-5" />}
                Save profile
             </Button>
