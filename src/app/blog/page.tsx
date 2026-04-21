@@ -10,6 +10,16 @@ import Image from "next/image"
 export default function BlogListingPage() {
   const blogs = [
     {
+      slug: "bhuria-charan-incomplete-story",
+      title: "بھوریاء چرن – ایک ادھوری کہانی (افسانہ)",
+      excerpt: "بچپن کی وہ سرد شامیں، ہڈالی کی مٹی اور ادھورے قصوں کی خلش۔ ایک جذباتی سفر جو آج بھی ادوھورا ہے۔",
+      date: "April 21, 2026",
+      category: "Literature",
+      image: "https://images.unsplash.com/photo-1500382017468-9049fee74a62?q=80&w=2070&auto=format&fit=crop",
+      author: "Paktellect Stories",
+      isUrdu: true
+    },
+    {
       slug: "allama-iqbal-khudi-vs-barelvi-thought-review",
       title: "Allama Iqbal’s Concept of Khudi vs Barelvi Thought: A Philosophical Review",
       excerpt: "Explore the dynamic relationship between Iqbal's selfhood philosophy and traditional Barelvi devotion, and how it shapes the modern lawyer.",
