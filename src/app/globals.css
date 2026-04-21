@@ -27,7 +27,14 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-playfair), serif;
   --font-mono: var(--font-geist-mono);
+
+  /* Premium Legal Palette */
+  --brand-gold: #c5a059;
+  --brand-gold-glow: rgba(197, 160, 89, 0.3);
+  --brand-navy: #0d1117;
+  --brand-navy-light: #161b22;
 }
 
 :root {
@@ -37,21 +44,21 @@
   --card-foreground: #020617;
   --popover: #ffffff;
   --popover-foreground: #020617;
-  --primary: #005959;
+  --primary: #c5a059; /* Shifted to Gold for Premium Legal feel */
   --primary-foreground: #ffffff;
-  --secondary: #0f172a;
+  --secondary: #0d1117;
   --secondary-foreground: #f8fafc;
   --muted: #f8fafc;
   --muted-foreground: #64748b;
-  --accent: #0066CC;
+  --accent: #c5a059;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #94a3b8; /* Increased contrast for better visibility (Slate 400) */
-  --input: #cbd5e1; /* Slate 300 for input fields */
-  --ring: #0d9488;
+  --border: #e2e8f0;
+  --input: #f1f5f9;
+  --ring: #c5a059;
   --radius: 2rem;
-  --sidebar-bg: #0f172a;
+  --sidebar-bg: #0d1117;
   --sidebar-foreground: #f8fafc;
 }
 
@@ -63,51 +70,51 @@
 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b0f1a;
-    --foreground: #f8fafc;
-    --card: #151b2b;
+    --background: #0b0d11; /* Deeper Cinematic Black */
+    --foreground: #f0f6fc;
+    --card: #151b23;
     --card-foreground: #f1f5f9;
-    --popover: #121212;
+    --popover: #0d1117;
     --popover-foreground: #f8fafc;
-    --primary: #5eead4;
+    --primary: #c5a059;
     --primary-foreground: #0a0a0a;
-    --secondary: #1a1a1a;
+    --secondary: #161b22;
     --secondary-foreground: #f8fafc;
-    --muted: #1f1f1f;
-    --muted-foreground: #d1d5db;
-    --accent: #3b82f6;
+    --muted: #161b22;
+    --muted-foreground: #8b949e;
+    --accent: #c5a059;
     --accent-foreground: #f8fafc;
-    --destructive: #7f1d1d;
+    --destructive: #f85149;
     --destructive-foreground: #f8fafc;
-    --border: #1e293b;
-    --input: #1e293b;
-    --ring: #5eead4;
-    --sidebar-bg: #0b0f1a;
+    --border: #30363d;
+    --input: #21262d;
+    --ring: #c5a059;
+    --sidebar-bg: #0b0d11;
     color-scheme: dark;
   }
 }
 
 .dark {
-  --background: #0b0f1a; /* Deep Navy-Black to reduce halation */
-  --foreground: #f8fafc;
-  --card: #151b2b;
+  --background: #0b0d11;
+  --foreground: #f0f6fc;
+  --card: #151b23;
   --card-foreground: #f1f5f9;
-  --popover: #121212;
+  --popover: #0d1117;
   --popover-foreground: #f8fafc;
-  --primary: #5eead4;
+  --primary: #c5a059;
   --primary-foreground: #0a0a0a;
-  --secondary: #1a1a1a;
+  --secondary: #161b22;
   --secondary-foreground: #f8fafc;
-  --muted: #1f1f1f;
-  --muted-foreground: #d1d5db;
-  --accent: #3b82f6;
+  --muted: #161b22;
+  --muted-foreground: #8b949e;
+  --accent: #c5a059;
   --accent-foreground: #f8fafc;
-  --destructive: #7f1d1d;
+  --destructive: #f85149;
   --destructive-foreground: #f8fafc;
-  --border: #1e293b; /* Optimized for navigation depth */
-  --input: #1e293b;
-  --ring: #5eead4;
-  --sidebar-bg: #0b0f1a;
+  --border: #30363d;
+  --input: #21262d;
+  --ring: #c5a059;
+  --sidebar-bg: #0b0d11;
   color-scheme: dark;
 }
 
@@ -146,7 +153,7 @@
 /* Hayy Premium Design System - Vitality & Wisdom Update */
 
 .glass {
-  @apply bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5;
+  @apply bg-white/40 dark:bg-slate-950/40 backdrop-blur-2xl border border-white/20 dark:border-white/5;
 }
 
 .glass-pill {
@@ -154,15 +161,19 @@
 }
 
 .cinematic-surface {
-    background: radial-gradient(circle at top left, #134e4a, #020617 80%);
+    background: radial-gradient(circle at top left, #1a1a1a, #0b0d11 80%);
 }
 
 .premium-card {
-    @apply bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-500 p-6 md:p-14;
+    @apply bg-white dark:bg-card rounded-[2.5rem] border border-slate-200 dark:border-border shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-500 p-6 md:p-14;
 }
 
-.text-gradient-premium {
-    @apply bg-clip-text text-transparent bg-linear-to-br from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 font-bold;
+.text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-linear-to-br from-slate-900 to-slate-600 dark:from-[#c5a059] dark:to-[#e2c799] font-serif;
+}
+
+.font-serif {
+    font-family: var(--font-serif);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -174,12 +185,12 @@
 }
 
 /* Sophisticated Glows */
-.glow-primary {
-    box-shadow: 0 0 40px -10px rgba(13, 148, 136, 0.3);
+.glow-gold {
+    box-shadow: 0 0 40px -10px rgba(197, 160, 89, 0.3);
 }
 
-.glow-accent {
-    box-shadow: 0 0 40px -10px rgba(244, 63, 94, 0.3);
+.glow-primary {
+    box-shadow: 0 0 40px -10px var(--brand-gold-glow);
 }
 
 /* Animations */

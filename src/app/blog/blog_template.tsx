@@ -21,7 +21,7 @@ import {
 
 const BlogTemplate = () => {
   return (
-    <div className="min-h-screen bg-[#f8fafb] text-[#020617] font-sans selection:bg-[#005959] selection:text-white">
+    <div className="min-h-screen bg-[#0b0d11] text-[#f0f6fc] font-sans selection:bg-[#c5a059] selection:text-white">
       
       {/* 1. HERO SECTION */}
       <section className="relative pt-48 pb-20 overflow-hidden bg-slate-950 text-white isolate">
@@ -37,27 +37,27 @@ const BlogTemplate = () => {
 
         <div className="container mx-auto px-6 max-w-4xl text-center">
             {/* Accent Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-teal-500/20 bg-teal-500/5 mb-8">
-              <Zap className="w-4 h-4 text-teal-400" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-300">Analysis 2026</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#c5a059]/20 bg-[#c5a059]/5 mb-8">
+              <Zap className="w-4 h-4 text-[#c5a059]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#c5a059]">Legal Analysis 2026</span>
             </div>
             
             {/* Main Title */}
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-[1.1]">
-              Title of Your <br />
-              <span className="text-teal-400 italic">Premium Article</span>
+            <h1 className="text-5xl md:text-8xl font-serif tracking-tight mb-8 leading-[0.9]">
+              The Future of <br />
+              <span className="text-[#c5a059] italic">Legal Intelligence</span>
             </h1>
 
             {/* Meta Data */}
-            <div className="flex items-center justify-center gap-6 text-xs font-bold text-slate-400 uppercase tracking-widest border-y border-white/10 py-6">
+            <div className="flex items-center justify-center gap-6 text-xs font-bold text-slate-500 uppercase tracking-widest border-y border-white/5 py-8">
               <div className="flex items-center gap-2 italic">
-                <Calendar className="w-4 h-4 text-teal-400" />
+                <Calendar className="w-4 h-4 text-[#c5a059]" />
                 <span>21 April, 2026</span>
               </div>
-              <div className="w-4 h-px bg-white/10" />
-              <div className="flex items-center gap-2 italic">
-                <User className="w-4 h-4 text-teal-400" />
-                <span>Author Name</span>
+              <div className="w-4 h-px bg-white/5" />
+              <div className="flex items-center gap-2 italic text-[#c5a059]">
+                <User className="w-4 h-4" />
+                <span>Senior Counsel</span>
               </div>
             </div>
         </div>
@@ -68,59 +68,61 @@ const BlogTemplate = () => {
         <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-12">
           
           {/* SIDEBAR */}
-          <aside className="lg:col-span-1 border-r border-slate-200 pr-8 hidden lg:block">
+          <aside className="lg:col-span-1 border-r border-[#30363d] pr-8 hidden lg:block">
             <div className="sticky top-40 space-y-8">
-               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Navigation</h4>
-               <nav className="flex flex-col gap-4 text-sm font-bold">
-                  <a href="#" className="hover:text-teal-600 transition-colors">Introduction</a>
-                  <a href="#" className="hover:text-teal-600 transition-colors">Core Concepts</a>
-                  <a href="#" className="hover:text-teal-600 transition-colors">Conclusion</a>
+               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Matter Index</h4>
+               <nav className="flex flex-col gap-5 text-sm font-bold">
+                  <a href="#" className="text-[#c5a059] hover:text-[#e2c799] transition-colors">Executive Summary</a>
+                  <a href="#" className="hover:text-[#c5a059] transition-colors">Jurisdictional Review</a>
+                  <a href="#" className="hover:text-[#c5a059] transition-colors">Conclusion</a>
                </nav>
             </div>
           </aside>
 
           {/* CONTENT BODY */}
-          <div className="lg:col-span-3 space-y-12 text-lg leading-[1.8] font-medium text-slate-700">
+          <div className="lg:col-span-3 space-y-16 text-xl leading-[1.8] font-medium text-[#8b949e]">
              
              {/* Highlight Card */}
-             <div className="p-10 rounded-[3rem] bg-teal-500/5 border border-teal-500/10 shadow-2xl shadow-teal-500/5">
-                <p className="font-bold text-slate-900 leading-[1.8]">
-                  Key introduction or summary text goes here. Use a subtle background color to make it pop from the white page.
+             <div className="p-12 rounded-[3.5rem] bg-[#161b22] border border-[#30363d] shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 size-32 bg-[#c5a059]/5 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl group-hover:scale-150 transition-transform duration-1000" />
+                <p className="font-serif text-[#f0f6fc] leading-[1.6] relative z-10 text-2xl italic">
+                  "The transformation of legal services into a digitally-native ecosystem is no longer a luxury—it is the foundational requirement for global chamber excellence."
                 </p>
              </div>
 
              {/* Standard Section */}
-             <section className="space-y-6">
-                <h2 className="text-3xl font-black text-slate-950 tracking-tight border-l-4 border-teal-600 pl-6">
-                  Section Header
+             <section className="space-y-8">
+                <h2 className="text-4xl font-serif text-[#f0f6fc] tracking-tight border-l-2 border-[#c5a059] pl-8">
+                  Chamber Optimization
                 </h2>
                 <p>
-                  Standard article paragraph. Maintain generous line height (leading-relaxed) and slate-700 color for high readability on bright backgrounds.
+                  Professional analysis requires a focus on both precision and aesthetic delivery. By utilizing high-fidelity surface depth and serif-based hierarchy, we ensure that complex legal insights are digested with appropriate gravity.
                 </p>
              </section>
 
              {/* Icons/List Section */}
-             <div className="grid gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex gap-6 p-8 rounded-[2rem] bg-white border border-slate-100 shadow-sm transition-all hover:border-teal-500/20 group">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-teal-600 group-hover:scale-110 transition-transform shrink-0">
-                         <ShieldCheck className="w-6 h-6" />
+             <div className="grid gap-6">
+                {[1, 2].map((i) => (
+                  <div key={i} className="flex gap-8 p-10 rounded-[3rem] bg-[#161b22] border border-[#30363d] transition-all hover:border-[#c5a059]/40 group">
+                      <div className="w-16 h-16 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-center text-[#c5a059] group-hover:scale-110 transition-transform shrink-0">
+                         <ShieldCheck className="w-8 h-8" />
                       </div>
                       <div>
-                        <h4 className="text-xl font-black text-slate-900 mb-1">Benefit {i}</h4>
-                        <p className="text-slate-500 text-base">Description of the benefit or feature in a clean, legible font.</p>
+                        <h4 className="text-2xl font-serif text-[#f0f6fc] mb-2">Legal Security Protocol {i}</h4>
+                        <p className="text-[#8b949e] text-lg leading-relaxed">Implementing end-to-end encryption for all chamber correspondence ensuring client-attorney privilege in the digital age.</p>
                       </div>
                   </div>
                 ))}
              </div>
 
              {/* Dark Cinematic Card */}
-             <div className="p-12 rounded-[3rem] bg-slate-950 text-white space-y-8 relative overflow-hidden group">
-                <div className="relative z-10">
-                  <h3 className="text-3xl font-black italic mb-4">Call to Action Card</h3>
-                  <p className="text-slate-300 mb-8">Encourage users to take action with a high-contrast dark section.</p>
-                  <button className="h-14 px-10 rounded-2xl bg-teal-500 text-white font-black shadow-xl shadow-teal-500/20 hover:scale-105 transition-all">
-                    Get Started
+             <div className="p-16 rounded-[4rem] bg-slate-950 text-white space-y-10 relative overflow-hidden group border border-white/5">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                <div className="relative z-10 text-center max-w-lg mx-auto">
+                  <h3 className="text-4xl font-serif italic mb-6">Access Elite Counsel</h3>
+                  <p className="text-slate-400 mb-10 text-lg">Join the world's most exclusive professional ecosystem for high-stakes legal practice.</p>
+                  <button className="h-16 px-12 rounded-2xl bg-[#c5a059] text-white font-black text-lg shadow-2xl shadow-[#c5a059]/20 hover:scale-105 active:scale-95 transition-all">
+                    Initiate Practice
                   </button>
                 </div>
              </div>
@@ -130,11 +132,11 @@ const BlogTemplate = () => {
       </section>
 
       {/* 3. FOOTER AREA */}
-      <footer className="border-t border-slate-100 py-20 text-center">
-         <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-8">End of Insight</p>
-         <div className="flex justify-center gap-4">
-            <button className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-teal-600 hover:text-white transition-all">
-               <Share2 className="w-6 h-6" />
+      <footer className="border-t border-[#30363d] py-24 text-center">
+         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c5a059] mb-10">Final Insight</p>
+         <div className="flex justify-center gap-6">
+            <button className="w-16 h-16 rounded-2xl bg-[#161b22] border border-[#30363d] flex items-center justify-center hover:bg-[#c5a059] hover:text-white transition-all text-[#8b949e]">
+               <Share2 className="w-8 h-8" />
             </button>
          </div>
       </footer>

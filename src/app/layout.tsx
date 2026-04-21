@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Noto_Nastaliq_Urdu } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Nastaliq_Urdu, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -11,6 +11,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
 });
 
@@ -33,7 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${notoUrdu.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${notoUrdu.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
