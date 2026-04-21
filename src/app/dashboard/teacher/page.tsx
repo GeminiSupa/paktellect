@@ -151,19 +151,7 @@ export default function TeacherOverview() {
           }
           setCounts((prev) => ({ ...prev, messages: unread }))
 
-          const { data: bookingRows } = await supabase.from("bookings").select("id").eq("expert_id", teacher.id)
-          const ids = bookingRows?.map((b) => b.id) || []
-          let unread = 0
-          if (ids.length > 0) {
-            const { count } = await supabase
-              .from("messages")
-              .select("*", { count: "exact", head: true })
-              .eq("is_read", false)
-              .neq("sender_id", user.id)
-              .in("booking_id", ids)
-            unread = count || 0
-          }
-          setCounts((prev) => ({ ...prev, messages: unread }))
+
 
           // Fetch career earnings from transactions
           const { data: txs } = await supabase
