@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   avatar_url TEXT,
   city TEXT,
   country TEXT,
+  phone TEXT,
   device_id_hash TEXT,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -97,6 +98,7 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'full_name', NULL),
     v_role,
     COALESCE(NEW.raw_user_meta_data->>'avatar_url', NULL),
+    COALESCE(NEW.raw_user_meta_data->>'phone', NULL),
     COALESCE(NEW.raw_user_meta_data->>'device_id_hash', NULL),
     NOW()
   )
@@ -104,6 +106,7 @@ BEGIN
     full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
     role = COALESCE(EXCLUDED.role, public.profiles.role),
     avatar_url = COALESCE(EXCLUDED.avatar_url, public.profiles.avatar_url),
+    phone = COALESCE(EXCLUDED.phone, public.profiles.phone),
     device_id_hash = COALESCE(EXCLUDED.device_id_hash, public.profiles.device_id_hash),
     updated_at = NOW();
   RETURN NEW;
@@ -436,6 +439,14 @@ BEGIN
       WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'country'
     ) THEN
       ALTER TABLE public.profiles ADD COLUMN country TEXT;
+    END IF;
+
+    -- Profiles: phone field
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'phone'
+    ) THEN
+      ALTER TABLE public.profiles ADD COLUMN phone TEXT;
     END IF;
 
     -- Profiles: ensure CHECK constraint matches canonical roles ('student' | 'expert')

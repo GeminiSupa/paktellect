@@ -18,6 +18,7 @@ import { motion } from "framer-motion"
 const signupSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Please enter a valid phone number"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   role: z.enum(["student", "expert"]),
   category: z.string().optional(),
@@ -57,6 +58,7 @@ export default function SignupPage() {
         options: {
           data: {
             full_name: data.fullName,
+            phone: data.phone,
             role: data.role,
             ...(data.role === "expert"
               ? { expert_category: data.category || "Academic" }
@@ -194,6 +196,20 @@ export default function SignupPage() {
             />
             {errors.email && (
               <p className="text-xs text-red-500 font-bold">{errors.email.message}</p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300" htmlFor="phone">Phone Number</label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="+92 300 1234567"
+              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
+              disabled={isLoading}
+              {...register("phone")}
+            />
+            {errors.phone && (
+              <p className="text-xs text-red-500 font-bold">{errors.phone.message}</p>
             )}
           </div>
           <div className="grid gap-2">

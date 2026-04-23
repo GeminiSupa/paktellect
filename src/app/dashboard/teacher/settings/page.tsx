@@ -376,7 +376,7 @@ export default function TeacherSettings() {
                             </div>
                             <div>
                                 <h5 className="font-extrabold text-sm mb-1">2FA Enabled</h5>
-                                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Verified via Phone</p>
+                                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Verified: {(user?.user_metadata?.phone as string) || "No phone set"}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">

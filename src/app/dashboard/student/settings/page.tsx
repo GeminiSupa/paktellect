@@ -17,6 +17,10 @@ export default function StudentSettings() {
   const [displayName, setDisplayName] = useState(
     (user?.user_metadata?.full_name as string | undefined) ?? ""
   )
+  const [phone, setPhone] = useState(
+    (user?.user_metadata?.phone as string | undefined) ?? ""
+  )
+  const [isSavingPhone, setIsSavingPhone] = useState(false)
   
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? null
 
@@ -60,6 +64,22 @@ export default function StudentSettings() {
       toast.error(message)
     } finally {
       setIsSavingName(false)
+    }
+  }
+
+  const handleSavePhone = async () => {
+    if (!user || !phone.trim()) return
+    setIsSavingPhone(true)
+    try {
+      await supabase.from('profiles').update({ phone: phone }).eq('id', user.id)
+      await supabase.auth.updateUser({ data: { phone: phone } })
+      setUser({ ...user, user_metadata: { ...user.user_metadata, phone: phone } })
+      toast.success("Phone number updated!")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update phone"
+      toast.error(message)
+    } finally {
+      setIsSavingPhone(false)
     }
   }
 
@@ -161,6 +181,32 @@ export default function StudentSettings() {
                     className="h-12 px-5 rounded-xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
                   >
                     {isSavingName ? <Loader2 className="animate-spin size-4" /> : <CheckCircle2 className="size-4" />}
+                    Save
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2.5">
+                <label
+                  htmlFor="student-phone"
+                  className="text-xs font-semibold text-slate-700 dark:text-slate-200 tracking-wide block"
+                >
+                  Phone number
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Input
+                    id="student-phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="flex-1 h-12 px-5 rounded-xl text-sm font-semibold border-slate-300 dark:border-slate-500 bg-white dark:bg-background"
+                    placeholder="+92 300 1234567"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSavePhone}
+                    disabled={isSavingPhone}
+                    className="h-12 px-5 rounded-xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+                  >
+                    {isSavingPhone ? <Loader2 className="animate-spin size-4" /> : <CheckCircle2 className="size-4" />}
                     Save
                   </button>
                 </div>

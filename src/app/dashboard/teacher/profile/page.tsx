@@ -25,6 +25,7 @@ export default function TeacherProfile() {
   const [city, setCity] = useState("")
   const [country, setCountry] = useState("")
   const [fullName, setFullName] = useState("")
+  const [phone, setPhone] = useState("")
   const [isPublic, setIsPublic] = useState(false)
   // Category-specific fields
   const [legalBarNumber, setLegalBarNumber] = useState("")
@@ -107,11 +108,12 @@ export default function TeacherProfile() {
     async function loadLocation() {
       if (!user) return
       try {
-        const { data, error } = await supabase.from("profiles").select("city, country, full_name").eq("id", user.id).single()
+        const { data, error } = await supabase.from("profiles").select("city, country, full_name, phone").eq("id", user.id).single()
         if (error) throw error
         setCity((data?.city as string | null) || "")
         setCountry((data?.country as string | null) || "")
         setFullName((data?.full_name as string | null) || (user.user_metadata?.full_name as string | null) || "")
+        setPhone((data?.phone as string | null) || (user.user_metadata?.phone as string | null) || "")
       } catch (err) {
         console.error(err)
       }
@@ -298,18 +300,20 @@ export default function TeacherProfile() {
             full_name: fullName.trim() || null,
             city: city.trim() ? city.trim() : null,
             country: country.trim() ? country.trim() : null,
+            phone: phone.trim() ? phone.trim() : null,
           })
           .eq("id", user.id)
         if (pErr) throw pErr
 
         // Sync with Auth meta as well
-        await supabase.auth.updateUser({ data: { full_name: fullName.trim() } })
+        await supabase.auth.updateUser({ data: { full_name: fullName.trim(), phone: phone.trim() } })
         if (user) {
           setUser({
             ...user,
             user_metadata: {
               ...user.user_metadata,
-              full_name: fullName.trim()
+              full_name: fullName.trim(),
+              phone: phone.trim()
             }
           })
         }
@@ -455,13 +459,13 @@ export default function TeacherProfile() {
                    </div>
                  </div>
                  <div>
-                   <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Primary Specialty</label>
+                   <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Phone Number (Secure)</label>
                    <input 
-                     type="text" 
-                     placeholder="e.g. Clinical Psychology"
+                     type="tel" 
+                     placeholder="e.g. +92 300 1234567"
                      className="w-full px-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
-                     value={specialty}
-                     onChange={(e) => setSpecialty(e.target.value)}
+                     value={phone}
+                     onChange={(e) => setPhone(e.target.value)}
                    />
                  </div>
              </div>
