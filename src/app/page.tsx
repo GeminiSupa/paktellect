@@ -12,7 +12,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import Image from "next/image"
 
-const FEATURE_CATEGORIES = ["Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics"] as const
+const FEATURE_CATEGORIES = ["Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics", "Mechanics"] as const
 
 export default function Home() {
   type FeaturedExpert = {

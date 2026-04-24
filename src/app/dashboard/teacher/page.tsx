@@ -442,7 +442,7 @@ export default function TeacherOverview() {
                   </div>
                   <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground truncate">Pending inquiries</span>
                 </div>
-                <span className="text-lg font-black text-orange-600 dark:text-orange-400 tabular-nums">{counts.inquiries}</span>
+                <span className="text-lg font-black text-orange-600 dark:text-orange-400 tabular-nums shrink-0">{counts.inquiries}</span>
               </Link>
               <Link
                 href="/dashboard/teacher/messages"
@@ -454,7 +454,7 @@ export default function TeacherOverview() {
                   </div>
                   <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground truncate">Messages</span>
                 </div>
-                <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{messageLabel}</span>
+                <span className="text-sm font-black text-indigo-600 dark:text-indigo-400 shrink-0 truncate">{messageLabel}</span>
               </Link>
             </div>
 
@@ -499,7 +499,7 @@ export default function TeacherOverview() {
             </Button>
           </Link>
           <Link href="/dashboard/teacher/jobs">
-            <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-primary text-primary bg-primary/5">
+            <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-primary text-primary bg-primary/5 active:scale-95 transition-all">
               Marketplace
             </Button>
           </Link>

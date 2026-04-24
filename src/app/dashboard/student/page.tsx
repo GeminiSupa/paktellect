@@ -263,10 +263,10 @@ export default function StudentDashboard() {
         <div className="absolute inset-0 z-0">
             {/* Strong scrim so copy stays readable if the image is bright or fails to load */}
             <div
-              className="absolute inset-0 z-10 bg-linear-to-br from-slate-950 via-slate-950/92 to-slate-950/75"
+              className="absolute inset-0 z-10 bg-linear-to-br from-slate-950 via-slate-950/92 to-slate-950/40"
               aria-hidden
             />
-            <div className="absolute inset-0 z-11 bg-linear-to-t from-black/55 via-transparent to-black/25 pointer-events-none" aria-hidden />
+            <div className="absolute inset-0 z-11 bg-linear-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" aria-hidden />
             <Image
               src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
               alt=""
@@ -300,7 +300,7 @@ export default function StudentDashboard() {
                 </Button>
             </Link>
             <Link href="/dashboard/student/jobs">
-                <Button variant="outline" className="h-14 sm:h-16 px-8 sm:px-10 rounded-2xl border-white/20 bg-white/5 hover:bg-white/10 text-white font-black text-base sm:text-lg backdrop-blur-xl transition-all">
+                <Button variant="outline" className="h-14 sm:h-16 px-8 sm:px-10 rounded-2xl border-white/20 bg-white/5 hover:bg-white/10 active:scale-95 text-white font-black text-base sm:text-lg backdrop-blur-xl transition-all">
                     Active Mandates
                     <Briefcase className="size-5 ml-2" />
                 </Button>
@@ -365,10 +365,10 @@ export default function StudentDashboard() {
                                         <div className={`p-1.5 rounded-lg ${theme.color} border`}>
                                             {theme.icon}
                                         </div>
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{booking.teachers?.category}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 truncate">{booking.teachers?.category}</span>
                                     </div>
                                     <h3 className="font-black text-2xl text-slate-950 dark:text-white tracking-tighter line-clamp-1 group-hover:text-primary transition-colors duration-500">{booking.topic}</h3>
-                                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Expert: {booking.teachers?.profiles?.full_name || 'Verified Pro'}</p>
+                                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest truncate">Expert: {booking.teachers?.profiles?.full_name || 'Verified Pro'}</p>
                                 </div>
                             </div>
                             <span className={`px-5 py-2 text-[10px] font-black rounded-full border uppercase tracking-widest shadow-lg shadow-current/5 ${

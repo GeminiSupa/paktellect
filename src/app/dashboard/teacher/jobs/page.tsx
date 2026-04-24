@@ -28,7 +28,7 @@ export default function ExpertBrowseJobsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [userLoc, setUserLoc] = useState<UserLocation>({ city: null, country: null })
 
-  const categories = ["All", "Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics"]
+  const categories = ["All", "Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics", "Mechanics"]
 
   useEffect(() => {
     async function init() {
@@ -158,7 +158,7 @@ export default function ExpertBrowseJobsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-8">
           {filteredJobs.map((job) => (
-            <div key={job.id} className="group bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-8 md:p-12 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
+            <div key={job.id} className="group bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-8 md:p-12 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden min-h-[300px]">
                {/* Location Match Badge */}
                {(job.location_city === userLoc.city || job.location_country === userLoc.country) && (
                  <div className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
@@ -179,11 +179,11 @@ export default function ExpertBrowseJobsPage() {
                       </div>
                     </div>
 
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] group-hover:text-primary transition-colors">
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] group-hover:text-primary transition-colors line-clamp-1">
                       {job.title}
                     </h2>
                     
-                    <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-3xl line-clamp-3">
+                    <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-3xl line-clamp-3 min-h-[72px]">
                       {job.description}
                     </p>
 
@@ -226,7 +226,7 @@ export default function ExpertBrowseJobsPage() {
 
                   <div className="lg:w-72 shrink-0 flex items-end">
                      <Link href={`/dashboard/teacher/jobs/${job.id}`} className="w-full">
-                        <Button className="w-full h-16 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-emerald-500/20 group-hover:scale-[1.02] transition-all">
+                        <Button className="w-full h-16 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all">
                            Review Details
                            <ChevronRight className="size-5" />
                         </Button>

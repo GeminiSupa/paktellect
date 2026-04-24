@@ -35,6 +35,14 @@ BEGIN
     DROP POLICY IF EXISTS "Public teachers are viewable by everyone" ON teachers;
     DROP POLICY IF EXISTS "Teachers can insert their own profile" ON teachers;
     DROP POLICY IF EXISTS "Teachers can update their own profile" ON teachers;
+
+    -- marketplace policies
+    DROP POLICY IF EXISTS "Public can view open jobs" ON jobs;
+    DROP POLICY IF EXISTS "Students can create jobs" ON jobs;
+    DROP POLICY IF EXISTS "Clients can update their own jobs" ON jobs;
+    DROP POLICY IF EXISTS "Job owners and applicants can view applications" ON job_applications;
+    DROP POLICY IF EXISTS "Experts can apply to jobs" ON job_applications;
+    DROP POLICY IF EXISTS "Applicants can update their applications" ON job_applications;
 END $$;
 
 -- ============================================================
@@ -92,7 +100,7 @@ BEGIN
     v_role := 'student';
   END IF;
 
-  INSERT INTO public.profiles (id, full_name, role, avatar_url, device_id_hash, updated_at)
+  INSERT INTO public.profiles (id, full_name, role, avatar_url, phone, device_id_hash, updated_at)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NULL),
@@ -127,7 +135,7 @@ CREATE TABLE IF NOT EXISTS teachers (
   qualifications TEXT,
   hourly_rate NUMERIC,
   profile_pic_url TEXT,
-  category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health', 'Plumbing', 'Electrical', 'Logistics')),
+  category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health', 'Plumbing', 'Electrical', 'Logistics', 'Mechanics')),
   specialty TEXT,
   headline TEXT,
   -- Category-specific fields (required before going public)
@@ -1200,7 +1208,7 @@ CREATE TABLE IF NOT EXISTS jobs (
   client_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
-  category TEXT NOT NULL CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health', 'Plumbing', 'Electrical', 'Logistics')),
+  category TEXT NOT NULL CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health', 'Plumbing', 'Electrical', 'Logistics', 'Mechanics')),
   budget_pkr NUMERIC,
   location_city TEXT,
   location_country TEXT,

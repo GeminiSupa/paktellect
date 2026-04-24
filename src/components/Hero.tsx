@@ -3,12 +3,16 @@
 import { Button } from "./ui/Button"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { 
-  ArrowRight, 
-  Scale, 
-  Heart, 
-  Brain, 
+  Play,
+  Wrench,
+  Zap,
+  Truck,
+  Droplets,
+  ArrowRight,
   GraduationCap,
-  Play
+  Scale,
+  Heart,
+  Brain
 } from "lucide-react"
 import Link from "next/link"
 import { useStore } from "@/store/useStore"
@@ -77,7 +81,7 @@ export function Hero() {
             </h1>
 
             <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-14 sm:mb-16 max-w-3xl mx-auto leading-relaxed font-medium">
-              Access top-tier Lawyers, Doctors, and Tutors through our high-security escrow ecosystem.
+              Access elite Lawyers, Doctors, Tutors, and Skilled Trades through our high-security ecosystem.
               Professionalism, protected.
             </p>
 
@@ -113,7 +117,7 @@ export function Hero() {
 
           {/* Interactive Domain Grid */}
           <motion.div 
-            className="mt-20 sm:mt-24 grid grid-cols-2 lg:grid-cols-4 gap-6 w-full"
+            className="mt-20 sm:mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 w-full"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 1 }}
@@ -145,6 +149,34 @@ export function Hero() {
               count="300+ Doctors"
               color="from-rose-600/25 to-pink-600/25"
               href="/experts?category=Mental%20Health"
+            />
+            <CategoryCard 
+              icon={<Droplets className="size-8" />} 
+              label="Plumbing" 
+              count="200+ Vetted"
+              color="from-sky-600/25 to-blue-600/25"
+              href="/experts?category=Plumbing"
+            />
+            <CategoryCard 
+              icon={<Zap className="size-8" />} 
+              label="Electrical" 
+              count="150+ Vetted"
+              color="from-amber-600/25 to-yellow-600/25"
+              href="/experts?category=Electrical"
+            />
+            <CategoryCard 
+              icon={<Truck className="size-8" />} 
+              label="Logistics" 
+              count="500+ Drivers"
+              color="from-emerald-600/25 to-green-600/25"
+              href="/experts?category=Logistics"
+            />
+            <CategoryCard 
+              icon={<Wrench className="size-8" />} 
+              label="Mechanics" 
+              count="100+ Vetted"
+              color="from-slate-700/40 to-slate-800/60"
+              href="/experts?category=Mechanics"
             />
           </motion.div>
         </div>

@@ -165,6 +165,7 @@ export default function PostJobPage() {
                   <option value="Plumbing">Plumbing</option>
                   <option value="Electrical">Electrical</option>
                   <option value="Logistics">Logistics</option>
+                  <option value="Mechanics">Mechanics</option>
                 </select>
               </div>
             </div>

@@ -99,7 +99,7 @@ export default function StudentJobsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-8">
           {jobs.map((job) => (
-            <div key={job.id} className="group relative bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 md:p-12 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden">
+            <div key={job.id} className="group relative bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 md:p-12 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden min-h-[300px]">
                <div className="absolute top-0 left-0 w-2 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                
                <div className="flex flex-col lg:flex-row gap-10">
@@ -116,12 +116,12 @@ export default function StudentJobsPage() {
                       </span>
                     </div>
 
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] group-hover:text-primary transition-colors">
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] group-hover:text-primary transition-colors line-clamp-1">
                       {job.title}
                     </h2>
                     
-                    <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-3xl">
-                      {job.description.length > 200 ? job.description.substring(0, 200) + "..." : job.description}
+                    <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-3xl line-clamp-3 min-h-[72px]">
+                      {job.description}
                     </p>
 
                     <div className="flex flex-wrap items-center gap-6 pt-4">
@@ -154,13 +154,13 @@ export default function StudentJobsPage() {
                      </div>
                      
                      <div className="flex flex-col gap-3">
-                        <Link href={`/dashboard/student/jobs/${job.id}`} className="w-full">
-                           <Button className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-black text-white font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3">
+                         <Link href={`/dashboard/student/jobs/${job.id}`} className="w-full">
+                           <Button className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-black active:scale-95 text-white font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 transition-all">
                               View Proposals
                               <ChevronRight className="size-4" />
                            </Button>
                         </Link>
-                        <Button variant="outline" className="w-full h-14 rounded-2xl border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest">
+                        <Button variant="outline" className="w-full h-14 rounded-2xl border-slate-200 hover:bg-red-50 hover:text-red-600 active:scale-95 text-slate-600 font-black text-xs uppercase tracking-widest transition-all">
                            Close Job
                         </Button>
                      </div>

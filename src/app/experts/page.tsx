@@ -17,7 +17,8 @@ import {
   Globe,
   Zap,
   Wrench,
-  Truck
+  Truck,
+  Droplets
 } from "lucide-react"
 import { useEffect, useMemo, useState, Suspense } from "react"
 import { supabase } from "@/lib/supabase"
@@ -66,7 +67,7 @@ function ExpertsContent() {
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get('category')
 
-  const categories = useMemo(() => ["All", "Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics"], [])
+  const categories = useMemo(() => ["All", "Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics", "Mechanics"], [])
 
   useEffect(() => {
     if (categoryParam && categories.includes(categoryParam)) {
@@ -104,6 +105,7 @@ function ExpertsContent() {
       Plumbing: "accent-sky",
       Electrical: "accent-amber",
       Logistics: "accent-emerald",
+      Mechanics: "accent-slate",
     }
 
     function mapTeacherToCard(t: TeacherRow, profile: ProfileEmbed | undefined): ExpertCard {
@@ -265,6 +267,7 @@ function ExpertsContent() {
           case 'Plumbing': return <Wrench className="size-5" />
           case 'Electrical': return <Zap className="size-5" />
           case 'Logistics': return <Truck className="size-5" />
+          case 'Mechanics': return <Wrench className="size-5" />
           default: return <Star className="size-5" />
       }
   }
@@ -367,7 +370,7 @@ function ExpertsContent() {
                         key={expert.id} 
                         className="group relative h-full flex flex-col"
                     >
-                        <div className="premium-card p-10 flex flex-col h-full hover:-translate-y-4 duration-700">
+                        <div className="premium-card p-10 flex flex-col min-h-[580px] hover:-translate-y-4 hover:shadow-[0_40px_100px_-15px_rgba(16,185,129,0.15)] transition-all duration-700">
                             <div className="flex justify-between items-start mb-10">
                                 <div className={`size-20 rounded-[2rem] flex items-center justify-center text-4xl font-black shadow-2xl border border-white/50 dark:border-white/5 ${expert.colorClass}`}>
                                     {expert.image ? (
@@ -406,12 +409,12 @@ function ExpertsContent() {
                                     <div className="p-2 rounded-lg glass border border-slate-100 dark:border-white/5 opacity-60">
                                         {getCategoryIcon(expert.category)}
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{expert.category}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 truncate">{expert.category}</span>
                                 </div>
-                                <h3 className="text-3xl font-black text-slate-950 dark:text-white tracking-tighter mb-2 group-hover:text-primary transition-colors duration-500">{expert.name}</h3>
+                                <h3 className="text-3xl font-black text-slate-950 dark:text-white tracking-tighter mb-2 group-hover:text-primary transition-colors duration-500 line-clamp-1">{expert.name}</h3>
                                 <div className="space-y-1 mb-10">
                                     {expert.headline ? (
-                                      <p className="text-slate-600 dark:text-slate-300 font-bold text-sm italic group-hover:not-italic transition-all duration-500">
+                                      <p className="text-slate-600 dark:text-slate-300 font-bold text-sm italic group-hover:not-italic transition-all duration-500 line-clamp-2 min-h-[40px]">
                                           {expert.headline}
                                       </p>
                                     ) : (
@@ -459,13 +462,13 @@ function ExpertsContent() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <Link href={`/book/${expert.id}`}>
-                                  <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-[12px] uppercase tracking-widest transition-all group-hover:scale-[1.02] shadow-xl shadow-emerald-500/20 group-hover:shadow-emerald-500/40">
+                                  <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-[12px] uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40">
                                       Book
                                       <ExternalLink className="size-5 ml-2 opacity-50" />
                                   </Button>
                               </Link>
                               <Link href={`/dashboard/student/offers?expertId=${encodeURIComponent(expert.id)}`}>
-                                  <Button variant="outline" className="w-full h-14 rounded-2xl font-black text-[12px] uppercase tracking-widest">
+                                  <Button variant="outline" className="w-full h-14 rounded-2xl font-black text-[12px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all">
                                       Send Offer
                                   </Button>
                               </Link>

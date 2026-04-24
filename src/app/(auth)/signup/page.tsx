@@ -6,7 +6,7 @@ import * as z from "zod"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
-import { Loader2, GraduationCap, Scale, Heart, Brain } from "lucide-react"
+import { Loader2, GraduationCap, Scale, Heart, Brain, Wrench, Zap, Truck } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -106,6 +106,10 @@ export default function SignupPage() {
     { id: 'Legal', icon: <Scale className="size-4" />, label: 'Legal' },
     { id: 'Wellness', icon: <Heart className="size-4" />, label: 'Wellness' },
     { id: 'Mental Health', icon: <Brain className="size-4" />, label: 'Mental' },
+    { id: 'Plumbing', icon: <Wrench className="size-4" />, label: 'Plumbing' },
+    { id: 'Electrical', icon: <Zap className="size-4" />, label: 'Electrical' },
+    { id: 'Logistics', icon: <Truck className="size-4" />, label: 'Logistics' },
+    { id: 'Mechanics', icon: <Wrench className="size-4" />, label: 'Mechanics' },
   ]
 
   return (
@@ -149,7 +153,7 @@ export default function SignupPage() {
                className="grid gap-3"
             >
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300">Professional Domain</label>
-                <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Select professional domain">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2" role="radiogroup" aria-label="Select professional domain">
                     {categoryIcons.map((cat) => (
                         <button
                             key={cat.id}
