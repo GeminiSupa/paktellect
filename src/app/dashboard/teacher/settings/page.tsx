@@ -17,8 +17,7 @@ import {
   Globe,
   Upload,
   CheckCircle2,
-  ShieldCheck,
-  Shield
+  ShieldCheck
 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { toast } from "sonner"
@@ -59,14 +58,7 @@ export default function TeacherSettings() {
           setTeacherId(data.id ?? null)
 
           const nonEmptyArray = (arr: unknown) => Array.isArray(arr) && arr.filter(Boolean).length > 0
-          const ok =
-            data.category === 'Legal'
-              ? Boolean(data.legal_bar_number && data.legal_jurisdiction && nonEmptyArray(data.legal_practice_areas))
-              : data.category === 'Mental Health'
-                ? Boolean(data.mental_license_number && data.mental_license_type && nonEmptyArray(data.mental_modalities))
-                : data.category === 'Wellness'
-                  ? Boolean(data.wellness_certification && nonEmptyArray(data.wellness_specialties) && data.wellness_approach)
-                  : Boolean(nonEmptyArray(data.academic_subjects) && data.academic_education_level && data.academic_credentials)
+          const ok = true; // All fields are now optional for easier onboarding
           setTeacherFieldsOk(ok)
 
           setSettings(prev => ({

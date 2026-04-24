@@ -173,35 +173,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- Only require full category fields when turning public ON (or inserting as public).
-  -- Routine updates (availability_slots, is_online, etc.) must not fail once already public.
-  IF NEW.is_public IS NOT TRUE THEN
-    RETURN NEW;
-  END IF;
-
-  IF TG_OP = 'UPDATE' AND OLD.is_public IS TRUE THEN
-    RETURN NEW;
-  END IF;
-
-  IF NEW.category = 'Legal' THEN
-    IF NEW.legal_bar_number IS NULL OR NEW.legal_jurisdiction IS NULL OR NEW.legal_practice_areas IS NULL OR array_length(NEW.legal_practice_areas, 1) IS NULL THEN
-      RAISE EXCEPTION 'Legal profiles must include bar number, jurisdiction, and practice areas before being public';
-    END IF;
-  ELSIF NEW.category = 'Mental Health' THEN
-    IF NEW.mental_license_number IS NULL OR NEW.mental_license_type IS NULL OR NEW.mental_modalities IS NULL OR array_length(NEW.mental_modalities, 1) IS NULL THEN
-      RAISE EXCEPTION 'Mental Health profiles must include license info and modalities before being public';
-    END IF;
-  ELSIF NEW.category = 'Wellness' THEN
-    IF NEW.wellness_certification IS NULL OR NEW.wellness_specialties IS NULL OR array_length(NEW.wellness_specialties, 1) IS NULL OR NEW.wellness_approach IS NULL THEN
-      RAISE EXCEPTION 'Wellness profiles must include certification, specialties, and approach before being public';
-    END IF;
-  ELSE
-    -- Academic
-    IF NEW.academic_subjects IS NULL OR array_length(NEW.academic_subjects, 1) IS NULL OR NEW.academic_education_level IS NULL OR NEW.academic_credentials IS NULL THEN
-      RAISE EXCEPTION 'Academic profiles must include subjects, education level, and credentials before being public';
-    END IF;
-  END IF;
-
+  /** Requirements are now optional to allow faster onboarding. */
   RETURN NEW;
 END;
 $$;
@@ -498,7 +470,7 @@ BEGIN
 
     -- Teachers: category (required for rankings + domain requirements)
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='category') THEN
-        ALTER TABLE teachers ADD COLUMN category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health'));
+        ALTER TABLE teachers ADD COLUMN category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health', 'Plumbing', 'Electrical', 'Logistics', 'Mechanics'));
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='teachers' AND column_name='timezone') THEN
         ALTER TABLE teachers ADD COLUMN timezone TEXT DEFAULT 'UTC';
