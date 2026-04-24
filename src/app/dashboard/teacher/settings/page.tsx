@@ -17,7 +17,8 @@ import {
   Globe,
   Upload,
   CheckCircle2,
-  ShieldCheck
+  ShieldCheck,
+  Shield
 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { toast } from "sonner"
@@ -125,6 +126,25 @@ export default function TeacherSettings() {
     } catch (err) {
       console.error(err)
       toast.error("Security system error. Please try again later.")
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure you want to permanently delete your account? This will remove your practice from the directory and delete all professional data. This action cannot be undone.")) return
+    
+    try {
+      // 1. Delete profile (cascades to teachers)
+      const { error } = await supabase.from('profiles').delete().eq('id', user?.id)
+      if (error) throw error
+      
+      // 2. Sign out
+      await supabase.auth.signOut()
+      setUser(null)
+      router.push("/")
+      toast.success("Account deleted successfully.")
+    } catch (err: unknown) {
+      console.error(err)
+      toast.error("Failed to fully delete account. Please contact support.")
     }
   }
 
@@ -401,7 +421,11 @@ export default function TeacherSettings() {
                 <Button onClick={handleSignOut} className="flex-1 h-16 rounded-[2rem] bg-slate-900 hover:bg-black text-white font-black text-sm uppercase tracking-widest gap-2 shadow-xl shadow-slate-950/20 transition-all">
                     <LogOut className="size-4" /> Sign Out Global Session
                 </Button>
-                <Button variant="outline" className="flex-1 h-16 rounded-[2rem] border-rose-500/30 hover:bg-rose-600 hover:border-transparent text-rose-500 hover:text-white font-black text-sm uppercase tracking-widest gap-2 transition-all">
+                <Button 
+                    onClick={handleDeleteAccount}
+                    variant="outline" 
+                    className="flex-1 h-16 rounded-[2rem] border-rose-500/30 hover:bg-rose-600 hover:border-transparent text-rose-500 hover:text-white font-black text-sm uppercase tracking-widest gap-2 transition-all"
+                >
                     <Trash2 className="size-4" /> Permanent account Deletion
                 </Button>
             </div>

@@ -61,7 +61,7 @@ export function Hero() {
       <div className="absolute top-1/4 left-1/4 z-0 pointer-events-none size-[500px] bg-emerald-600/20 rounded-full blur-[120px] animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 z-0 pointer-events-none size-[400px] bg-teal-500/10 rounded-full blur-[100px] animate-pulse delay-1000" />
 
-      <div className="container mx-auto px-6 sm:px-8 relative z-10 pt-36 sm:pt-40 md:pt-44 pb-16 md:pb-20">
+      <div className="container mx-auto px-6 sm:px-8 relative z-20 pt-36 sm:pt-40 md:pt-44 pb-16 md:pb-20">
         <div className="flex flex-col items-center text-center max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

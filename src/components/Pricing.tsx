@@ -55,7 +55,7 @@ export function Pricing() {
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Link href="/signup" className="flex-1">
                                 <Button className="w-full h-18 text-lg font-black rounded-2xl bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-emerald-500/20">
-                                    Start Practice
+                                    Become an Expert
                                 </Button>
                             </Link>
                             <Link href="/experts" className="flex-1">

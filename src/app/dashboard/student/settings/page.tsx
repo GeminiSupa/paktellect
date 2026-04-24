@@ -109,6 +109,25 @@ export default function StudentSettings() {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure you want to permanently delete your account? This will remove all your data and access. This action cannot be undone.")) return
+    
+    try {
+      // 1. Delete profile (which cascades in our app logic)
+      const { error } = await supabase.from('profiles').delete().eq('id', user?.id)
+      if (error) throw error
+      
+      // 2. Sign out
+      await supabase.auth.signOut()
+      setUser(null)
+      router.push("/")
+      toast.success("Account deleted successfully.")
+    } catch (err: unknown) {
+      console.error(err)
+      toast.error("Failed to fully delete account. Please contact support.")
+    }
+  }
+
   return (
     <div className="max-w-4xl space-y-8 pb-20">
       <div className="bg-white dark:bg-card p-6 sm:p-10 rounded-[2.5rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/50 dark:shadow-black/40">
@@ -262,14 +281,21 @@ export default function StudentSettings() {
             </div>
           </div>
 
-          {/* Sign Out */}
-          <div className="flex justify-end pt-2">
+          {/* Sign Out & Account Management */}
+          <div className="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4 border-t border-slate-100 dark:border-border mt-10">
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2 h-12 px-8 rounded-2xl border border-slate-200 dark:border-slate-700 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:border-rose-500 hover:text-rose-500 transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 h-12 px-8 rounded-2xl border border-slate-200 dark:border-slate-700 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:border-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
             >
               <LogOut className="size-4" />
-              Sign Out
+              Sign Out global session
+            </button>
+            <button
+              onClick={handleDeleteAccount}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 h-12 px-8 rounded-2xl border border-rose-500/20 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
+            >
+              <Shield className="size-4" />
+              Permanently Delete Account
             </button>
           </div>
         </div>
