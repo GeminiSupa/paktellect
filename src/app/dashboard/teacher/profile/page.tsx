@@ -353,7 +353,7 @@ export default function TeacherProfile() {
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 font-black text-[10px] uppercase tracking-widest text-primary">
-                <User className="size-3" /> Practice Identity
+                <User className="size-3" /> Expert Identity
               </div>
               {validationErrors.length === 0 ? (
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 font-black text-[10px] uppercase tracking-widest text-emerald-600 animate-in fade-in zoom-in duration-1000">
@@ -365,7 +365,7 @@ export default function TeacherProfile() {
                 </div>
               )}
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-3 tracking-tighter">Profile & Practice</h1>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-3 tracking-tighter">Professional Profile</h1>
             <p className="text-slate-500 text-lg font-medium max-w-xl">Elite professionals maintain high-fidelity profiles. Your portfolio is your bridge to new clients.</p>
           </div>
           
@@ -409,7 +409,7 @@ export default function TeacherProfile() {
                 "Headline & specialty on each card",
                 "Hourly rate (Offers still allowed)",
                 "City / country as “Remote” fallback",
-                "Category tags (subjects, practice areas, etc.)",
+                "Category tags (subjects, specialties, etc.)",
               ].map((line) => (
                 <li key={line} className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" aria-hidden />
@@ -494,19 +494,32 @@ export default function TeacherProfile() {
                       />
                     </div>
                   </div>
+                    <div>
+                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Hourly Advisory Rate</label>
+                     <div className="relative group">
+                       <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5 group-hover:scale-110 transition-transform" />
+                       <input 
+                         type="number" 
+                         className="w-full pl-14 pr-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-xl font-black tracking-tight transition-all"
+                         value={rate}
+                         onChange={(e) => setRate(e.target.value)}
+                         placeholder="Leave blank to negotiate"
+                       />
+                     </div>
+                   </div>
                    <div>
-                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Hourly Advisory Rate</label>
-                    <div className="relative group">
-                      <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5 group-hover:scale-110 transition-transform" />
-                      <input 
-                        type="number" 
-                        className="w-full pl-14 pr-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-xl font-black tracking-tight transition-all"
-                        value={rate}
-                        onChange={(e) => setRate(e.target.value)}
-                        placeholder="Leave blank to negotiate"
-                      />
-                    </div>
-                  </div>
+                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Primary Specialty</label>
+                     <div className="relative group">
+                       <Briefcase className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5 group-hover:scale-110 transition-transform" />
+                       <input
+                         type="text"
+                         placeholder="e.g. M&A Advisor, Fitness Coach"
+                         className="w-full pl-14 pr-8 h-16 rounded-[1.2rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
+                         value={specialty}
+                         onChange={(e) => setSpecialty(e.target.value)}
+                       />
+                     </div>
+                   </div>
                 </div>
              </div>
 

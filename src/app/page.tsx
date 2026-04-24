@@ -237,13 +237,13 @@ export default function Home() {
                     Share your expertise <br /> with the <span className="text-primary">world.</span>
                 </h2>
                 <p className="text-slate-400 mb-14 max-w-2xl mx-auto text-xl font-medium leading-relaxed">
-                    Join the top 1% of professionals. Set your own clinical rates. 
-                    Manage your coordinate practice. Experience escrow safety.
+                    Join the top 1% of professionals. Set your own professional rates. 
+                    Manage your professional empire. Experience escrow safety.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-6">
                     <Link href="/signup">
                         <button className="bg-primary hover:bg-emerald-700 text-white px-14 py-8 rounded-3xl font-black text-xl transition-all shadow-2xl hover:scale-[1.03] active:scale-95 border-t border-white/20">
-                            Establish Practice
+                            Become an Expert
                         </button>
                     </Link>
                     <Link href="/experts">

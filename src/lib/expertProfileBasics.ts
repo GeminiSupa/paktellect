@@ -37,9 +37,7 @@ export function validateExpertProfileBasics(input: ExpertProfileBasicsInput): { 
   if (input.headline.trim().length < 8) {
     errors.push("Public headline: at least 8 characters (shown on Find Experts and booking).")
   }
-  if (!input.specialty.trim()) {
-    errors.push("Primary specialty is required.")
-  }
+  /** Specialty is now optional for basic Save to prevent blocking users, though recommended for public listing. */
   const rateNum = parseFloat(input.rate)
   if (!input.rate.trim() || Number.isNaN(rateNum) || rateNum <= 0) {
     errors.push("Set a standard hourly rate greater than 0 (clients can still send custom Offers).")
