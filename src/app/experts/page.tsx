@@ -12,9 +12,12 @@ import {
   ExternalLink,
   GraduationCap,
   Scale,
-  Heart,
-  Brain,
-  Globe
+  Heart, 
+  Brain, 
+  Globe,
+  Zap,
+  Wrench,
+  Truck
 } from "lucide-react"
 import { useEffect, useMemo, useState, Suspense } from "react"
 import { supabase } from "@/lib/supabase"
@@ -22,6 +25,8 @@ import { toast } from "sonner"
 import { useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
+import { useStore } from "@/store/useStore"
+import { detectLocation, sortExpertsByRelevance, UserLocation } from "@/lib/location"
 
 function ExpertsContent() {
   type ExpertCard = {
@@ -47,11 +52,21 @@ function ExpertsContent() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
   const [activeExperts, setActiveExperts] = useState<ExpertCard[]>([])
+  const { user } = useStore()
+  const [userLoc, setUserLoc] = useState<UserLocation>({ city: null, country: null })
+  
+  useEffect(() => {
+    async function getLoc() {
+      const loc = await detectLocation(user?.id)
+      setUserLoc(loc)
+    }
+    getLoc()
+  }, [user])
   
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get('category')
 
-  const categories = useMemo(() => ["All", "Academic", "Legal", "Wellness", "Mental Health"], [])
+  const categories = useMemo(() => ["All", "Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics"], [])
 
   useEffect(() => {
     if (categoryParam && categories.includes(categoryParam)) {
@@ -86,6 +101,9 @@ function ExpertsContent() {
       Legal: "accent-orange",
       Wellness: "accent-teal",
       "Mental Health": "accent-pink",
+      Plumbing: "accent-sky",
+      Electrical: "accent-amber",
+      Logistics: "accent-emerald",
     }
 
     function mapTeacherToCard(t: TeacherRow, profile: ProfileEmbed | undefined): ExpertCard {
@@ -232,8 +250,11 @@ function ExpertsContent() {
         )
     }
 
+    // Sort by location relevance
+    filtered = sortExpertsByRelevance(filtered, userLoc)
+
     setActiveExperts(filtered)
-  }, [searchTerm, selectedCategory, experts])
+  }, [searchTerm, selectedCategory, experts, userLoc])
 
   const getCategoryIcon = (category: string) => {
       switch(category) {
@@ -241,6 +262,9 @@ function ExpertsContent() {
           case 'Legal': return <Scale className="size-5" />
           case 'Wellness': return <Heart className="size-5" />
           case 'Mental Health': return <Brain className="size-5" />
+          case 'Plumbing': return <Wrench className="size-5" />
+          case 'Electrical': return <Zap className="size-5" />
+          case 'Logistics': return <Truck className="size-5" />
           default: return <Star className="size-5" />
       }
   }

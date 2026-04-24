@@ -498,6 +498,11 @@ export default function TeacherOverview() {
               Reviews
             </Button>
           </Link>
+          <Link href="/dashboard/teacher/jobs">
+            <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-primary text-primary bg-primary/5">
+              Marketplace
+            </Button>
+          </Link>
           <Link href="/dashboard/teacher/earnings">
             <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-border bg-card">
               Withdraw / payouts

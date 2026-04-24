@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS teachers (
   qualifications TEXT,
   hourly_rate NUMERIC,
   profile_pic_url TEXT,
-  category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health')),
+  category TEXT DEFAULT 'Academic' CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health', 'Plumbing', 'Electrical', 'Logistics')),
   specialty TEXT,
   headline TEXT,
   -- Category-specific fields (required before going public)
@@ -1191,6 +1191,88 @@ CREATE POLICY "Matter participants can delete legal docs"
       SELECT 1 FROM matters
       WHERE matters.id::text = (storage.foldername(name))[1]
         AND (auth.uid() = matters.client_id OR auth.uid() IN (SELECT user_id FROM teachers WHERE id = matters.teacher_id))
+    )
+  );
+
+-- 7. MARKETPLACE: JOBS & QUERIES
+CREATE TABLE IF NOT EXISTS jobs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  client_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('Academic', 'Legal', 'Wellness', 'Mental Health', 'Plumbing', 'Electrical', 'Logistics')),
+  budget_pkr NUMERIC,
+  location_city TEXT,
+  location_country TEXT,
+  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'completed', 'cancelled')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can view open jobs"
+  ON jobs FOR SELECT
+  USING (status = 'open' OR auth.uid() = client_id);
+
+CREATE POLICY "Students can create jobs"
+  ON jobs FOR INSERT
+  WITH CHECK (auth.uid() = client_id);
+
+CREATE POLICY "Clients can update their own jobs"
+  ON jobs FOR UPDATE
+  USING (auth.uid() = client_id);
+
+-- 8. JOB APPLICATIONS (PROPOSALS)
+CREATE TABLE IF NOT EXISTS job_applications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  job_id UUID REFERENCES jobs(id) ON DELETE CASCADE NOT NULL,
+  expert_id UUID REFERENCES teachers(id) ON DELETE CASCADE NOT NULL,
+  proposal TEXT NOT NULL,
+  bid_amount NUMERIC,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected', 'withdrawn')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(job_id, expert_id) -- One application per expert per job
+);
+ALTER TABLE job_applications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Job owners and applicants can view applications"
+  ON job_applications FOR SELECT
+  USING (
+    auth.uid() IN (SELECT client_id FROM jobs WHERE id = job_id)
+    OR auth.uid() IN (SELECT user_id FROM teachers WHERE id = expert_id)
+  );
+
+CREATE POLICY "Experts can apply to jobs"
+  ON job_applications FOR INSERT
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'expert')
+    AND auth.uid() IN (SELECT user_id FROM teachers WHERE id = expert_id)
+  );
+
+CREATE POLICY "Applicants can update their applications"
+  ON job_applications FOR UPDATE
+  USING (auth.uid() IN (SELECT user_id FROM teachers WHERE id = expert_id));
+
+-- Update messages to support job_id
+DO $$
+BEGIN
+    IF NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_name = 'messages' AND column_name = 'job_id'
+    ) THEN
+      ALTER TABLE messages ADD COLUMN job_id UUID REFERENCES jobs(id) ON DELETE CASCADE;
+    END IF;
+END $$;
+
+-- Policy for job-based messages
+DROP POLICY IF EXISTS "Users can view messages for their jobs" ON messages;
+CREATE POLICY "Users can view messages for their jobs"
+  ON messages FOR SELECT
+  USING (
+    job_id IS NOT NULL AND (
+      EXISTS (SELECT 1 FROM jobs WHERE id = job_id AND client_id = auth.uid())
+      OR EXISTS (SELECT 1 FROM job_applications WHERE job_id = messages.job_id AND expert_id IN (SELECT id FROM teachers WHERE user_id = auth.uid()))
     )
   );
 

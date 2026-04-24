@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Layout,
   ArrowUpRight,
-  X
+  X,
+  Briefcase
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -296,6 +297,12 @@ export default function StudentDashboard() {
                 <Button className="h-14 sm:h-16 px-8 sm:px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-base sm:text-lg shadow-2xl shadow-black/30 border border-white/10 transition-all hover:scale-[1.02]">
                     Explore New Services
                     <ChevronRight className="size-5 sm:size-6 ml-2" />
+                </Button>
+            </Link>
+            <Link href="/dashboard/student/jobs">
+                <Button variant="outline" className="h-14 sm:h-16 px-8 sm:px-10 rounded-2xl border-white/20 bg-white/5 hover:bg-white/10 text-white font-black text-base sm:text-lg backdrop-blur-xl transition-all">
+                    Active Mandates
+                    <Briefcase className="size-5 ml-2" />
                 </Button>
             </Link>
           </div>
