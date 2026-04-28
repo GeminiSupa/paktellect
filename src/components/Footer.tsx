@@ -8,8 +8,8 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-6 group">
-              <div className="relative size-10 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/10 transition-transform group-hover:scale-110 bg-white/50">
-                <Image src="/logo1.png" alt="PAKTELLECT" fill className="object-contain p-1.5" sizes="40px" />
+              <div className="relative size-11 sm:size-10 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/10 transition-transform group-hover:scale-110 bg-white/70 dark:bg-card/80 ring-1 ring-border/60">
+                <Image src="/logo1.png" alt="PAKTELLECT" fill className="object-contain p-0.75" sizes="40px" />
               </div>
               <span className="text-2xl tracking-tighter text-slate-900 dark:text-white">
                 <span className="font-black">PAK</span>

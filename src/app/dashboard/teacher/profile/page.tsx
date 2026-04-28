@@ -226,6 +226,7 @@ export default function TeacherProfile() {
 
     const basics = validateExpertProfileBasics({
       displayNameFromAccount: fullName,
+      phone,
       category,
       headline,
       specialty,

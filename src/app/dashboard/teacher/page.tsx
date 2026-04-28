@@ -81,7 +81,7 @@ export default function TeacherOverview() {
           .from("teachers")
           .select(`
             *,
-            profiles:user_id(full_name, city, country)
+            profiles:user_id(full_name, city, country, phone)
           `)
           .eq("user_id", user.id)
           .single()
@@ -94,6 +94,7 @@ export default function TeacherOverview() {
           // Run checklist validation
           const validationInput: ExpertProfileBasicsInput = {
             displayNameFromAccount: teacher.profiles?.full_name || "",
+            phone: teacher.profiles?.phone || "",
             category: teacher.category || "Academic",
             headline: teacher.headline || "",
             specialty: teacher.specialty || "",

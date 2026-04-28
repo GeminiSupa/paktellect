@@ -14,8 +14,8 @@ export default function AuthLayout({
         <div className="absolute bottom-0 left-0 size-[500px] bg-emerald-500/20 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3"></div>
 
         <Link href="/" className="flex items-center gap-3 relative z-10 group">
-          <div className="relative size-12 bg-white rounded-2xl overflow-hidden shadow-2xl transition-transform group-hover:scale-110">
-            <Image src="/logo1.png" alt="PAKTELLECT" fill className="object-contain p-2" sizes="48px" />
+          <div className="relative size-12 bg-white/90 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/30 transition-transform group-hover:scale-110">
+            <Image src="/logo1.png" alt="PAKTELLECT" fill className="object-contain p-1" sizes="48px" />
           </div>
           <span className="text-3xl tracking-tighter">
             <span className="font-black">PAK</span>

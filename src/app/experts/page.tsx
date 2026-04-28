@@ -151,7 +151,11 @@ function ExpertsContent() {
           .from("profiles")
           .select("id, full_name, city, country")
           .in("id", chunk)
-        if (pErr) throw pErr
+        if (pErr) {
+          // Do not block the directory if profile read fails due RLS/network.
+          console.warn("Profile lookup failed, continuing with teacher rows only:", pErr.message)
+          continue
+        }
         for (const row of profs ?? []) {
           profileById.set(row.id as string, {
             full_name: row.full_name as string | null,
@@ -185,7 +189,7 @@ function ExpertsContent() {
           const { data: pubData, error: pubErr } = await supabase
             .from("teachers")
             .select(cols)
-            .eq("is_public", true)
+            .or("is_public.eq.true,is_public.is.null")
 
           if (!pubErr && pubData) {
             teachers = pubData as unknown as TeacherRow[]
@@ -199,7 +203,7 @@ function ExpertsContent() {
             .select(cols)
           
           if (!allErr && allData) {
-            const filtered = (allData as unknown as TeacherRow[]).filter((t) => t.is_public === true)
+            const filtered = (allData as unknown as TeacherRow[]).filter((t) => t.is_public !== false)
             teachers = filtered
             hasFetchedAny = true
             break

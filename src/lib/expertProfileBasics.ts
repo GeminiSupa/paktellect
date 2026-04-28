@@ -2,6 +2,7 @@
 
 export type ExpertProfileBasicsInput = {
   displayNameFromAccount: string
+  phone: string
   category: string
   headline: string
   specialty: string
@@ -33,6 +34,9 @@ export function validateExpertProfileBasics(input: ExpertProfileBasicsInput): { 
 
   if (!input.displayNameFromAccount.trim()) {
     errors.push("Set your display name under Account Settings (it appears as your name to clients).")
+  }
+  if (input.phone.trim().length < 10) {
+    errors.push("Add a valid phone number (minimum 10 digits) before saving your expert profile.")
   }
   if (input.headline.trim().length < 8) {
     errors.push("Public headline: at least 8 characters (shown on Find Experts and booking).")
