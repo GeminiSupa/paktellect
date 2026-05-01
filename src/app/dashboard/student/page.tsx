@@ -78,14 +78,64 @@ export default function StudentDashboard() {
     async function loadBookings(currentUserId: string) {
       setIsLoading(true)
       try {
-        const { data } = await supabase
+        // Step 1: Fetch bookings
+        const { data: bookingsData, error: bookingsError } = await supabase
           .from("bookings")
-          .select("*, teachers!bookings_expert_id_fkey(category, user_id, profiles!teachers_user_id_fkey(full_name, avatar_url))")
+          .select("*")
           .eq("user_id", currentUserId)
           .order("booking_date", { ascending: false })
 
-        setBookings(data || [])
+        if (bookingsError) throw bookingsError
+        if (!bookingsData || bookingsData.length === 0) {
+          setBookings([])
+          setIsLoading(false)
+          return
+        }
 
+        // Step 2: Fetch teacher info for these bookings
+        const expertIds = [...new Set(bookingsData.map(b => b.expert_id))]
+        const { data: teachersData, error: teachersError } = await supabase
+          .from("teachers")
+          .select("id, category, user_id")
+          .in("id", expertIds)
+
+        if (teachersError) {
+          console.error("Failed to fetch teachers for bookings:", teachersError)
+        }
+
+        // Step 3: Fetch profile info for these teachers
+        const teacherUserIds = [...new Set(teachersData?.map(t => t.user_id) || [])]
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url")
+          .in("id", teacherUserIds)
+
+        if (profilesError) {
+          console.error("Failed to fetch profiles for teachers:", profilesError)
+        }
+
+        // Step 4: Merge everything
+        const profileMap = (profilesData || []).reduce((acc, curr) => {
+          acc[curr.id] = curr
+          return acc
+        }, {} as Record<string, any>)
+
+        const teacherMap = (teachersData || []).reduce((acc, curr) => {
+          acc[curr.id] = {
+            ...curr,
+            profiles: profileMap[curr.user_id] || null
+          }
+          return acc
+        }, {} as Record<string, any>)
+
+        const mergedBookings = bookingsData.map(b => ({
+          ...b,
+          teachers: teacherMap[b.expert_id] || null
+        }))
+
+        setBookings(mergedBookings as Booking[])
+
+        // Fetch reviews
         const { data: r, error: rErr } = await supabase
           .from("reviews")
           .select("booking_id")
@@ -94,7 +144,7 @@ export default function StudentDashboard() {
           setReviewedBookingIds(new Set(r.map((x) => x.booking_id as string)))
         }
       } catch (err) {
-        console.error(err)
+        console.error("Student dashboard load error:", err)
       } finally {
         setIsLoading(false)
       }

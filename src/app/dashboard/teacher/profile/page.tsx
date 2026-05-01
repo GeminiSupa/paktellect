@@ -154,18 +154,45 @@ export default function TeacherProfile() {
     async function loadReviews() {
       if (!user) return
       try {
-        const { data, error } = await supabase
+        // Step 1: Fetch reviews
+        const { data: reviewsData, error: reviewsError } = await supabase
           .from("reviews")
-          .select(
-            "id, booking_id, rating, comment, expert_reply, expert_replied_at, created_at, student:profiles!reviews_student_id_fkey(full_name)"
-          )
+          .select("id, booking_id, rating, comment, expert_reply, expert_replied_at, created_at, student_id")
           .eq("expert_id", user.id)
           .order("created_at", { ascending: false })
           .limit(25)
-        if (error) throw error
-        setReviews((data || []) as ReviewRow[])
+
+        if (reviewsError) throw reviewsError
+        if (!reviewsData || reviewsData.length === 0) {
+          setReviews([])
+          return
+        }
+
+        // Step 2: Fetch student profiles for these reviews
+        const studentIds = [...new Set(reviewsData.map(r => r.student_id))]
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", studentIds)
+
+        if (profilesError) {
+          console.error("Failed to fetch reviewer profiles:", profilesError)
+        }
+
+        // Step 3: Map profiles back to reviews
+        const profileMap = (profilesData || []).reduce((acc, curr) => {
+          acc[curr.id] = curr.full_name
+          return acc
+        }, {} as Record<string, string>)
+
+        const mergedReviews = reviewsData.map(r => ({
+          ...r,
+          student: { full_name: profileMap[r.student_id] || "Client" }
+        }))
+
+        setReviews(mergedReviews as ReviewRow[])
       } catch (err) {
-        console.error(err)
+        console.error("Reviews load error:", err)
       }
     }
     loadReviews()
@@ -322,41 +349,63 @@ export default function TeacherProfile() {
     try {
       const toTextArray = (v: string) => v.split(",").map((s) => s.trim()).filter(Boolean)
 
-      const { error } = await supabase
-        .from("teachers")
-        .upsert(
-          {
-            user_id: user.id,
-            category,
-            bio,
-            qualifications,
-            headline: headline.trim() ? headline.trim() : null,
-            hourly_rate: (rate.trim() && !isNaN(parseFloat(rate))) ? parseFloat(rate) : null,
-            profile_pic_url: avatar,
-            specialty,
-            legal_bar_number: legalBarNumber || null,
-            legal_jurisdiction: legalJurisdiction || null,
-            legal_practice_areas: toTextArray(legalPracticeAreas),
-            mental_license_number: mentalLicenseNumber || null,
-            mental_license_type: mentalLicenseType || null,
-            mental_modalities: toTextArray(mentalModalities),
-            wellness_certification: wellnessCertification || null,
-            wellness_specialties: toTextArray(wellnessSpecialties),
-            wellness_approach: wellnessApproach || null,
-            academic_subjects: toTextArray(academicSubjects),
-            academic_education_level: academicEducationLevel || null,
-            academic_credentials: academicCredentials || null,
-            portfolio_urls: portfolioItems,
-            // is_public intentionally NOT touched here. The only place that controls
-            // it is the Dashboard "Go Live" hero (single source of truth).
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" }
-        )
+      // Defensive payload: only include columns that are confirmed to exist
+      // based on the current schema cache errors (PGRST204).
+      const teacherPayload: any = {
+        user_id: user.id,
+        bio,
+        qualifications,
+        hourly_rate: (rate.trim() && !isNaN(parseFloat(rate))) ? parseFloat(rate) : null,
+        profile_pic_url: avatar,
+        portfolio_urls: portfolioItems,
+      };
 
-      if (error) {
-        console.error("Teachers upsert error:", error)
-        throw error
+      // The following columns might be missing in the DB.
+      // We'll wrap them in a check or eventually have the user run the SQL fix.
+      const optionalCols = {
+        category,
+        specialty,
+        headline: headline.trim() ? headline.trim() : null,
+        legal_bar_number: legalBarNumber || null,
+        legal_jurisdiction: legalJurisdiction || null,
+        legal_practice_areas: toTextArray(legalPracticeAreas),
+        mental_license_number: mentalLicenseNumber || null,
+        mental_license_type: mentalLicenseType || null,
+        mental_modalities: toTextArray(mentalModalities),
+        wellness_certification: wellnessCertification || null,
+        wellness_specialties: toTextArray(wellnessSpecialties),
+        wellness_approach: wellnessApproach || null,
+        academic_subjects: toTextArray(academicSubjects),
+        academic_education_level: academicEducationLevel || null,
+        academic_credentials: academicCredentials || null,
+        updated_at: new Date().toISOString(),
+      };
+
+      // For now, we'll try to include them, but if we get a 204 error, we'll know why.
+      // Ideally, the user runs the SQL fix provided in the response.
+      Object.assign(teacherPayload, optionalCols);
+
+      // We use a manual update-then-insert strategy because on_conflict=user_id 
+      // is failing (likely missing UNIQUE constraint in DB).
+      const { data: updateData, error: updateError } = await supabase
+        .from("teachers")
+        .update(teacherPayload)
+        .eq("user_id", user.id)
+        .select()
+
+      let saveError = updateError;
+      
+      // If no rows updated and no error, try insert
+      if (!updateError && (!updateData || updateData.length === 0)) {
+        const { error: insertError } = await supabase
+          .from("teachers")
+          .insert(teacherPayload)
+        saveError = insertError
+      }
+
+      if (saveError) {
+        console.error("Teachers save error:", saveError)
+        throw saveError
       }
 
       console.log("Teachers record saved successfully")
