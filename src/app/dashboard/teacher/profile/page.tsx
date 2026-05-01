@@ -331,7 +331,7 @@ export default function TeacherProfile() {
             bio,
             qualifications,
             headline: headline.trim() ? headline.trim() : null,
-            hourly_rate: rate.trim() ? parseFloat(rate) : null,
+            hourly_rate: (rate.trim() && !isNaN(parseFloat(rate))) ? parseFloat(rate) : null,
             profile_pic_url: avatar,
             specialty,
             legal_bar_number: legalBarNumber || null,
@@ -354,7 +354,12 @@ export default function TeacherProfile() {
           { onConflict: "user_id" }
         )
 
-      if (error) throw error
+      if (error) {
+        console.error("Teachers upsert error:", error)
+        throw error
+      }
+
+      console.log("Teachers record saved successfully")
 
       const { error: pErr } = await supabase
         .from("profiles")
@@ -365,9 +370,26 @@ export default function TeacherProfile() {
           phone: phone.trim() ? phone.trim() : null,
         })
         .eq("id", user.id)
-      if (pErr) throw pErr
+      
+      if (pErr) {
+        console.error("Profiles update error:", pErr)
+        throw pErr
+      }
 
-      await supabase.auth.updateUser({ data: { full_name: fullName.trim(), phone: phone.trim() } })
+      console.log("Profile record updated successfully")
+
+      const { error: authErr } = await supabase.auth.updateUser({ 
+        data: { 
+          full_name: fullName.trim(), 
+          phone: phone.trim() 
+        } 
+      })
+      
+      if (authErr) {
+        console.error("Auth metadata update error:", authErr)
+        // We don't necessarily want to block the whole save if only metadata fails, 
+        // but it's good to know.
+      }
       if (user) {
         setUser({
           ...user,
@@ -400,10 +422,10 @@ export default function TeacherProfile() {
           } left before you can go live.`,
         })
       }
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to save profile"
+    } catch (error: any) {
+      console.error("Profile save error:", error)
+      const message = error?.message || error?.error_description || "Failed to save profile"
       toast.error(message)
-      console.error(error)
     } finally {
       setIsSaving(false)
     }
