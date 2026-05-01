@@ -44,7 +44,7 @@ export function Hero() {
           alt=""
           fill
           priority
-          className="object-cover object-center scale-110 opacity-55 saturate-[0.85]"
+          className="object-cover object-center scale-110 opacity-40 saturate-[0.75]"
           sizes="100vw"
         />
         <div
@@ -70,7 +70,7 @@ export function Hero() {
           >
             <div className="relative z-20 inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/20 mb-8 sm:mb-10 max-w-88 sm:max-w-none">
               <span className="size-2 rounded-full bg-teal-400 animate-ping shrink-0" />
-              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.16em] sm:tracking-[0.2em] text-white/95 text-balance whitespace-normal text-center">
+              <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-white/95 text-balance whitespace-normal text-center">
                 Pakistan&apos;s Premium Professional Hub
               </span>
             </div>
@@ -210,7 +210,7 @@ function CategoryCard({
         <h3 className="font-black text-xl sm:text-2xl text-white mb-2 tracking-tight transition-colors group-hover:text-teal-50">
           {label}
         </h3>
-        <p className="text-[10px] font-black text-teal-100/80 uppercase tracking-widest leading-none transition-colors group-hover:text-teal-200">
+        <p className="text-xs font-black text-teal-100/80 uppercase tracking-widest leading-none transition-colors group-hover:text-teal-200">
           {count}
         </p>
       </div>

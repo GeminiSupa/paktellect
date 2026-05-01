@@ -4,7 +4,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "./ui/Button"
 import { LayoutDashboard, Menu, X, LogOut } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
@@ -35,7 +36,20 @@ export function Navbar() {
     }
   }
 
+  // Prevent scrolling when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "unset"
+    }
+    return () => {
+      document.body.style.overflow = "unset"
+    }
+  }, [isOpen])
+
   return (
+    <>
     <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[94%] sm:w-[92%] max-w-6xl z-50 rounded-[2rem] sm:rounded-[2.5rem] border border-border bg-background/95 dark:bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-white/10">
       <div className="container mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
         <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
@@ -156,95 +170,123 @@ export function Navbar() {
           {isOpen ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
       </div>
-
-      {/* Mobile Menu — compact, less intrusive */}
-      <div
-        className={cn(
-          "md:hidden overflow-hidden transition-[max-height] duration-300 ease-out border-t border-border",
-          isOpen ? "max-h-[min(70vh,520px)]" : "max-h-0 border-t-0"
-        )}
-      >
-        <div className="container mx-auto px-4 py-4 flex flex-col gap-4 max-h-[min(65vh,480px)] overflow-y-auto">
-          <div className="flex flex-col gap-1 text-sm font-semibold text-foreground">
-            {inWorkspace ? (
-              <>
-                <Link href="/" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  Marketing home
-                </Link>
-                <Link href="/experts" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  Find experts
-                </Link>
-                <Link href="/safety" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  Safety
-                </Link>
-                <Link href="/escrow-protection" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  Escrow & trust
-                </Link>
-                <Link href="/blog" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  Blog
-                </Link>
-              </>
-            ) : (
-              <>
-                {user?.user_metadata?.role !== "expert" && (
-                  <Link href="/experts" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                    Directory
-                  </Link>
-                )}
-                <Link href="/contact" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  Contact
-                </Link>
-                <Link href="/blog" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  News & Blog
-                </Link>
-                <Link href="/manual" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  User guide
-                </Link>
-                <Link href="/safety" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  Safety
-                </Link>
-                <Link href="/escrow-protection" className="py-2.5 px-3 rounded-xl hover:bg-muted" onClick={() => setIsOpen(false)}>
-                  Trust / Escrow
-                </Link>
-              </>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-            {user ? (
-              <>
-                <Link href={workspaceHref} onClick={() => setIsOpen(false)} className="flex-1 min-w-[140px]">
-                  <span className="flex h-11 items-center justify-center rounded-xl border border-border bg-muted font-bold text-sm text-foreground">
-                    Open workspace
-                  </span>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="flex-1 min-w-[120px] h-11 rounded-xl border-destructive/30 text-destructive font-bold text-sm"
-                  onClick={() => {
-                    setIsOpen(false)
-                    void handleSignOut()
-                  }}
-                >
-                  Log out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" onClick={() => setIsOpen(false)} className="flex-1">
-                  <span className="flex h-11 items-center justify-center rounded-xl border border-border font-bold text-sm">
-                    Sign in
-                  </span>
-                </Link>
-                <Link href="/signup" onClick={() => setIsOpen(false)} className="flex-1">
-                  <span className="flex h-11 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-sm">
-                    Get started
-                  </span>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
     </nav>
+
+    {/* Mobile Overlay & Drawer */}
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm md:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-background border-l border-border z-[70] shadow-2xl flex flex-col md:hidden"
+          >
+            <div className="flex items-center justify-between px-6 py-6 border-b border-border">
+              <span className="text-xl font-black tracking-tighter text-foreground">MENU</span>
+              <button
+                type="button"
+                className="size-10 flex items-center justify-center bg-muted rounded-full text-foreground hover:bg-muted/80 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-8">
+              <div className="flex flex-col gap-2 text-lg font-bold text-foreground">
+                {inWorkspace ? (
+                  <>
+                    <Link href="/" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      Marketing home
+                    </Link>
+                    <Link href="/experts" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      Find experts
+                    </Link>
+                    <Link href="/safety" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      Safety
+                    </Link>
+                    <Link href="/escrow-protection" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      Escrow & trust
+                    </Link>
+                    <Link href="/blog" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      Blog
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    {user?.user_metadata?.role !== "expert" && (
+                      <Link href="/experts" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                        Directory
+                      </Link>
+                    )}
+                    <Link href="/contact" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      Contact
+                    </Link>
+                    <Link href="/blog" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      News & Blog
+                    </Link>
+                    <Link href="/manual" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      User guide
+                    </Link>
+                    <Link href="/safety" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      Safety
+                    </Link>
+                    <Link href="/escrow-protection" className="py-3 px-4 rounded-2xl hover:bg-muted transition-colors" onClick={() => setIsOpen(false)}>
+                      Trust / Escrow
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-border bg-muted/30">
+              {user ? (
+                <div className="flex flex-col gap-3">
+                  <Link href={workspaceHref} onClick={() => setIsOpen(false)}>
+                    <Button className="w-full h-14 rounded-xl font-bold text-base bg-primary hover:opacity-90 text-primary-foreground shadow-lg">
+                      Open workspace
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full h-14 rounded-xl border-destructive/30 text-destructive font-bold text-base hover:bg-destructive/10"
+                    onClick={() => {
+                      setIsOpen(false)
+                      void handleSignOut()
+                    }}
+                  >
+                    Log out
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <Link href="/signup" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full h-14 rounded-xl font-bold text-base bg-primary hover:opacity-90 text-primary-foreground shadow-lg">
+                      Get started
+                    </Button>
+                  </Link>
+                  <Link href="/login" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full h-14 rounded-xl font-bold text-base">
+                      Sign in
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+    </>
   )
 }

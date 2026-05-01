@@ -18,19 +18,18 @@ import {
   X,
   Sparkles,
   Zap,
-  ShieldAlert,
   ShieldCheck,
   Eye,
   EyeOff,
-  ArrowRight,
-  ChevronRight,
-  AlertCircle
+  AlertCircle,
+  Globe,
+  Loader2,
 } from "lucide-react"
 import { useEffect, useState, useMemo } from "react"
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
-import { validateExpertProfileBasics, ExpertProfileBasicsInput } from "@/lib/expertProfileBasics"
+import { validateProfileForPublish, type ExpertProfileBasicsInput } from "@/lib/expertProfileBasics"
 
 const AVAIL_TIP_KEY = "paktellect_dismiss_avail_tip_v1"
 
@@ -39,8 +38,10 @@ export default function TeacherOverview() {
   const [category, setCategory] = useState<string>("Academic")
   const [isOnline, setIsOnline] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
+  const [teacherId, setTeacherId] = useState<string | null>(null)
   const [checklist, setChecklist] = useState<{ ok: boolean; errors: string[] }>({ ok: true, errors: [] })
-  
+  const [isPublishing, setIsPublishing] = useState(false)
+
   type Session = {
     id: string
     booking_date: string
@@ -57,7 +58,7 @@ export default function TeacherOverview() {
     careerEarnings: 0,
     ratingAvg: 0,
     reviewCount: 0,
-    reliability: 100
+    reliability: 100,
   })
 
   const messageLabel = useMemo(() => {
@@ -79,19 +80,21 @@ export default function TeacherOverview() {
       try {
         const { data: teacher } = await supabase
           .from("teachers")
-          .select(`
+          .select(
+            `
             *,
             profiles:user_id(full_name, city, country, phone)
-          `)
+          `
+          )
           .eq("user_id", user.id)
           .single()
 
         if (teacher) {
+          setTeacherId(teacher.id ?? null)
           setCategory(teacher.category || "Academic")
           setIsOnline(teacher.is_online || false)
-          setIsPublic(teacher.is_public || false)
+          setIsPublic(Boolean(teacher.is_public))
 
-          // Run checklist validation
           const validationInput: ExpertProfileBasicsInput = {
             displayNameFromAccount: teacher.profiles?.full_name || "",
             phone: teacher.profiles?.phone || "",
@@ -114,10 +117,10 @@ export default function TeacherOverview() {
             wellnessApproach: teacher.wellness_approach || "",
             academicSubjects: (teacher.academic_subjects || []).join(", "),
             academicEducationLevel: teacher.academic_education_level || "",
-            academicCredentials: teacher.academic_credentials || ""
+            academicCredentials: teacher.academic_credentials || "",
           }
 
-          setChecklist(validateExpertProfileBasics(validationInput))
+          setChecklist(validateProfileForPublish(validationInput))
 
           const today = new Date().toISOString().split("T")[0]
           const { data: sessions } = await supabase
@@ -152,22 +155,19 @@ export default function TeacherOverview() {
           }
           setCounts((prev) => ({ ...prev, messages: unread }))
 
-
-
-          // Fetch career earnings from transactions
           const { data: txs } = await supabase
             .from("transactions")
             .select("amount")
             .eq("payee_id", user.id)
             .neq("status", "refunded")
-          
+
           const totalEarnings = txs?.reduce((acc, t) => acc + Number(t.amount), 0) || 0
 
           setMetrics({
             careerEarnings: totalEarnings,
             ratingAvg: Number(teacher.rating_avg || 0),
             reviewCount: Number(teacher.review_count || 0),
-            reliability: 100 // Default for now
+            reliability: 100,
           })
         }
       } catch (err) {
@@ -243,6 +243,42 @@ export default function TeacherOverview() {
     }
   }
 
+  const setPublicStatus = async (next: boolean) => {
+    if (!user) return
+    if (next && !checklist.ok) {
+      toast.error("Complete your profile checklist before going live.")
+      return
+    }
+    setIsPublishing(true)
+    const previous = isPublic
+    setIsPublic(next)
+    try {
+      const { error } = await supabase
+        .from("teachers")
+        .upsert(
+          { user_id: user.id, is_public: next, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        )
+      if (error) throw error
+      if (next) {
+        toast.success("You're live", {
+          description: "Your profile is now visible in the directory.",
+        })
+      } else {
+        toast.success("Hidden from directory", {
+          description: "Existing bookings and messages still work.",
+        })
+      }
+    } catch (err: unknown) {
+      console.error(err)
+      setIsPublic(previous)
+      const msg = err instanceof Error ? err.message : "Failed to update visibility"
+      toast.error(msg)
+    } finally {
+      setIsPublishing(false)
+    }
+  }
+
   const dismissAvailTip = () => {
     try {
       localStorage.setItem(AVAIL_TIP_KEY, "1")
@@ -273,94 +309,169 @@ export default function TeacherOverview() {
         </Link>
       </div>
 
-      {/* Visibility & Discovery Status Widget */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`rounded-[2rem] border p-8 flex flex-col justify-between transition-all duration-500 ${isPublic ? 'bg-emerald-500/5 border-emerald-500/20 shadow-lg shadow-emerald-500/5' : 'bg-orange-500/5 border-orange-500/20 shadow-lg shadow-orange-500/5'}`}>
-          <div className="flex items-start justify-between mb-8">
-            <div className={`p-4 rounded-2xl ${isPublic ? 'bg-emerald-500/20 text-emerald-600' : 'bg-orange-500/20 text-orange-600'}`}>
-              {isPublic ? <Eye className="size-8" /> : <EyeOff className="size-8" />}
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">Directory Status</p>
-              <h4 className={`text-xl font-black ${isPublic ? 'text-emerald-600' : 'text-orange-600'}`}>
-                {isPublic ? 'Visible to Consumers' : 'Hidden from Directory'}
-              </h4>
-            </div>
-          </div>
-          
-          {!isPublic && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/10 flex items-start gap-3">
-                <AlertCircle className="size-5 text-orange-600 shrink-0 mt-0.5" />
-                <p className="text-xs font-bold text-orange-700 leading-relaxed">
-                  Consumers cannot find you in the directory. You must complete your profile checklist and enable "Public Profile" in Settings.
+      {/* Single Go Live hero — only place that controls is_public */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div
+          className={`lg:col-span-2 rounded-[2rem] border p-6 md:p-8 transition-colors ${
+            isPublic
+              ? "bg-emerald-500/5 border-emerald-500/30"
+              : checklist.ok
+                ? "bg-primary/5 border-primary/30"
+                : "bg-amber-500/5 border-amber-500/25"
+          }`}
+        >
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div className="flex items-start gap-3 min-w-0">
+              <div
+                className={`size-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                  isPublic
+                    ? "bg-emerald-500/15 text-emerald-600"
+                    : checklist.ok
+                      ? "bg-primary/15 text-primary"
+                      : "bg-amber-500/15 text-amber-600"
+                }`}
+              >
+                {isPublic ? <Eye className="size-6" /> : checklist.ok ? <Globe className="size-6" /> : <EyeOff className="size-6" />}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-1">
+                  Directory status
+                </p>
+                <h2
+                  className={`text-xl md:text-2xl font-black tracking-tight ${
+                    isPublic ? "text-emerald-700 dark:text-emerald-300" : checklist.ok ? "text-foreground" : "text-amber-700 dark:text-amber-200"
+                  }`}
+                >
+                  {isPublic
+                    ? "You're live in the directory"
+                    : checklist.ok
+                      ? "Ready to go live"
+                      : "Almost there"}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                  {isPublic
+                    ? "Clients can find you in the public expert directory."
+                    : checklist.ok
+                      ? "Your profile passed the publish checklist. Go live to appear in the directory."
+                      : `${checklist.errors.length} item${checklist.errors.length === 1 ? "" : "s"} left before you can go live.`}
                 </p>
               </div>
-              <div className="grid gap-2">
-                {checklist.errors.slice(0, 3).map((err, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-orange-600/70">
-                    <div className="size-1 bg-orange-400 rounded-full" />
-                    {err}
-                  </div>
-                ))}
-                {checklist.errors.length > 3 && (
-                  <p className="text-[10px] font-bold text-orange-500/60">+ {checklist.errors.length - 3} more requirements</p>
-                )}
-              </div>
             </div>
+          </div>
+
+          {/* Missing-item checklist */}
+          {!isPublic && !checklist.ok && (
+            <ul className="mt-4 space-y-1.5">
+              {checklist.errors.slice(0, 5).map((err) => (
+                <li key={err} className="flex items-start gap-2 text-sm text-amber-900 dark:text-amber-100 font-medium">
+                  <AlertCircle className="size-4 text-amber-600 shrink-0 mt-0.5" aria-hidden />
+                  {err}
+                </li>
+              ))}
+              {checklist.errors.length > 5 && (
+                <li className="text-xs font-semibold text-amber-700/80 dark:text-amber-200/80 pl-6">
+                  + {checklist.errors.length - 5} more
+                </li>
+              )}
+            </ul>
           )}
 
-          <div className="mt-8 flex gap-3">
-             <Link href="/dashboard/teacher/profile" className="flex-1">
-                <Button variant="outline" className={`w-full h-12 rounded-xl font-black text-xs border-current hover:bg-current hover:text-white transition-all ${isPublic ? 'text-emerald-600' : 'text-orange-600'}`}>
-                  {checklist.ok ? 'Refine Profile' : 'Complete Profile'}
+          {/* Action row */}
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            {isPublic ? (
+              <>
+                {teacherId ? (
+                  <Link href={`/book/${teacherId}`} target="_blank" className="flex-1 sm:flex-none">
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 rounded-2xl font-black text-xs uppercase tracking-widest border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/5 hover:bg-emerald-500/10"
+                    >
+                      <Eye className="size-4" /> View public listing
+                    </Button>
+                  </Link>
+                ) : null}
+                <Button
+                  onClick={() => setPublicStatus(false)}
+                  variant="outline"
+                  disabled={isPublishing}
+                  className="h-12 rounded-2xl font-black text-xs uppercase tracking-widest"
+                >
+                  {isPublishing ? <Loader2 className="size-4 animate-spin" /> : <EyeOff className="size-4" />}
+                  Hide from directory
                 </Button>
-             </Link>
-             <Link href="/dashboard/teacher/settings" className="flex-1">
-                <Button className={`w-full h-12 rounded-xl font-black text-xs text-white shadow-xl ${isPublic ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-500/20'}`}>
-                  {isPublic ? 'Sync Settings' : 'Go Public'}
+                <Link href="/dashboard/teacher/profile" className="sm:ml-auto">
+                  <Button
+                    variant="ghost"
+                    className="h-12 rounded-2xl font-bold text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Edit profile
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => setPublicStatus(true)}
+                  disabled={!checklist.ok || isPublishing}
+                  className="flex-1 sm:flex-none h-12 px-8 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                >
+                  {isPublishing ? <Loader2 className="size-4 animate-spin" /> : <Globe className="size-4" />}
+                  Go live
                 </Button>
-             </Link>
+                <Link href="/dashboard/teacher/profile" className="flex-1 sm:flex-none">
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 rounded-2xl font-black text-xs uppercase tracking-widest border-border bg-card"
+                  >
+                    {checklist.ok ? "Refine profile" : "Complete profile"}
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
-        <div className={`rounded-[2rem] border p-8 flex flex-col justify-between transition-all duration-500 ${isOnline ? 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5' : 'bg-slate-500/5 border-slate-500/20 shadow-lg shadow-slate-500/5'}`}>
-          <div className="flex items-start justify-between mb-8">
-            <div className={`p-4 rounded-2xl ${isOnline ? 'bg-primary/20 text-primary' : 'bg-slate-500/20 text-slate-500'}`}>
-              <ShieldCheck className="size-8" />
+        {/* Online / accepting sessions */}
+        <div
+          className={`rounded-[2rem] border p-6 md:p-8 flex flex-col transition-colors ${
+            isOnline ? "bg-primary/5 border-primary/25" : "bg-card border-border"
+          }`}
+        >
+          <div className="flex items-start gap-3 mb-4">
+            <div
+              className={`size-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                isOnline ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <ShieldCheck className="size-6" />
             </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">Session Status</p>
-              <h4 className={`text-xl font-black ${isOnline ? 'text-primary' : 'text-slate-500'}`}>
-                {isOnline ? 'Accepting Sessions' : 'Taking a Break'}
-              </h4>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-1">
+                Session status
+              </p>
+              <h3 className={`text-lg font-black ${isOnline ? "text-primary" : "text-foreground"}`}>
+                {isOnline ? "Accepting sessions" : "Taking a break"}
+              </h3>
             </div>
           </div>
-
-          <div className="space-y-4">
-             <p className="text-xs font-bold text-muted-foreground leading-relaxed">
-               {isOnline 
-                 ? "You are currently marked as 'Online'. Your profile will show a green status badge and you can accept immediate session requests."
-                 : "You are currently 'Offline'. Consumers can still message you, but they will see that you are currently unavailable."}
-             </p>
-             {!isOnline && isPublic && (
-               <div className="p-4 rounded-xl bg-primary/10 border border-primary/10 flex items-center gap-3 animate-pulse">
-                  <Zap className="size-5 text-primary shrink-0" />
-                  <p className="text-xs font-bold text-primary">Go online to increase visibility by 3x</p>
-               </div>
-             )}
-          </div>
-
+          <p className="text-xs text-muted-foreground leading-relaxed mb-5 grow">
+            {isOnline
+              ? "You show as available for new bookings. Independent from the directory listing above."
+              : "You appear unavailable for new sessions. Existing bookings still work."}
+          </p>
           <button
+            type="button"
+            role="switch"
+            aria-checked={isOnline}
             onClick={toggleStatus}
-            className={`mt-8 w-full h-14 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-3 px-6 ${
+            className={`w-full h-12 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
               isOnline
-                ? "bg-primary text-white shadow-xl shadow-primary/25 hover:scale-[1.02]"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary/40"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "bg-muted text-muted-foreground border border-border hover:border-primary/40"
             }`}
           >
-            <div className={`size-2.5 rounded-full ${isOnline ? 'bg-white animate-pulse' : 'bg-slate-400'}`} />
-            {isOnline ? "Switch to Offline Mode" : "Go Online Now"}
+            <span className={`size-2 rounded-full ${isOnline ? "bg-white animate-pulse" : "bg-slate-400"}`} aria-hidden />
+            {isOnline ? "Go offline" : "Go online"}
           </button>
         </div>
       </section>
@@ -458,29 +569,6 @@ export default function TeacherOverview() {
                 <span className="text-sm font-black text-indigo-600 dark:text-indigo-400 shrink-0 truncate">{messageLabel}</span>
               </Link>
             </div>
-
-            <div className="pt-6 mt-6 border-t border-border">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Directory visibility</p>
-              <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-                {isOnline
-                  ? "You appear as available for new bookings (separate from “public” listing in Settings)."
-                  : "You appear offline. Clients may still message you from existing bookings."}
-              </p>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={isOnline}
-                onClick={toggleStatus}
-                className={`w-full min-h-[48px] rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 px-3 ${
-                  isOnline
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                    : "bg-muted text-muted-foreground border border-border"
-                }`}
-              >
-                <span className="size-2 rounded-full shrink-0 bg-current opacity-80" aria-hidden />
-                {isOnline ? "Visible: open for sessions" : "Hidden: not taking new sessions"}
-              </button>
-            </div>
           </div>
         </div>
       </section>
@@ -531,7 +619,7 @@ export default function TeacherOverview() {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2">Career earnings</p>
                 <p className="text-3xl md:text-4xl font-black tabular-nums text-foreground tracking-tighter">
-                  ${metrics.careerEarnings.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  ${metrics.careerEarnings.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                 </p>
                 <p className="text-xs font-semibold text-muted-foreground mt-2">Verified revenue across all sessions</p>
               </div>

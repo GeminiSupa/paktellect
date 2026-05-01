@@ -6,7 +6,7 @@ import * as z from "zod"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
-import { Loader2, GraduationCap, Scale, Heart, Brain, Wrench, Zap, Truck } from "lucide-react"
+import { Loader2, GraduationCap, Scale, Heart, Brain, Wrench, Zap, Truck, Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -28,6 +28,8 @@ type SignupFormValues = z.infer<typeof signupSchema>
 
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [pendingConfirmEmail, setPendingConfirmEmail] = useState<string | null>(null)
   const router = useRouter()
 
   const {
@@ -90,8 +92,9 @@ export default function SignupPage() {
         const target = data.role === "expert" ? "/dashboard/teacher" : "/dashboard/student"
         router.push(target)
       } else {
-        toast.success("Account created! Please log in.")
-        router.push("/login")
+        // Email confirmation flow — keep the user here with a clear "check your inbox" panel.
+        setPendingConfirmEmail(data.email)
+        toast.success("Check your inbox to confirm your email.")
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Something went wrong"
@@ -111,6 +114,45 @@ export default function SignupPage() {
     { id: 'Logistics', icon: <Truck className="size-4" />, label: 'Logistics' },
     { id: 'Mechanics', icon: <Wrench className="size-4" />, label: 'Mechanics' },
   ]
+
+  if (pendingConfirmEmail) {
+    return (
+      <Card className="border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
+        <CardHeader className="space-y-1 p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+          <CardTitle className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
+            Check your email
+          </CardTitle>
+          <CardDescription className="font-medium text-slate-600 dark:text-slate-300">
+            We sent a confirmation link to <span className="font-bold text-foreground">{pendingConfirmEmail}</span>. Click the link to activate your account, then sign in.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-8 space-y-4">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="font-semibold text-slate-800 dark:text-slate-100 mb-1">Didn&apos;t receive it?</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Check your spam or promotions folder.</li>
+              <li>Make sure {pendingConfirmEmail} is correct.</li>
+              <li>Try again in a minute — sometimes it takes a moment.</li>
+            </ul>
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-3 p-8 pt-0">
+          <Link href="/login" className="w-full">
+            <Button className="w-full h-14 rounded-2xl font-black text-sm uppercase tracking-widest" variant="premium">
+              Go to sign in
+            </Button>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setPendingConfirmEmail(null)}
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Use a different email
+          </button>
+        </CardFooter>
+      </Card>
+    )
+  }
 
   return (
       <Card className="border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
@@ -180,7 +222,7 @@ export default function SignupPage() {
             <Input
               id="fullName"
               placeholder="John Doe"
-              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
+              className={`h-14 rounded-xl bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary ${errors.fullName ? "border-red-500 ring-1 ring-red-500" : "border-slate-200 dark:border-slate-800"}`}
               disabled={isLoading}
               {...register("fullName")}
             />
@@ -194,7 +236,7 @@ export default function SignupPage() {
               id="email"
               type="email"
               placeholder="name@example.com"
-              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
+              className={`h-14 rounded-xl bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary ${errors.email ? "border-red-500 ring-1 ring-red-500" : "border-slate-200 dark:border-slate-800"}`}
               disabled={isLoading}
               {...register("email")}
             />
@@ -208,7 +250,7 @@ export default function SignupPage() {
               id="phone"
               type="tel"
               placeholder="+92 300 1234567"
-              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
+              className={`h-14 rounded-xl bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary ${errors.phone ? "border-red-500 ring-1 ring-red-500" : "border-slate-200 dark:border-slate-800"}`}
               disabled={isLoading}
               {...register("phone")}
             />
@@ -218,13 +260,22 @@ export default function SignupPage() {
           </div>
           <div className="grid gap-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300" htmlFor="password">Security Password</label>
-            <Input
-              id="password"
-              type="password"
-              className="h-14 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary"
-              disabled={isLoading}
-              {...register("password")}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                className={`h-14 rounded-xl pr-12 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-primary ${errors.password ? "border-red-500 ring-1 ring-red-500" : "border-slate-200 dark:border-slate-800"}`}
+                disabled={isLoading}
+                {...register("password")}
+              />
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-xs text-red-500 font-bold">{errors.password.message}</p>
             )}

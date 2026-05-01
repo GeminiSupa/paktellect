@@ -69,7 +69,7 @@ export default function Home() {
         .limit(3)
 
       if (fErr) {
-        console.error("Featured experts fallback failed", fErr)
+        console.error("Featured experts fallback failed", fErr.message, fErr)
         return []
       }
       return (fallback ?? []) as FeaturedExpert[]
@@ -108,7 +108,7 @@ export default function Home() {
       <section className="py-24 md:py-32 container mx-auto px-6 rounded-[3rem] bg-muted/50 dark:bg-muted/25 border border-border/60">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 md:mb-20 gap-8">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/25 mb-6 font-black text-[10px] uppercase tracking-[0.2em] text-emerald-800 dark:text-emerald-300">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/25 mb-6 font-black text-xs uppercase tracking-widest text-emerald-800 dark:text-emerald-300">
                 <Globe className="size-3" /> Professional Ecosystem
             </div>
             <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-[0.9] text-foreground">
@@ -120,7 +120,7 @@ export default function Home() {
             </p>
           </div>
           <Link href="/experts" className="group flex items-center gap-4">
-            <span className="text-lg font-black text-primary group-hover:underline uppercase tracking-widest text-[12px]">Explore Full Directory</span>
+            <span className="text-lg font-black text-primary group-hover:underline uppercase tracking-widest text-xs sm:text-sm">Explore Full Directory</span>
             <div className="size-14 rounded-full border border-emerald-100 dark:border-slate-800 flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1">
                 <ArrowUpRight className="size-6" />
             </div>
@@ -128,9 +128,23 @@ export default function Home() {
         </div>
 
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="animate-spin text-primary/20 size-12" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Loading Experts...</p>
+          <div className="space-y-16">
+            {[1, 2].map((groupIdx) => (
+              <div key={groupIdx} className="space-y-8">
+                <div className="h-10 w-48 bg-muted rounded-xl animate-pulse" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                  {[1, 2, 3].map((cardIdx) => (
+                    <div key={cardIdx} className="premium-card p-1 bg-card h-[400px] flex flex-col border-border animate-pulse">
+                      <div className="aspect-4/3 rounded-[2rem] bg-muted mb-8" />
+                      <div className="p-8 pt-0 grow flex flex-col gap-4">
+                        <div className="h-8 bg-muted rounded-lg w-3/4" />
+                        <div className="h-4 bg-muted rounded-md w-1/2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="space-y-16">
@@ -140,18 +154,23 @@ export default function Home() {
                 <div key={cat} className="space-y-8">
                   <div className="flex items-end justify-between gap-6">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{cat}</p>
+                      <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{cat}</p>
                       <h3 className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 dark:text-white">Top rated in {cat}</h3>
                     </div>
-                    <Link href={`/experts?category=${encodeURIComponent(cat)}`} className="text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:underline">
+                    <Link href={`/experts?category=${encodeURIComponent(cat)}`} className="text-xs font-black uppercase tracking-widest text-primary hover:underline">
                       View all
                     </Link>
                   </div>
 
                   {experts.length === 0 ? (
-                    <div className="premium-card p-10 text-center">
-                      <p className="text-slate-600 dark:text-slate-300 font-bold">Not enough verified reviews yet.</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 font-medium">Once experts receive {MIN_REVIEWS}+ verified reviews, they&apos;ll appear here.</p>
+                    <div className="premium-card p-12 text-center flex flex-col items-center justify-center border-dashed border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                      <div className="size-16 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6 shadow-inner">
+                        <Star className="size-8 text-slate-400 dark:text-slate-500" />
+                      </div>
+                      <h4 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Building Excellence</h4>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-sm mx-auto">
+                        Professionals in this category are currently being vetted or gathering their first {MIN_REVIEWS} verified reviews to appear on the leaderboard.
+                      </p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -161,14 +180,14 @@ export default function Home() {
                             <div className="aspect-4/3 rounded-[2rem] bg-muted mb-8 overflow-hidden relative shadow-inner">
                               <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-transparent z-10" />
                               <div className="absolute top-6 left-6 z-20">
-                                <span className="px-3 py-1.5 rounded-xl glass border border-white/10 text-[10px] font-black uppercase tracking-widest text-white shadow-2xl">
+                                <span className="px-3 py-1.5 rounded-xl glass border border-white/10 text-xs font-black uppercase tracking-widest text-white shadow-2xl">
                                   {expert.category}
                                 </span>
                               </div>
                               {expert.is_online && (
                                 <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/20 backdrop-blur-md">
                                   <div className="size-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
-                                  <span className="text-white text-[10px] font-black uppercase tracking-widest">Active Now</span>
+                                  <span className="text-white text-xs font-black uppercase tracking-widest">Active Now</span>
                                 </div>
                               )}
                               <div className="w-full h-full flex items-center justify-center text-8xl font-black text-slate-200 dark:text-slate-700 select-none group-hover:scale-110 transition-transform duration-1000">
@@ -199,11 +218,11 @@ export default function Home() {
                                 <div className="flex items-center gap-2 text-sm font-black text-foreground">
                                   <Star className="size-4 text-orange-500 fill-orange-500" />
                                   <span>{expert.rating_avg || "0.0"}</span>
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                  <span className="text-xs font-black uppercase tracking-widest text-slate-400">
                                     ({expert.review_count || 0})
                                   </span>
                                 </div>
-                                <div className="px-6 h-12 rounded-xl bg-muted text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground flex items-center transition-all">
+                                <div className="px-6 h-12 rounded-xl bg-muted text-xs font-black uppercase tracking-widest text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground flex items-center transition-all">
                                   Initiate Session
                                 </div>
                               </div>
@@ -230,7 +249,7 @@ export default function Home() {
             <div className="absolute top-0 right-0 size-[500px] bg-emerald-600/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] animate-pulse" />
             
             <div className="relative z-10 flex flex-col items-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-10 font-black text-[10px] uppercase tracking-[0.3em]">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-10 font-black text-xs uppercase tracking-[0.2em]">
                     <Zap className="size-4 text-primary" /> Professional Certification
                 </div>
                 <h2 className="text-5xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.85] max-w-4xl">

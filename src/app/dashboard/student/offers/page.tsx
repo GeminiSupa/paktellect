@@ -298,17 +298,22 @@ function StudentOffersContent() {
                   ) : null}
                 </div>
                 {o.booking_id ? (
-                  <Link href="/dashboard/student">
-                    <Button className="h-12 px-6 rounded-2xl bg-primary text-white font-black">
-                      View booking <ArrowUpRight className="size-4" />
-                    </Button>
-                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/dashboard/messages/${o.booking_id}`}>
+                      <Button variant="outline" className="h-12 px-5 rounded-2xl font-black">
+                        Open chat
+                      </Button>
+                    </Link>
+                    <Link href="/dashboard/student">
+                      <Button className="h-12 px-5 rounded-2xl bg-primary text-white font-black">
+                        View booking <ArrowUpRight className="size-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 ) : (
-                  <Link href={`/dashboard/messages/${o.expert_teacher_id}`}>
-                    <Button variant="outline" className="h-12 px-6 rounded-2xl font-black">
-                      Open chat
-                    </Button>
-                  </Link>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">
+                    <Clock className="size-3.5" /> Awaiting confirmation
+                  </span>
                 )}
               </div>
             </div>
