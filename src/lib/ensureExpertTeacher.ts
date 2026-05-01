@@ -26,6 +26,8 @@ export async function ensureExpertTeacherRow(user: User | null): Promise<EnsureE
   const role = user.user_metadata?.role
   if (role !== "expert") return { status: "skipped" }
 
+  console.log("Ensuring expert teacher row for user:", user.id)
+
   const { data: existing, error: existingErr } = await supabase
     .from("teachers")
     .select("id")
@@ -33,11 +35,16 @@ export async function ensureExpertTeacherRow(user: User | null): Promise<EnsureE
     .maybeSingle()
 
   if (existingErr) {
+    console.error("Error checking existing expert row:", existingErr)
     return { status: "error", message: existingErr.message || "Failed to verify expert profile" }
   }
 
-  if (existing?.id) return { status: "ok" }
+  if (existing?.id) {
+    console.log("Expert row already exists:", existing.id)
+    return { status: "ok" }
+  }
 
+  console.log("Creating new expert row...")
   // INSERT can race with signup or a parallel session; unique on user_id → use upsert DO NOTHING.
   const { error: upsertErr } = await supabase.from("teachers").upsert(
     {
@@ -49,9 +56,14 @@ export async function ensureExpertTeacherRow(user: User | null): Promise<EnsureE
   )
 
   if (upsertErr) {
-    if (upsertErr.code === "23505") return { status: "ok" }
+    if (upsertErr.code === "23505") {
+        console.log("Expert row created in parallel race.")
+        return { status: "ok" }
+    }
+    console.error("Error creating expert row:", upsertErr)
     return { status: "error", message: upsertErr.message || "Failed to create expert profile" }
   }
 
+  console.log("Expert row created successfully.")
   return { status: "ok" }
 }

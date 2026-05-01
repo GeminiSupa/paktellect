@@ -51,8 +51,10 @@ export default function SignupPage() {
 
   async function onSubmit(data: SignupFormValues) {
     setIsLoading(true)
+    console.log("Attempting signup for:", data.email, "as", data.role)
     try {
       const deviceId = await getDeviceId();
+      console.log("Device ID hash:", deviceId)
 
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
@@ -70,9 +72,15 @@ export default function SignupPage() {
         },
       })
 
-      if (error) throw error
+      if (error) {
+        console.error("Supabase SignUp Error:", error)
+        throw error
+      }
+
+      console.log("SignUp successful, user:", authData.user?.id, "session:", !!authData.session)
 
       if (authData.user && data.role === "expert" && authData.session) {
+        console.log("Creating expert record immediately (session found)...")
         const { error: tErr } = await supabase.from("teachers").upsert(
           {
             user_id: authData.user.id,
@@ -90,13 +98,16 @@ export default function SignupPage() {
       if (authData.session) {
         toast.success("Account created! Redirecting to dashboard...")
         const target = data.role === "expert" ? "/dashboard/teacher" : "/dashboard/student"
+        console.log("Redirecting to:", target)
         router.push(target)
       } else {
         // Email confirmation flow — keep the user here with a clear "check your inbox" panel.
+        console.log("No session returned, user needs to confirm email.")
         setPendingConfirmEmail(data.email)
         toast.success("Check your inbox to confirm your email.")
       }
     } catch (error: unknown) {
+      console.error("Signup catch block:", error)
       const message = error instanceof Error ? error.message : "Something went wrong"
       toast.error(message)
     } finally {

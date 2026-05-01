@@ -36,34 +36,43 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true)
+    console.log("Attempting login for:", data.email)
     try {
       const deviceId = await getDeviceId();
+      console.log("Device ID:", deviceId)
       
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       })
 
-      if (error) throw error
+      if (error) {
+        console.error("Supabase Auth Error:", error)
+        throw error
+      }
+
+      console.log("Auth successful, user:", authData.user?.id)
 
       const ensured = await ensureExpertTeacherRow(authData.user)
       if (ensured.status === "error") {
+        console.error("Provisioning Error:", ensured.message)
         throw new Error(ensured.message)
       }
 
-      // Device Limit Check Logic
-      // In a real app, you would check this deviceId against a 'user_devices' table in Supabase
-      console.log("Device Fingerprint:", deviceId);
+      console.log("Provisioning check status:", ensured.status)
 
       toast.success("Logged in successfully!")
       
       const role = authData.user?.user_metadata?.role
+      console.log("Redirecting based on role:", role)
+      
       if (role === 'expert') {
          router.push("/dashboard/teacher")
       } else {
          router.push("/dashboard/student")
       }
     } catch (error: unknown) {
+      console.error("Login catch block:", error)
       const message = error instanceof Error ? error.message : "Something went wrong"
       toast.error(message)
     } finally {

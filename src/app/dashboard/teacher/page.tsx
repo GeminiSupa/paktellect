@@ -78,18 +78,48 @@ export default function TeacherOverview() {
     async function loadDashboardData() {
       if (!user) return
       try {
-        const { data: teacher } = await supabase
+        console.log("Loading dashboard data for expert:", user.id)
+        
+        // Attempt to load teacher data with profile in one query
+        let { data: teacher, error } = await supabase
           .from("teachers")
-          .select(
-            `
+          .select(`
             *,
             profiles:user_id(full_name, city, country, phone)
-          `
-          )
+          `)
           .eq("user_id", user.id)
-          .single()
+          .maybeSingle()
+
+        if (error) {
+          console.warn("Joint query failed, attempting separate fetches:", error.message)
+          
+          // Fallback: Fetch teacher and profile separately if relationship is missing
+          const { data: tOnly, error: tErr } = await supabase
+            .from("teachers")
+            .select("*")
+            .eq("user_id", user.id)
+            .maybeSingle()
+            
+          if (tErr) throw tErr
+          
+          if (tOnly) {
+            const { data: pOnly, error: pErr } = await supabase
+              .from("profiles")
+              .select("full_name, city, country, phone")
+              .eq("id", user.id)
+              .maybeSingle()
+              
+            if (pErr) console.error("Could not fetch profile fallback:", pErr)
+            
+            teacher = {
+              ...tOnly,
+              profiles: pOnly || null
+            }
+          }
+        }
 
         if (teacher) {
+          console.log("Teacher data loaded successfully")
           setTeacherId(teacher.id ?? null)
           setCategory(teacher.category || "Academic")
           setIsOnline(teacher.is_online || false)
@@ -123,7 +153,7 @@ export default function TeacherOverview() {
           setChecklist(validateProfileForPublish(validationInput))
 
           const today = new Date().toISOString().split("T")[0]
-          const { data: sessions } = await supabase
+          const { data: sessions, error: sErr } = await supabase
             .from("bookings")
             .select("*")
             .eq("expert_id", teacher.id)
@@ -131,36 +161,41 @@ export default function TeacherOverview() {
             .eq("status", "confirmed")
             .order("booking_time", { ascending: true })
 
+          if (sErr) console.error("Sessions load failed:", sErr)
           setUpcomingSessions(sessions || [])
 
-          const { count: inquiryCount } = await supabase
+          const { count: inquiryCount, error: iErr } = await supabase
             .from("bookings")
             .select("*", { count: "exact", head: true })
             .eq("expert_id", teacher.id)
             .eq("status", "pending")
 
+          if (iErr) console.error("Inquiries load failed:", iErr)
           setCounts((prev) => ({ ...prev, inquiries: inquiryCount || 0 }))
 
           const { data: bookingRows } = await supabase.from("bookings").select("id").eq("expert_id", teacher.id)
           const ids = bookingRows?.map((b) => b.id) || []
           let unread = 0
           if (ids.length > 0) {
-            const { count } = await supabase
+            const { count, error: mErr } = await supabase
               .from("messages")
               .select("*", { count: "exact", head: true })
               .eq("is_read", false)
               .neq("sender_id", user.id)
               .in("booking_id", ids)
+            
+            if (mErr) console.error("Messages load failed:", mErr)
             unread = count || 0
           }
           setCounts((prev) => ({ ...prev, messages: unread }))
 
-          const { data: txs } = await supabase
+          const { data: txs, error: tErr2 } = await supabase
             .from("transactions")
             .select("amount")
             .eq("payee_id", user.id)
             .neq("status", "refunded")
 
+          if (tErr2) console.error("Transactions load failed:", tErr2)
           const totalEarnings = txs?.reduce((acc, t) => acc + Number(t.amount), 0) || 0
 
           setMetrics({
@@ -169,9 +204,12 @@ export default function TeacherOverview() {
             reviewCount: Number(teacher.review_count || 0),
             reliability: 100,
           })
+        } else {
+          console.warn("No teacher record found for expert user:", user.id)
         }
       } catch (err) {
-        console.error("Dashboard load failed", err)
+        console.error("Dashboard load crashed", err)
+        toast.error("Failed to load dashboard data")
       }
     }
     loadDashboardData()
