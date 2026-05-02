@@ -54,7 +54,7 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
               headline,
               rating_avg,
               profile_pic_url,
-              profiles:user_id (full_name, city, country)
+              profiles!teachers_user_id_fkey (full_name, city, country)
             )
           `)
           .eq("job_id", id)

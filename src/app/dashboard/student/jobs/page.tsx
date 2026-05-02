@@ -38,7 +38,7 @@ export default function StudentJobsPage() {
               status,
               teachers:expert_id (
                 profile_pic_url,
-                profiles:user_id (full_name)
+                profiles!teachers_user_id_fkey (full_name)
               )
             )
           `)

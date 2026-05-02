@@ -108,7 +108,7 @@ export default function TeacherOverview() {
           .from("teachers")
           .select(`
             *,
-            profiles:user_id(full_name, city, country, phone)
+            profiles!teachers_user_id_fkey(full_name, city, country, phone)
           `)
           .eq("user_id", user.id)
           .maybeSingle()
@@ -322,7 +322,7 @@ export default function TeacherOverview() {
       if (next) {
         const { data: freshTeacher, error: freshErr } = await supabase
           .from("teachers")
-          .select(`*, profiles:user_id(full_name, city, country, phone)`)
+          .select(`*, profiles!teachers_user_id_fkey(full_name, city, country, phone)`)
           .eq("user_id", authUser.id)
           .maybeSingle()
 

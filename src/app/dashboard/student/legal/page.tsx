@@ -29,7 +29,7 @@ export default function StudentLegalFiles() {
         const { data: m, error: mErr } = await supabase
           .from("matters")
           // Avoid relying on a specific FK constraint name (schema-cache mismatch can break embeds).
-          .select("id, title, status, created_at, teacher:teachers(id, profiles(full_name))")
+          .select("id, title, status, created_at, teacher:teachers(id, profiles!teachers_user_id_fkey(full_name))")
           .eq("client_id", user.id)
           .order("created_at", { ascending: false })
         if (mErr) throw mErr
