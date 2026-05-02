@@ -15,6 +15,30 @@ import Image from "next/image"
 
 const FEATURE_CATEGORIES = ["Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics", "Mechanics"] as const
 
+/** Decorative header only — expert photos belong in the avatar tile, not full-bleed under the marketing hero. */
+function featuredExpertHeaderGradient(category: string | null | undefined): string {
+  switch (category) {
+    case "Academic":
+      return "bg-linear-to-br from-indigo-600/55 via-blue-900/45 to-slate-950"
+    case "Legal":
+      return "bg-linear-to-br from-slate-600/50 via-slate-800/60 to-slate-950"
+    case "Wellness":
+      return "bg-linear-to-br from-emerald-600/45 via-teal-800/40 to-slate-950"
+    case "Mental Health":
+      return "bg-linear-to-br from-rose-600/45 via-pink-900/35 to-slate-950"
+    case "Plumbing":
+      return "bg-linear-to-br from-sky-600/50 via-blue-900/45 to-slate-950"
+    case "Electrical":
+      return "bg-linear-to-br from-amber-600/50 via-yellow-900/40 to-slate-950"
+    case "Logistics":
+      return "bg-linear-to-br from-emerald-700/45 via-green-900/45 to-slate-950"
+    case "Mechanics":
+      return "bg-linear-to-br from-zinc-600/50 via-slate-900/55 to-slate-950"
+    default:
+      return "bg-linear-to-br from-slate-600/50 to-slate-950"
+  }
+}
+
 export default function Home() {
   type FeaturedExpert = {
     id: string
@@ -191,31 +215,43 @@ export default function Home() {
                       {experts.map((expert) => (
                         <Link key={expert.id} href={`/book/${expert.id}`} className="group relative">
                           <div className="premium-card p-1 bg-card overflow-hidden h-full flex flex-col border-border">
-                            <div className="aspect-4/3 rounded-[2rem] bg-muted mb-8 overflow-hidden relative shadow-inner">
-                              <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-transparent z-10" />
+                            <div className="aspect-4/3 rounded-[2rem] bg-muted mb-8 overflow-hidden relative shadow-inner isolate">
+                              <div
+                                className={`absolute inset-0 z-0 ${featuredExpertHeaderGradient(expert.category)}`}
+                                aria-hidden
+                              />
+                              <div
+                                className="absolute inset-0 z-1 opacity-40 bg-[radial-gradient(ellipse_80%_60%_at_80%_20%,rgba(255,255,255,0.22),transparent_55%)]"
+                                aria-hidden
+                              />
+                              <div className="absolute inset-0 z-2 bg-linear-to-t from-slate-950/75 via-slate-950/15 to-transparent pointer-events-none" />
                               <div className="absolute top-6 left-6 z-20">
                                 <span className="px-3 py-1.5 rounded-xl glass border border-white/10 text-xs font-black uppercase tracking-widest text-white shadow-2xl">
                                   {expert.category}
                                 </span>
                               </div>
                               {expert.is_online && (
-                                <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/20 backdrop-blur-md">
+                                <div className="absolute top-6 right-6 z-20 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/20 backdrop-blur-md">
                                   <div className="size-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse"></div>
                                   <span className="text-white text-xs font-black uppercase tracking-widest">Active Now</span>
                                 </div>
                               )}
-                              <div className="w-full h-full flex items-center justify-center text-8xl font-black text-slate-200 dark:text-slate-700 select-none group-hover:scale-110 transition-transform duration-1000">
-                                {expert.profile_pic_url ? (
-                                  <Image
-                                    src={expert.profile_pic_url}
-                                    alt={expert.profiles?.full_name ?? "Expert"}
-                                    fill
-                                    className="object-cover"
-                                    sizes="(min-width: 1024px) 33vw, 100vw"
-                                  />
-                                ) : (
-                                  expert.profiles?.full_name?.charAt(0) || "E"
-                                )}
+                              <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
+                                <div className="relative size-22 rounded-2xl ring-4 ring-card bg-card shadow-2xl overflow-hidden">
+                                  {expert.profile_pic_url ? (
+                                    <Image
+                                      src={expert.profile_pic_url}
+                                      alt={expert.profiles?.full_name ?? "Expert"}
+                                      fill
+                                      className="object-cover"
+                                      sizes="88px"
+                                    />
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center text-3xl font-black text-muted-foreground bg-muted">
+                                      {expert.profiles?.full_name?.charAt(0) || "E"}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
                             <div className="p-8 pt-0 grow flex flex-col">
