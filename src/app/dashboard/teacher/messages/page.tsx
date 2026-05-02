@@ -66,7 +66,7 @@ export default function TeacherMessagesInbox() {
               <Link key={conv.id} href={`/dashboard/messages/${conv.id}`} className="block group">
                 <div className="p-8 hover:bg-slate-50 dark:hover:bg-slate-950 transition-all flex items-center justify-between gap-8">
                   <div className="flex items-center gap-6">
-                    <div className="size-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-800">
+                    <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800">
                         {conv.profiles?.avatar_url ? (
                             <Image src={conv.profiles.avatar_url} alt="User" fill className="object-cover" sizes="64px" />
                         ) : (

@@ -416,9 +416,9 @@ function ExpertsContent() {
                     >
                         <div className="premium-card p-6 sm:p-10 flex flex-col min-h-0 md:min-h-[520px] hover:-translate-y-2 md:hover:-translate-y-4 hover:shadow-[0_40px_100px_-15px_rgba(16,185,129,0.15)] transition-all duration-700">
                             <div className="flex justify-between items-start mb-10">
-                                <div className={`size-20 rounded-[2rem] flex items-center justify-center text-4xl font-black shadow-2xl border border-white/50 dark:border-white/5 ${expert.colorClass}`}>
+                                <div className={`relative size-20 shrink-0 overflow-hidden rounded-[2rem] flex items-center justify-center text-4xl font-black shadow-2xl border border-white/50 dark:border-white/5 ${expert.colorClass}`}>
                                     {expert.image ? (
-                                        <Image src={expert.image} alt={expert.name} fill className="object-cover rounded-[2rem]" sizes="80px" />
+                                        <Image src={expert.image} alt={expert.name} fill className="object-cover" sizes="80px" />
                                     ) : (
                                         expert.name.charAt(0)
                                     )}

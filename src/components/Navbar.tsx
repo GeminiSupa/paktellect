@@ -121,7 +121,7 @@ export function Navbar() {
                   href={workspaceHref}
                   className="flex items-center gap-2 lg:gap-3 group/dash rounded-xl px-2 py-1.5 hover:bg-muted/80 transition-colors"
                 >
-                  <div className="size-9 lg:size-10 rounded-xl bg-muted border border-border flex items-center justify-center overflow-hidden">
+                  <div className="relative size-9 lg:size-10 shrink-0 rounded-xl bg-muted border border-border overflow-hidden">
                     {avatarUrl ? (
                       <Image src={avatarUrl} alt="" fill className="object-cover" sizes="40px" />
                     ) : (
