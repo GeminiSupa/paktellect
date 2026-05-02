@@ -131,8 +131,10 @@ export default function Home() {
               Featured rankings use verified reviews (min {MIN_REVIEWS}).
             </p>
           </div>
-          <Link href="/experts" className="group flex items-center gap-4">
-            <span className="text-lg font-black text-primary group-hover:underline uppercase tracking-widest text-xs sm:text-sm">Explore Full Directory</span>
+          <Link href="/experts" className="group flex flex-wrap items-center gap-3 sm:gap-4">
+            <span className="font-black text-primary group-hover:underline uppercase tracking-widest text-xs sm:text-sm leading-snug max-w-[min(100%,14rem)] sm:max-w-none">
+              Explore full directory
+            </span>
             <div className="size-14 rounded-full border border-emerald-100 dark:border-slate-800 flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1">
                 <ArrowUpRight className="size-6" />
             </div>

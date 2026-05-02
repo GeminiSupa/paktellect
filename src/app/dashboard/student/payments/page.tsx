@@ -59,24 +59,24 @@ export default function StudentPayments() {
   }, [user])
 
   return (
-    <div className="space-y-10">
-      <div className="bg-linear-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-10 md:p-14 text-white relative overflow-hidden shadow-2xl shadow-blue-900/40">
-        <div className="absolute top-0 right-0 size-80 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+    <div className="space-y-8 sm:space-y-10 pb-24 sm:pb-8">
+      <div className="bg-linear-to-br from-indigo-600 to-blue-700 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-10 md:p-14 text-white relative overflow-hidden shadow-2xl shadow-blue-900/40">
+        <div className="absolute top-0 right-0 size-80 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" aria-hidden />
         
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
-          <div className="flex-1">
-            <span className="px-4 py-1.5 rounded-full bg-white/20 text-white text-[10px] font-black uppercase tracking-widest border border-white/20 flex items-center gap-1.5 w-fit mb-6">
-              <ShieldCheck className="size-3" />
-              Secure Escrow
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-8 md:gap-10">
+          <div className="flex-1 min-w-0">
+            <span className="px-4 py-1.5 rounded-full bg-white/20 text-white text-[10px] font-black uppercase tracking-widest border border-white/20 inline-flex items-center gap-1.5 w-fit mb-4 sm:mb-6">
+              <ShieldCheck className="size-3 shrink-0" aria-hidden />
+              Secure escrow
             </span>
-            <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tighter">Your Payments</h1>
-            <p className="text-indigo-100 text-lg max-w-md">Track your spending and manage your held funds. All payments are protected by our escrow engine.</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 sm:mb-4 tracking-tighter leading-[1.05]">Payments</h1>
+            <p className="text-white/95 text-base sm:text-lg max-w-md leading-relaxed">Held and released funds, with escrow protection.</p>
           </div>
           
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-full md:w-80 text-center">
-            <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-2">Total Amount Held</p>
-            <h3 className="text-5xl font-black mb-1 text-white">${stats.held.toFixed(2)}</h3>
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mt-4">Protected by Hayy.</p>
+          <div className="bg-white/15 backdrop-blur-xl border border-white/25 rounded-2xl sm:rounded-3xl p-6 sm:p-8 w-full md:w-80 text-center shrink-0">
+            <p className="text-white/85 text-xs font-bold uppercase tracking-widest mb-2">Currently held</p>
+            <h3 className="text-3xl sm:text-4xl md:text-5xl font-black tabular-nums text-white">${stats.held.toFixed(2)}</h3>
+            <p className="text-[10px] font-bold text-white/70 uppercase tracking-[0.15em] mt-3">PAKTELLECT escrow</p>
           </div>
         </div>
       </div>

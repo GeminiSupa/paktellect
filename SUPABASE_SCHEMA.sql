@@ -580,23 +580,13 @@ CREATE POLICY "Users can update own profile"
 -- Policy is created after the view is defined (see below).
 
 -- TEACHERS
--- Prefer this over SELECT USING (true): hide is_public = false from anonymous visitors while keeping
--- dashboard, bookings, and booking_offers working. Matters / job proposals clauses are layered
--- later once those tables exist (see legal module + marketplace sections).
+-- Do NOT embed EXISTS(bookings → …) directly here: bookings RLS reads teachers again → infinite
+-- recursion. Final policy uses can_read_teacher_row() after that function is defined (marketplace tail).
 CREATE POLICY "Teachers readable by owner public or participants"
   ON teachers FOR SELECT
   USING (
     auth.uid() = user_id
     OR (is_public IS TRUE OR is_public IS NULL)
-    OR EXISTS (
-      SELECT 1 FROM public.bookings b
-      WHERE b.expert_id = teachers.id AND b.user_id = auth.uid()
-    )
-    OR EXISTS (
-      SELECT 1 FROM public.booking_offers o
-      WHERE o.expert_teacher_id = teachers.id
-        AND (o.student_user_id = auth.uid() OR o.expert_user_id = auth.uid())
-    )
   );
 
 CREATE POLICY "Teachers can insert their own profile"
@@ -1151,28 +1141,7 @@ CREATE POLICY "Lawyers can manage time entries"
   USING (auth.uid() IN (SELECT user_id FROM teachers WHERE id = teacher_id))
   WITH CHECK (auth.uid() IN (SELECT user_id FROM teachers WHERE id = teacher_id));
 
--- Matters exists only after this step; extend teachers SELECT so legal clients can load lawyer embeds.
--- (job_applications is added later — see marketplace section below.)
-DROP POLICY IF EXISTS "Teachers readable by owner public or participants" ON teachers;
-CREATE POLICY "Teachers readable by owner public or participants"
-  ON teachers FOR SELECT
-  USING (
-    auth.uid() = user_id
-    OR (is_public IS TRUE OR is_public IS NULL)
-    OR EXISTS (
-      SELECT 1 FROM public.bookings b
-      WHERE b.expert_id = teachers.id AND b.user_id = auth.uid()
-    )
-    OR EXISTS (
-      SELECT 1 FROM public.booking_offers o
-      WHERE o.expert_teacher_id = teachers.id
-        AND (o.student_user_id = auth.uid() OR o.expert_user_id = auth.uid())
-    )
-    OR EXISTS (
-      SELECT 1 FROM public.matters m
-      WHERE m.teacher_id = teachers.id AND m.client_id = auth.uid()
-    )
-  );
+-- teachers SELECT is finalized after can_read_teacher_row() is created (includes matters / jobs).
 
 -- ============================================================
 -- STEP 6: STORAGE BUCKETS & POLICIES
@@ -1327,32 +1296,53 @@ CREATE POLICY "Applicants can update their applications"
   ON job_applications FOR UPDATE
   USING (auth.uid() IN (SELECT user_id FROM teachers WHERE id = expert_id));
 
--- Full teachers SELECT policy (job_applications + jobs exist only from this point forward).
+-- Non-recursive teachers read: policies on bookings/matters/job_applications query teachers, so the
+-- teachers policy must not reference those tables directly. This helper runs as SECURITY DEFINER and
+-- checks relationships without re-entering teachers RLS.
+CREATE OR REPLACE FUNCTION public.can_read_teacher_row(p_teacher_id uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.teachers t
+    WHERE t.id = p_teacher_id
+      AND (
+        t.user_id = auth.uid()
+        OR (t.is_public IS TRUE OR t.is_public IS NULL)
+      )
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.bookings b
+    WHERE b.expert_id = p_teacher_id AND b.user_id = auth.uid()
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.booking_offers o
+    WHERE o.expert_teacher_id = p_teacher_id
+      AND (o.student_user_id = auth.uid() OR o.expert_user_id = auth.uid())
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.job_applications ja
+    INNER JOIN public.jobs j ON j.id = ja.job_id
+    WHERE ja.expert_id = p_teacher_id AND j.client_id = auth.uid()
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.matters m
+    WHERE m.teacher_id = p_teacher_id AND m.client_id = auth.uid()
+  );
+$$;
+
+ALTER FUNCTION public.can_read_teacher_row(uuid) OWNER TO postgres;
+
+REVOKE ALL ON FUNCTION public.can_read_teacher_row(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.can_read_teacher_row(uuid) TO anon, authenticated;
+
 DROP POLICY IF EXISTS "Teachers readable by owner public or participants" ON teachers;
 CREATE POLICY "Teachers readable by owner public or participants"
   ON teachers FOR SELECT
-  USING (
-    auth.uid() = user_id
-    OR (is_public IS TRUE OR is_public IS NULL)
-    OR EXISTS (
-      SELECT 1 FROM public.bookings b
-      WHERE b.expert_id = teachers.id AND b.user_id = auth.uid()
-    )
-    OR EXISTS (
-      SELECT 1 FROM public.job_applications ja
-      INNER JOIN public.jobs j ON j.id = ja.job_id
-      WHERE ja.expert_id = teachers.id AND j.client_id = auth.uid()
-    )
-    OR EXISTS (
-      SELECT 1 FROM public.booking_offers o
-      WHERE o.expert_teacher_id = teachers.id
-        AND (o.student_user_id = auth.uid() OR o.expert_user_id = auth.uid())
-    )
-    OR EXISTS (
-      SELECT 1 FROM public.matters m
-      WHERE m.teacher_id = teachers.id AND m.client_id = auth.uid()
-    )
-  );
+  USING (public.can_read_teacher_row(teachers.id));
 
 -- Update messages to support job_id
 DO $$

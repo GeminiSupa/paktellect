@@ -82,17 +82,17 @@ export default function StudentLegalFiles() {
   }
 
   return (
-    <div className="space-y-10 pb-20 max-w-5xl mx-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 border border-slate-200 dark:border-slate-800 shadow-xl">
+    <div className="space-y-8 sm:space-y-10 pb-24 sm:pb-20 max-w-5xl mx-auto px-0">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4 text-orange-600 text-[10px] font-black uppercase tracking-widest">
-              <Scale className="size-3" /> Legal Portal
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-3 sm:mb-4 text-orange-600 dark:text-orange-400 text-[10px] font-black uppercase tracking-widest">
+              <Scale className="size-3 shrink-0" aria-hidden /> Legal
             </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 dark:text-white">Your Legal Files</h1>
-            <p className="text-slate-600 dark:text-slate-300 font-medium">View documents and complete signature requests securely.</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter text-slate-900 dark:text-white leading-tight">Legal files</h1>
+            <p className="text-slate-600 dark:text-slate-300 font-medium text-sm sm:text-base mt-2 leading-relaxed">Documents and e-signatures in one place.</p>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 min-w-[240px]">
+          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 w-full md:min-w-[240px] md:w-auto">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Pending Signatures</p>
             <div className="flex items-center justify-between">
               <p className="text-3xl font-black text-slate-900 dark:text-white">{pendingSigs}</p>
@@ -102,9 +102,9 @@ export default function StudentLegalFiles() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
-        <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Matters</h2>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+        <div className="px-4 sm:px-10 py-6 sm:py-8 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">Matters</h2>
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{matters.length} total</span>
         </div>
 
@@ -118,7 +118,7 @@ export default function StudentLegalFiles() {
           <div className="divide-y divide-slate-50 dark:divide-slate-800">
             {matters.map((m) => (
               <Link key={m.id} href={`/dashboard/student/legal/${m.id}`} className="block group">
-                <div className="px-10 py-8 flex items-center justify-between gap-6 hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors">
+                <div className="px-4 sm:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors">
                   <div className="min-w-0">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
                       Lawyer: {m.teacher?.profiles?.full_name || "Expert"}

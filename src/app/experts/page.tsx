@@ -277,7 +277,7 @@ function ExpertsContent() {
   }
 
   return (
-    <div className="container mx-auto px-6 pt-48 pb-32 grow">
+    <div className="container mx-auto px-4 sm:px-6 pt-28 sm:pt-36 md:pt-44 pb-24 sm:pb-32 grow">
         {loadError && !isLoading && (
           <div
             role="alert"
@@ -298,7 +298,7 @@ function ExpertsContent() {
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-5xl mb-24"
+            className="max-w-5xl mb-12 sm:mb-20 pt-4 sm:pt-0"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 border border-slate-200/50 dark:border-white/5">
             <Globe className="size-3 text-primary animate-pulse" />
@@ -306,7 +306,7 @@ function ExpertsContent() {
                 Verified Global Expert Directory
             </span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 text-foreground leading-[0.85]">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-6 sm:mb-8 text-foreground leading-[0.92]">
             World-class talent, <br /> <span className="text-primary">vetted for you.</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl font-medium">
@@ -315,39 +315,58 @@ function ExpertsContent() {
           </p>
         </motion.div>
 
-        {/* Filter Bar */}
-        <div className="sticky top-32 z-40 mb-20">
-            <div className="glass p-3 rounded-[2.5rem] border border-slate-200/50 dark:border-white/10 shadow-2xl shadow-emerald-950/5 flex flex-col md:flex-row gap-4">
-                <div className="flex flex-wrap gap-2 p-1">
+        {/* Filter Bar — mobile-first: horizontal scroll chips + stacked search/actions */}
+        <div className="sticky top-[5.25rem] sm:top-28 md:top-32 z-40 mb-12 sm:mb-16 -mx-1 px-1">
+            <div className="glass p-3 sm:p-4 rounded-3xl sm:rounded-[2.5rem] border border-border shadow-xl flex flex-col gap-4">
+                <div className="-mx-1 px-1 overflow-x-auto no-scrollbar pb-1">
+                  <div className="flex gap-2 min-w-max sm:min-w-0 sm:flex-wrap sm:gap-2">
                     {categories.map((cat) => (
                         <button
                             key={cat}
+                            type="button"
                             onClick={() => setSelectedCategory(cat)}
-                            className={`px-8 h-12 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                            className={`shrink-0 min-h-11 px-4 sm:px-6 rounded-2xl text-[11px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest transition-all duration-200 max-w-[9.5rem] sm:max-w-none text-center leading-tight ${
                                 selectedCategory === cat 
-                                    ? "bg-slate-950 text-white shadow-xl translate-y-[-2px]" 
-                                    : "text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                                    ? "bg-slate-950 text-white dark:bg-primary dark:text-primary-foreground shadow-lg ring-2 ring-primary/30" 
+                                    : "text-slate-700 dark:text-slate-100 bg-white/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                             }`}
                         >
                             {cat}
                         </button>
                     ))}
+                  </div>
                 </div>
-                <div className="h-10 w-px bg-slate-200 dark:bg-slate-800 hidden md:block self-center mx-2" />
-                <div className="relative grow">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 size-5" />
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                  <div className="relative grow min-w-0">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5 pointer-events-none" />
                     <input 
                         type="text" 
-                        placeholder="Search by legal specialty, medical domain, or academic topic..." 
+                        placeholder="Search name, specialty, city…" 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         aria-label="Search expert directory"
-                        className="w-full h-14 pl-14 pr-8 rounded-2xl border-0 bg-transparent focus:ring-0 font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                        className="w-full min-h-12 sm:h-14 pl-12 pr-4 rounded-2xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary font-semibold text-sm sm:text-base"
                     />
+                  </div>
+                    <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto">
+                    <div className="flex-1 sm:flex-none flex items-center justify-center min-h-12 px-5 rounded-2xl bg-muted border border-border text-foreground font-black text-sm tabular-nums">
+                      {activeExperts.length} listed
+                    </div>
+                    {(searchTerm.trim() !== "" || selectedCategory !== "All") && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full sm:w-auto min-h-12 rounded-2xl font-bold border-2"
+                        onClick={() => {
+                          setSearchTerm("")
+                          setSelectedCategory("All")
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <Button className="h-14 px-10 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black shadow-xl shadow-emerald-500/20">
-                    {activeExperts.length} Available
-                </Button>
             </div>
         </div>
 
@@ -395,7 +414,7 @@ function ExpertsContent() {
                         key={expert.id} 
                         className="group relative h-full flex flex-col"
                     >
-                        <div className="premium-card p-10 flex flex-col min-h-[580px] hover:-translate-y-4 hover:shadow-[0_40px_100px_-15px_rgba(16,185,129,0.15)] transition-all duration-700">
+                        <div className="premium-card p-6 sm:p-10 flex flex-col min-h-0 md:min-h-[520px] hover:-translate-y-2 md:hover:-translate-y-4 hover:shadow-[0_40px_100px_-15px_rgba(16,185,129,0.15)] transition-all duration-700">
                             <div className="flex justify-between items-start mb-10">
                                 <div className={`size-20 rounded-[2rem] flex items-center justify-center text-4xl font-black shadow-2xl border border-white/50 dark:border-white/5 ${expert.colorClass}`}>
                                     {expert.image ? (
@@ -406,7 +425,7 @@ function ExpertsContent() {
                                 </div>
                                 <div className="flex flex-col items-end gap-3">
                                     {typeof expert.rate === "number" && expert.rate > 0 ? (
-                                      <div className="bg-slate-950 dark:bg-primary text-white px-6 py-3 rounded-2xl text-lg font-black shadow-2xl shadow-emerald-500/20">
+                                      <div className="bg-slate-950 dark:bg-primary text-white dark:text-primary-foreground px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl text-base sm:text-lg font-black shadow-xl tabular-nums max-w-full truncate">
                                           ${expert.rate}<span className="text-[10px] opacity-70 ml-1">/hr</span>
                                       </div>
                                     ) : (
@@ -485,16 +504,16 @@ function ExpertsContent() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <Link href={`/book/${expert.id}`}>
-                                  <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-[12px] uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40">
-                                      Book
-                                      <ExternalLink className="size-5 ml-2 opacity-50" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                              <Link href={`/book/${expert.id}`} className="min-w-0">
+                                  <Button className="w-full min-h-12 rounded-2xl bg-primary hover:bg-emerald-700 text-primary-foreground font-black text-xs sm:text-[11px] uppercase tracking-wide px-3 shadow-xl shadow-emerald-500/15 gap-2">
+                                      <span className="truncate">Book session</span>
+                                      <ExternalLink className="size-4 shrink-0 opacity-90" aria-hidden />
                                   </Button>
                               </Link>
-                              <Link href={`/dashboard/student/offers?expertId=${encodeURIComponent(expert.id)}`}>
-                                  <Button variant="outline" className="w-full h-14 rounded-2xl font-black text-[12px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all">
-                                      Send Offer
+                              <Link href={`/dashboard/student/offers?expertId=${encodeURIComponent(expert.id)}`} className="min-w-0">
+                                  <Button variant="outline" className="w-full min-h-12 rounded-2xl font-black text-xs sm:text-[11px] uppercase tracking-wide px-3 border-2 bg-background text-foreground hover:bg-muted dark:hover:bg-slate-800/80 gap-2">
+                                      <span className="truncate">Send offer</span>
                                   </Button>
                               </Link>
                             </div>

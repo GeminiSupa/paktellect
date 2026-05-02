@@ -129,11 +129,11 @@ export default function StudentSettings() {
   }
 
   return (
-    <div className="max-w-4xl space-y-8 pb-20">
-      <div className="bg-white dark:bg-card p-6 sm:p-10 rounded-[2.5rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/50 dark:shadow-black/40">
-        <div className="mb-10 border-b border-slate-200 dark:border-border pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-foreground mb-2 tracking-tight">Account Settings</h1>
+    <div className="max-w-4xl space-y-8 pb-28 sm:pb-24">
+      <div className="bg-white dark:bg-card p-5 sm:p-10 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-border shadow-xl shadow-slate-200/50 dark:shadow-black/40">
+        <div className="mb-8 sm:mb-10 border-b border-slate-200 dark:border-border pb-6 sm:pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 sm:gap-8">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-foreground mb-2 tracking-tight leading-tight">Account settings</h1>
             <p className="text-slate-600 dark:text-muted-foreground font-medium leading-relaxed">
               Manage your learning identity and security preferences.
             </p>

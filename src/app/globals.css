@@ -153,7 +153,7 @@
 /* Hayy Premium Design System - Vitality & Wisdom Update */
 
 .glass {
-  @apply bg-white/40 dark:bg-slate-950/40 backdrop-blur-2xl border border-white/20 dark:border-white/5;
+  @apply bg-white/85 dark:bg-slate-950/90 backdrop-blur-2xl border border-white/30 dark:border-white/10 text-foreground;
 }
 
 .glass-pill {

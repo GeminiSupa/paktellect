@@ -308,7 +308,7 @@ export default function StudentDashboard() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative min-h-[min(100vw,520px)] sm:min-h-[440px] md:h-[480px] rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-slate-950 flex shadow-2xl shadow-emerald-900/40 isolate"
+        className="relative min-h-[280px] min-[400px]:min-h-[340px] sm:min-h-[400px] md:h-[460px] rounded-2xl sm:rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-slate-950 flex shadow-2xl shadow-emerald-900/40 isolate"
       >
         <div className="absolute inset-0 z-0">
             {/* Strong scrim so copy stays readable if the image is bright or fails to load */}
@@ -327,32 +327,31 @@ export default function StudentDashboard() {
             />
         </div>
 
-        <div className="relative z-20 flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-16 py-12 md:py-0 max-w-4xl text-white w-full">
-          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6 sm:mb-8 self-start shadow-lg shadow-black/20">
+        <div className="relative z-20 flex flex-col justify-center px-4 sm:px-10 md:px-14 lg:px-16 py-8 sm:py-12 md:py-0 max-w-4xl text-white w-full">
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-4 sm:mb-8 self-start shadow-lg shadow-black/20">
              <Zap className="size-3.5 text-teal-300 fill-teal-300 shrink-0" aria-hidden />
              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/95">Member</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-5 md:mb-6 tracking-tighter leading-[1.05] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.55)]">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black mb-4 sm:mb-6 tracking-tighter leading-[1.08] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.55)] text-balance">
             Scale your{" "}
-            <span className="text-teal-300 [text-shadow:0_1px_18px_rgba(20,184,166,0.35)]">ambitions,</span>
-            <br className="sm:hidden" />
-            <span className="sm:ml-1"> {user?.user_metadata?.full_name?.split(' ')[0] || "Member"}.</span>
+            <span className="text-teal-300 [text-shadow:0_1px_18px_rgba(20,184,166,0.35)]">ambitions,</span>{" "}
+            <span className="block sm:inline sm:ml-1">{user?.user_metadata?.full_name?.split(' ')[0] || "Member"}.</span>
           </h1>
-          <p className="text-white/90 mb-10 md:mb-12 text-lg sm:text-xl max-w-xl font-medium leading-relaxed">
+          <p className="text-white/90 mb-6 sm:mb-10 md:mb-12 text-base sm:text-lg md:text-xl max-w-xl font-medium leading-relaxed">
             You have {confirmedBookingCount} elite{" "}
             {confirmedBookingCount === 1 ? "professional" : "professionals"} awaiting your next session.
           </p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/experts">
-                <Button className="h-14 sm:h-16 px-8 sm:px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-base sm:text-lg shadow-2xl shadow-black/30 border border-white/10 transition-all hover:scale-[1.02]">
-                    Explore New Services
-                    <ChevronRight className="size-5 sm:size-6 ml-2" />
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full sm:w-auto">
+            <Link href="/experts" className="w-full sm:w-auto min-w-0">
+                <Button className="w-full min-h-12 sm:min-h-14 px-6 sm:px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm sm:text-base shadow-2xl shadow-black/30 border border-white/15">
+                    <span className="text-balance">Browse experts</span>
+                    <ChevronRight className="size-5 shrink-0" aria-hidden />
                 </Button>
             </Link>
-            <Link href="/dashboard/student/jobs">
-                <Button variant="outline" className="h-14 sm:h-16 px-8 sm:px-10 rounded-2xl border-white/20 bg-white/5 hover:bg-white/10 active:scale-95 text-white font-black text-base sm:text-lg backdrop-blur-xl transition-all">
-                    Active Mandates
-                    <Briefcase className="size-5 ml-2" />
+            <Link href="/dashboard/student/jobs" className="w-full sm:w-auto min-w-0">
+                <Button variant="outline" className="w-full min-h-12 sm:min-h-14 px-6 sm:px-10 rounded-2xl border-white/25 bg-white/10 hover:bg-white/15 text-white font-black text-sm sm:text-base backdrop-blur-md border-2">
+                    <span className="text-balance">Jobs & mandates</span>
+                    <Briefcase className="size-5 shrink-0" aria-hidden />
                 </Button>
             </Link>
           </div>
@@ -363,11 +362,11 @@ export default function StudentDashboard() {
 
       {/* Wellness & Service Timeline */}
       <div>
-        <div className="flex items-center justify-between mb-12">
-           <h2 className="text-3xl font-black text-slate-950 dark:text-white tracking-tighter">Your Active Engagement</h2>
-           <Link href="/experts" className="flex items-center gap-2 group">
-              <span className="text-sm font-black uppercase tracking-widest text-primary group-hover:underline">Browse Market</span>
-              <ArrowRight className="size-4 text-primary transition-transform group-hover:translate-x-1" />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12">
+           <h2 className="text-2xl sm:text-3xl font-black text-slate-950 dark:text-white tracking-tighter leading-tight">Your sessions</h2>
+           <Link href="/experts" className="inline-flex items-center justify-center sm:justify-start gap-2 group min-h-11 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary font-bold text-sm w-full sm:w-auto">
+              <span className="uppercase tracking-wide text-xs sm:text-sm">Find more experts</span>
+              <ArrowRight className="size-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden />
            </Link>
         </div>
 
@@ -403,7 +402,7 @@ export default function StudentDashboard() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6, delay: idx * 0.1 }}
                                 key={booking.id} 
-                                className="premium-card p-6 sm:p-10 hover:-translate-y-2 duration-500 group mx-4 sm:mx-0"
+                                className="premium-card p-6 sm:p-10 hover:-translate-y-2 duration-500 group"
                             >
                             <div className="flex justify-between items-start mb-10">
                             <div className="flex items-center gap-6">

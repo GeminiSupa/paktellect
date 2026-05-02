@@ -71,24 +71,24 @@ export default function PostJobPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-32">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-200 dark:border-border pb-12">
-        <div className="max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white shadow-2xl mb-6">
-            <Sparkles className="size-4 text-primary" />
-            <span className="text-xs font-bold tracking-wide leading-none text-white">Marketplace Active</span>
+    <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12 pb-28 sm:pb-32 px-0">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8 border-b border-slate-200 dark:border-border pb-8 sm:pb-12">
+        <div className="max-w-2xl min-w-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-slate-900 text-white shadow-2xl mb-4 sm:mb-6">
+            <Sparkles className="size-4 text-primary shrink-0" />
+            <span className="text-[10px] sm:text-xs font-bold tracking-wide leading-none text-white">Marketplace Active</span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-foreground mb-4 leading-none">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-foreground mb-3 sm:mb-4 leading-[1.05] text-balance">
             Post a Query <br /><span className="text-primary">& Find Experts.</span>
           </h1>
-          <p className="text-slate-600 dark:text-muted-foreground font-medium text-xl leading-relaxed">
+          <p className="text-slate-600 dark:text-muted-foreground font-medium text-base sm:text-xl leading-relaxed">
             Describe your project, legal matter, or academic challenge and receive proposals from our elite expert network.
           </p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-12">
-        <div className="md:col-span-8 space-y-10">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+        <div className="md:col-span-8 space-y-8 sm:space-y-10">
           <section className="space-y-6">
             <div className="flex items-center gap-3 mb-2">
               <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -102,7 +102,7 @@ export default function PostJobPage() {
               <input
                 type="text"
                 placeholder="e.g. Need urgent legal advice for property dispute in Lahore"
-                className="w-full px-8 h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all shadow-inner"
+                className="w-full px-4 sm:px-8 min-h-11 sm:h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all shadow-inner"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
@@ -113,7 +113,7 @@ export default function PostJobPage() {
               <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Full Description</label>
               <textarea
                 placeholder="Provide as much detail as possible. This helps experts give you accurate proposals."
-                className="w-full px-8 py-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-medium leading-relaxed shadow-inner min-h-[250px] transition-all"
+                className="w-full px-4 sm:px-8 py-4 sm:py-6 rounded-2xl sm:rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-medium leading-relaxed shadow-inner min-h-[200px] sm:min-h-[250px] transition-all"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
@@ -132,14 +132,14 @@ export default function PostJobPage() {
               <input
                 type="text"
                 placeholder="City (e.g. Karachi)"
-                className="w-full px-8 h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
+                className="w-full px-4 sm:px-8 min-h-11 sm:h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               />
               <input
                 type="text"
                 placeholder="Country (e.g. Pakistan)"
-                className="w-full px-8 h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
+                className="w-full px-4 sm:px-8 min-h-11 sm:h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/10 text-sm font-bold transition-all"
                 value={formData.country}
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
               />
@@ -148,13 +148,13 @@ export default function PostJobPage() {
         </div>
 
         <div className="md:col-span-4 space-y-8">
-          <div className="p-8 bg-slate-50 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 space-y-8 sticky top-24 shadow-xl">
+          <div className="p-5 sm:p-8 bg-slate-50 dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 space-y-6 sm:space-y-8 md:sticky md:top-24 shadow-xl">
             <div className="space-y-4">
               <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Domain / Category</label>
               <div className="relative group">
                 <Tag className="absolute left-6 top-1/2 -translate-y-1/2 text-primary size-5" />
                 <select
-                  className="w-full pl-14 pr-8 h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-bold text-sm focus:ring-2 focus:ring-primary appearance-none"
+                  className="w-full pl-14 pr-8 min-h-11 sm:h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-bold text-sm focus:ring-2 focus:ring-primary appearance-none"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 >
@@ -177,7 +177,7 @@ export default function PostJobPage() {
                 <input
                   type="number"
                   placeholder="e.g. 5000"
-                  className="w-full pl-14 pr-8 h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black text-xl tracking-tight shadow-inner"
+                  className="w-full pl-14 pr-8 min-h-11 sm:h-16 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black text-lg sm:text-xl tracking-tight shadow-inner"
                   value={formData.budget}
                   onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                 />
@@ -196,7 +196,7 @@ export default function PostJobPage() {
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full h-18 rounded-2xl bg-slate-900 hover:bg-black text-white font-black text-lg shadow-2xl flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95"
+              className="w-full min-h-14 sm:min-h-16 rounded-2xl bg-slate-900 hover:bg-black text-white font-black text-base sm:text-lg shadow-2xl flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95 whitespace-normal text-center px-3"
             >
               {isSubmitting ? <Loader2 className="animate-spin size-6" /> : <ChevronRight className="size-6" />}
               Post Query Now

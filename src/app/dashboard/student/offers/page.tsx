@@ -144,28 +144,28 @@ function StudentOffersContent() {
 
   if (mode === "create") {
     return (
-      <div className="max-w-3xl space-y-8 pb-24">
-        <div className="flex items-end justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4 text-primary text-[10px] font-black uppercase tracking-widest">
-              <Handshake className="size-3" />
-              Offer / Negotiation
+      <div className="max-w-3xl space-y-6 sm:space-y-8 pb-28">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-3 text-primary text-[10px] font-black uppercase tracking-widest">
+              <Handshake className="size-3 shrink-0" aria-hidden />
+              Offer
             </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white leading-tight text-balance">
               Send an offer
             </h1>
-            <p className="text-slate-600 dark:text-slate-300 font-medium mt-2">
-              Propose a time and price. The expert can counter or accept.
+            <p className="text-slate-600 dark:text-slate-300 font-medium mt-2 text-sm sm:text-base leading-relaxed">
+              Propose time and rate — the expert can counter or accept.
             </p>
           </div>
-          <Link href="/dashboard/student/offers">
-            <Button variant="outline" className="h-12 px-6 rounded-2xl font-black">
-              Back
+          <Link href="/dashboard/student/offers" className="w-full sm:w-auto shrink-0">
+            <Button variant="outline" className="w-full sm:w-auto min-h-11 px-6 rounded-2xl font-bold border-2">
+              Back to offers
             </Button>
           </Link>
         </div>
 
-        <div className="premium-card p-10">
+        <div className="premium-card p-5 sm:p-8 md:p-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300 flex items-center gap-2">
@@ -248,29 +248,29 @@ function StudentOffersContent() {
   }
 
   return (
-    <div className="max-w-5xl space-y-8 pb-24">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4 text-primary text-[10px] font-black uppercase tracking-widest">
-            <Handshake className="size-3" />
-            Negotiations
+    <div className="max-w-5xl space-y-6 sm:space-y-8 pb-28">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-3 text-primary text-[10px] font-black uppercase tracking-widest">
+            <Handshake className="size-3 shrink-0" aria-hidden />
+            Offers
           </div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white leading-tight text-balance">
             Your offers
           </h1>
-          <p className="text-slate-600 dark:text-slate-300 font-medium mt-2">
-            Track proposals, counters, and accepted bookings.
+          <p className="text-slate-600 dark:text-slate-300 font-medium mt-2 text-sm sm:text-base leading-relaxed">
+            Proposals, counters, and accepted sessions.
           </p>
         </div>
-        <Link href="/experts">
-          <Button variant="outline" className="h-12 px-6 rounded-2xl font-black">
+        <Link href="/experts" className="w-full sm:w-auto shrink-0">
+          <Button variant="outline" className="w-full sm:w-auto min-h-11 px-6 rounded-2xl font-bold border-2">
             Find experts
           </Button>
         </Link>
       </div>
 
       {offers.length === 0 ? (
-        <div className="premium-card p-12 text-center">
+        <div className="premium-card p-8 sm:p-12 text-center">
           <p className="text-slate-900 dark:text-white font-black text-2xl tracking-tight mb-2">No offers yet</p>
           <p className="text-slate-600 dark:text-slate-300 font-medium">
             Browse the directory and send an offer to negotiate time and price.

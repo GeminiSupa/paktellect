@@ -85,31 +85,31 @@ export function Hero() {
               Professionalism, protected.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 w-full sm:w-auto mt-2 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full max-w-xl sm:max-w-none mx-auto sm:mx-0 mt-2 justify-center items-stretch sm:items-center">
               {user ? (
-                <Link href={dashboardHref}>
-                   <Button className="h-16 sm:h-20 px-10 sm:px-12 rounded-[2rem] bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg sm:text-xl shadow-2xl shadow-black/30 border border-white/10 transition-all hover:scale-[1.02]">
-                    Enter Dashboard
-                    <ArrowRight className="size-6 ml-3" />
+                <Link href={dashboardHref} className="w-full sm:w-auto">
+                   <Button className="min-h-14 sm:min-h-[4.25rem] w-full px-8 sm:px-12 rounded-[2rem] bg-emerald-600 hover:bg-emerald-500 text-white font-black text-base sm:text-lg shadow-2xl shadow-black/30 border border-white/15">
+                    <span className="text-balance">Enter dashboard</span>
+                    <ArrowRight className="size-5 sm:size-6 shrink-0" aria-hidden />
                   </Button>
                 </Link>
               ) : (
-                <Link href="/signup">
-                  <Button className="h-16 sm:h-20 px-10 sm:px-12 rounded-[2rem] bg-white hover:bg-slate-50 text-slate-950 font-black text-lg sm:text-xl shadow-2xl shadow-black/20 transition-all hover:scale-[1.02] ring-1 ring-white/20 hover:ring-teal-400/40">
-                    Start Your Session
-                    <ArrowRight className="size-6 ml-3" />
+                <Link href="/signup" className="w-full sm:w-auto">
+                  <Button className="min-h-14 sm:min-h-[4.25rem] w-full px-8 sm:px-12 rounded-[2rem] bg-white hover:bg-slate-50 text-slate-950 font-black text-base sm:text-lg shadow-2xl shadow-black/25 ring-1 ring-white/25 hover:ring-teal-400/45 border border-white/10">
+                    <span className="text-balance">Create account</span>
+                    <ArrowRight className="size-5 sm:size-6 shrink-0" aria-hidden />
                   </Button>
                 </Link>
               )}
               <Link href="/experts" className="group w-full sm:w-auto">
                 <Button
                   variant="ghost"
-                  className="h-16 sm:h-20 w-full sm:w-auto px-8 sm:px-10 rounded-[2rem] text-teal-100 font-black text-lg sm:text-xl flex items-center justify-center gap-4 border border-white/12 bg-white/5 backdrop-blur-sm hover:bg-emerald-500/15 hover:border-teal-400/45 hover:text-white transition-all hover:scale-[1.02] hover:shadow-[0_16px_40px_-12px_rgba(20,184,166,0.2)]"
+                  className="min-h-14 sm:min-h-[4.25rem] w-full px-6 sm:px-10 rounded-[2rem] text-white font-black text-base sm:text-lg gap-3 border border-white/20 bg-white/10 backdrop-blur-md hover:bg-emerald-500/20 hover:border-teal-300/50 hover:text-white shadow-lg shadow-black/25"
                 >
-                  <div className="size-11 sm:size-12 rounded-full border border-teal-400/35 bg-teal-500/15 flex items-center justify-center shadow-inner transition-colors group-hover:border-teal-300/55 group-hover:bg-teal-500/25">
-                    <Play className="size-5 fill-teal-100 text-teal-100 transition-colors group-hover:fill-white group-hover:text-white" />
+                  <div className="size-10 sm:size-11 rounded-full border border-teal-400/40 bg-teal-500/20 flex items-center justify-center shrink-0">
+                    <Play className="size-5 fill-white text-white" aria-hidden />
                   </div>
-                  Browse Directory
+                  <span className="text-balance text-left sm:text-center leading-tight">Browse experts</span>
                 </Button>
               </Link>
             </div>

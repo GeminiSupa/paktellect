@@ -56,7 +56,7 @@ export default function TeacherDashboardShell({ children }: { children: React.Re
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center gap-3 px-4 py-3.5 rounded-2xl font-semibold text-sm transition-all",
+                        "flex items-start gap-3 px-4 py-3.5 rounded-2xl font-semibold text-sm transition-all min-h-[3rem]",
                         active
                           ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                           : "text-slate-200 hover:text-white hover:bg-white/10",
@@ -65,7 +65,7 @@ export default function TeacherDashboardShell({ children }: { children: React.Re
                     >
                       <div
                         className={cn(
-                          "size-9 rounded-xl flex items-center justify-center border",
+                          "size-9 rounded-xl flex items-center justify-center border shrink-0 mt-0.5",
                           active
                             ? "border-white/20 bg-white/10"
                             : "border-white/10 bg-slate-800/80"
@@ -73,7 +73,7 @@ export default function TeacherDashboardShell({ children }: { children: React.Re
                       >
                         <Icon className="size-4 shrink-0" aria-hidden />
                       </div>
-                      {item.label}
+                      <span className="min-w-0 flex-1 leading-snug">{item.label}</span>
                     </Link>
                   </li>
                 )
@@ -104,8 +104,8 @@ export default function TeacherDashboardShell({ children }: { children: React.Re
                   active ? "text-primary" : "text-muted-foreground"
                 )}
               >
-                <Icon className="size-5 shrink-0" aria-hidden />
-                <span className="text-[10px] font-bold truncate max-w-full">{item.shortLabel}</span>
+                <Icon className="size-[22px] shrink-0 stroke-[2]" aria-hidden />
+                <span className="text-[10px] font-bold leading-none text-center max-w-[4.5rem] line-clamp-2">{item.shortLabel}</span>
               </Link>
             )
           })}

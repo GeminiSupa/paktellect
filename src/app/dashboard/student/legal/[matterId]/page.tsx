@@ -154,8 +154,8 @@ export default function StudentMatterDetail() {
 
   if (!matter) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6 pb-20">
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 border border-slate-200 dark:border-slate-800 shadow-xl">
+      <div className="max-w-4xl mx-auto space-y-6 pb-28 sm:pb-20">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-xl">
           <p className="text-slate-500 font-medium">Matter not found or you don&apos;t have access.</p>
           <div className="pt-6">
             <Button variant="outline" className="h-12 px-6 rounded-2xl" onClick={() => router.push("/dashboard/student/legal")}>
@@ -168,33 +168,33 @@ export default function StudentMatterDetail() {
   }
 
   return (
-    <div className="space-y-10 pb-20 max-w-5xl mx-auto">
-      <div className="flex items-end justify-between gap-6">
+    <div className="space-y-6 sm:space-y-10 pb-28 sm:pb-24 max-w-5xl mx-auto px-0">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
         <div className="min-w-0">
-          <Button variant="outline" className="h-12 px-5 rounded-2xl border-slate-200 mb-5" onClick={() => router.push("/dashboard/student/legal")}>
-            <ArrowLeft className="size-4 mr-2" /> Back
+          <Button variant="outline" className="min-h-11 h-auto py-2.5 px-5 rounded-2xl border-slate-200 mb-4 sm:mb-5 w-full sm:w-auto justify-center sm:justify-start" onClick={() => router.push("/dashboard/student/legal")}>
+            <ArrowLeft className="size-4 mr-2 shrink-0" /> Back
           </Button>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4 text-orange-600 text-[10px] font-black uppercase tracking-widest">
-            <Scale className="size-3" /> Legal Matter
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-3 sm:mb-4 text-orange-600 text-[10px] font-black uppercase tracking-widest">
+            <Scale className="size-3 shrink-0" /> Legal Matter
           </div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 dark:text-white truncate">{matter.title}</h1>
-          <p className="text-slate-500 font-medium mt-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter text-slate-900 dark:text-white text-balance wrap-break-word">{matter.title}</h1>
+          <p className="text-slate-500 font-medium mt-2 text-sm sm:text-base">
             Lawyer: <span className="font-black">{matter.teacher?.profiles?.full_name || "Expert"}</span>
           </p>
         </div>
-        <div className="shrink-0">
-          <div className="px-6 py-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+        <div className="shrink-0 w-full sm:w-auto">
+          <div className="px-4 py-3 sm:px-6 sm:py-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center sm:text-left">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Pending Signatures</p>
             <p className="text-2xl font-black text-slate-900 dark:text-white">{pendingReqs.length}</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 border border-slate-200 dark:border-slate-800 shadow-xl">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-xl">
         <div className="flex items-center gap-3 mb-6">
           <Signature className="size-6 text-orange-500" />
-          <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Signature Requests</h2>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">Signature Requests</h2>
         </div>
 
         {pendingReqs.length === 0 ? (
@@ -202,17 +202,17 @@ export default function StudentMatterDetail() {
         ) : (
           <div className="space-y-4">
             {pendingReqs.map((r) => (
-              <div key={r.id} className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div key={r.id} className="p-4 sm:p-6 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
                 <div className="min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Requested {r.requested_at.split("T")[0]}</p>
-                  <p className="text-lg font-black text-slate-900 dark:text-white truncate">{r.document?.name || "Document"}</p>
+                  <p className="text-base sm:text-lg font-black text-slate-900 dark:text-white wrap-break-word">{r.document?.name || "Document"}</p>
                 </div>
-                <div className="flex gap-3 shrink-0">
-                  <Button onClick={() => updateSignature(r, "declined")} variant="outline" className="h-12 px-5 rounded-2xl border-slate-200 font-black">
-                    <ThumbsDown className="size-4 mr-2" /> Decline
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 shrink-0 w-full md:w-auto">
+                  <Button onClick={() => updateSignature(r, "declined")} variant="outline" className="min-h-11 h-12 px-5 rounded-2xl border-slate-200 font-black w-full md:w-auto">
+                    <ThumbsDown className="size-4 mr-2 shrink-0" /> Decline
                   </Button>
-                  <Button onClick={() => updateSignature(r, "signed")} className="h-12 px-5 rounded-2xl bg-primary text-white font-black">
-                    <CheckCircle2 className="size-4 mr-2" /> Sign
+                  <Button onClick={() => updateSignature(r, "signed")} className="min-h-11 h-12 px-5 rounded-2xl bg-primary text-white font-black w-full md:w-auto">
+                    <CheckCircle2 className="size-4 mr-2 shrink-0" /> Sign
                   </Button>
                 </div>
               </div>
@@ -221,9 +221,9 @@ export default function StudentMatterDetail() {
         )}
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
-        <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Documents</h2>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+        <div className="px-4 sm:px-10 py-5 sm:py-8 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">Documents</h2>
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{docs.length} total</span>
         </div>
 
@@ -236,15 +236,15 @@ export default function StudentMatterDetail() {
         ) : (
           <div className="divide-y divide-slate-50 dark:divide-slate-800">
             {docs.map((d) => (
-              <div key={d.id} className="px-10 py-8 flex items-center justify-between gap-6">
+              <div key={d.id} className="px-4 sm:px-10 py-5 sm:py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-black text-slate-900 dark:text-white truncate">{d.name}</p>
+                  <p className="font-black text-slate-900 dark:text-white wrap-break-word">{d.name}</p>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2">
                     {d.requires_signature ? "Signature required" : "Reference"}
                   </p>
                 </div>
-                <Button variant="outline" className="h-12 px-5 rounded-2xl border-slate-200 font-black" onClick={() => openDoc(d)}>
-                  <ExternalLink className="size-4 mr-2" /> Open
+                <Button variant="outline" className="min-h-11 h-12 px-5 rounded-2xl border-slate-200 font-black w-full sm:w-auto shrink-0" onClick={() => openDoc(d)}>
+                  <ExternalLink className="size-4 mr-2 shrink-0" /> Open
                 </Button>
               </div>
             ))}

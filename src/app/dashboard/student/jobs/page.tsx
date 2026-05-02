@@ -64,20 +64,20 @@ export default function StudentJobsPage() {
   )
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 pb-32 px-4 sm:px-0">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-200 dark:border-border pb-12">
-        <div className="max-w-2xl">
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-foreground mb-4 leading-none">
-            Your Active <br /><span className="text-primary">Queries & Jobs.</span>
+    <div className="max-w-6xl mx-auto space-y-10 sm:space-y-12 pb-28 sm:pb-32 px-0 sm:px-0">
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b border-slate-200 dark:border-border pb-8 sm:pb-12">
+        <div className="max-w-2xl min-w-0">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-foreground mb-3 sm:mb-4 leading-[1.05] text-balance">
+            Your jobs <span className="text-primary">&amp; queries</span>
           </h1>
-          <p className="text-slate-600 dark:text-muted-foreground font-medium text-xl leading-relaxed">
-            Manage your open requests and review proposals from our elite expert network.
+          <p className="text-slate-600 dark:text-muted-foreground font-medium text-base sm:text-lg md:text-xl leading-relaxed">
+            Post a brief, compare proposals, then hire with confidence.
           </p>
         </div>
-        <Link href="/dashboard/student/jobs/new">
-          <Button className="h-16 px-10 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-sm uppercase tracking-widest gap-3 shadow-2xl flex items-center shadow-emerald-500/20">
-            <Plus className="size-5" />
-            Post New Job
+        <Link href="/dashboard/student/jobs/new" className="w-full md:w-auto shrink-0">
+          <Button className="w-full md:w-auto min-h-12 px-8 rounded-2xl bg-primary hover:bg-emerald-700 text-primary-foreground font-black text-xs sm:text-sm uppercase tracking-wide gap-2 shadow-xl">
+            <Plus className="size-5 shrink-0" aria-hidden />
+            <span className="text-balance">Post new job</span>
           </Button>
         </Link>
       </div>

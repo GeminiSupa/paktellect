@@ -2,7 +2,7 @@ import { Geist, Geist_Mono, Noto_Nastaliq_Urdu, Playfair_Display } from "next/fo
 import "./globals.css";
 import Script from "next/script";
 import { AuthProvider } from "@/components/AuthProvider";
-import { Toaster } from "sonner";
+import { AppToaster } from "@/components/AppToaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,7 +50,7 @@ export default function RootLayout({
             crossOrigin="anonymous"
             strategy="afterInteractive"
           />
-          <Toaster position="top-center" richColors />
+          <AppToaster />
         </AuthProvider>
       </body>
     </html>

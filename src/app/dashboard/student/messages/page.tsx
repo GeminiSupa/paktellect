@@ -109,17 +109,26 @@ export default function StudentMessagesInbox() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <header className="flex items-center gap-3">
-        <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-          <MessageSquare className="size-6 text-primary" />
+    <div className="space-y-6 max-w-3xl pb-24 sm:pb-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+            <MessageSquare className="size-6 text-primary" aria-hidden />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground leading-tight">Messages</h1>
+            <p className="text-sm text-muted-foreground font-medium mt-1 leading-relaxed">
+              Chats from your bookings — newest first.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-foreground">Messages</h1>
-          <p className="text-sm text-muted-foreground font-medium">
-            All conversations from your bookings, newest first.
-          </p>
-        </div>
+        <Link
+          href="/experts"
+          className="inline-flex items-center justify-center gap-2 min-h-11 px-5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md w-full sm:w-auto shrink-0"
+        >
+          Book an expert
+          <ArrowRight className="size-4 shrink-0" aria-hidden />
+        </Link>
       </header>
 
       {threads.length === 0 ? (

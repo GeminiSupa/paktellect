@@ -689,29 +689,29 @@ export default function TeacherOverview() {
       {/* Quick actions */}
       <section className="rounded-[2rem] border border-border bg-muted/30 p-4 md:p-6">
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">Quick actions</p>
-        <div className="flex flex-wrap gap-2 md:gap-3">
-          <Link href="/dashboard/teacher/availability">
-            <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-border bg-card">
-              Open slots
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 md:gap-3">
+          <Link href="/dashboard/teacher/availability" className="min-w-0 sm:flex-initial">
+            <Button variant="outline" className="w-full min-h-11 rounded-xl font-bold text-xs border-2 border-border bg-card text-foreground">
+              Availability
             </Button>
           </Link>
-          <Link href="/dashboard/teacher/profile#reviews">
-            <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-border bg-card">
+          <Link href="/dashboard/teacher/profile#reviews" className="min-w-0 sm:flex-initial">
+            <Button variant="outline" className="w-full min-h-11 rounded-xl font-bold text-xs border-2 border-border bg-card text-foreground">
               Reviews
             </Button>
           </Link>
-          <Link href="/dashboard/teacher/jobs">
-            <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-primary text-primary bg-primary/5 active:scale-95 transition-all">
-              Marketplace
+          <Link href="/dashboard/teacher/jobs" className="min-w-0 sm:flex-initial">
+            <Button variant="outline" className="w-full min-h-11 rounded-xl font-bold text-xs border-2 border-primary text-primary bg-primary/5">
+              Jobs board
             </Button>
           </Link>
-          <Link href="/dashboard/teacher/earnings">
-            <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-border bg-card">
-              Withdraw / payouts
+          <Link href="/dashboard/teacher/earnings" className="min-w-0 sm:flex-initial">
+            <Button variant="outline" className="w-full min-h-11 rounded-xl font-bold text-xs border-2 border-border bg-card text-foreground">
+              Earnings
             </Button>
           </Link>
-          <Link href="/dashboard/teacher/offers">
-            <Button variant="outline" className="h-11 rounded-xl font-bold text-xs border-border bg-card">
+          <Link href="/dashboard/teacher/offers" className="min-w-0 sm:flex-initial">
+            <Button variant="outline" className="w-full min-h-11 rounded-xl font-bold text-xs border-2 border-border bg-card text-foreground">
               Offers
             </Button>
           </Link>

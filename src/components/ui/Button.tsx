@@ -4,27 +4,29 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 min-h-11 min-w-0 max-w-full px-4 py-2.5 leading-snug text-center whitespace-normal text-pretty active:scale-[0.98]",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
+          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 border border-transparent",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90",
+          "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 border border-transparent",
         outline:
-          "border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+          "border-2 border-border bg-background text-foreground shadow-xs hover:bg-muted hover:text-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        premium: "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-[1.02]",
+          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/85 border border-transparent",
+        ghost:
+          "text-foreground hover:bg-muted hover:text-foreground border border-transparent",
+        link: "text-primary underline-offset-4 hover:underline min-h-0 px-0 py-1 border-transparent shadow-none",
+        premium:
+          "border border-transparent bg-linear-to-r from-emerald-600 to-teal-600 text-white shadow-lg hover:opacity-95 hover:shadow-emerald-500/20",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-12 rounded-lg px-8 text-base",
-        icon: "h-9 w-9",
+        default: "min-h-11 px-4 py-2.5 sm:min-h-10 sm:py-2",
+        sm: "min-h-10 rounded-lg px-3 py-2 text-xs font-semibold",
+        lg: "min-h-12 rounded-xl px-6 py-3 text-base gap-2.5 [&_svg]:size-5",
+        icon: "size-11 sm:size-10 min-h-0 p-0 shrink-0 [&_svg]:size-[1.125rem]",
       },
     },
     defaultVariants: {

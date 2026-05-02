@@ -115,14 +115,14 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
   if (!job) return <div>Mandate not found.</div>
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 pb-32 px-4 sm:px-0">
-      <Link href="/dashboard/student/jobs" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-colors">
-        <ChevronLeft className="size-4" />
+    <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12 pb-28 sm:pb-32 px-0 sm:px-0">
+      <Link href="/dashboard/student/jobs" className="inline-flex items-center gap-2 min-h-11 sm:min-h-0 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-colors">
+        <ChevronLeft className="size-4 shrink-0" />
         Back to mandates
       </Link>
 
-      <div className="flex flex-col lg:flex-row gap-12">
-        <div className="grow space-y-10">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        <div className="grow space-y-8 sm:space-y-10">
            <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <span className="px-4 py-1.5 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest">
@@ -132,10 +132,10 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
                   {job.category}
                 </span>
               </div>
-              <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-foreground leading-none">
+              <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-foreground leading-[1.05] text-balance wrap-break-word">
                 {job.title}
               </h1>
-              <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed whitespace-pre-wrap max-w-4xl">
+              <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg leading-relaxed whitespace-pre-wrap max-w-4xl">
                 {job.description}
               </p>
            </div>
@@ -146,12 +146,12 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
                   <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     <Zap className="size-5 text-primary" />
                   </div>
-                  <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-foreground">Recieved Proposals ({applications.length})</h3>
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-foreground">Received proposals ({applications.length})</h3>
                 </div>
               </div>
 
               {applications.length === 0 ? (
-                <div className="py-20 text-center bg-slate-50/50 dark:bg-slate-900/50 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <div className="py-14 sm:py-20 px-4 text-center bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl sm:rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
                    <Clock className="size-12 text-slate-200 mx-auto mb-4" />
                    <p className="text-slate-500 font-bold">Waiting for experts to submit proposals...</p>
                    <p className="text-xs text-slate-400 mt-2 font-medium">Most jobs receive bids within 4-8 hours.</p>
@@ -159,7 +159,7 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
               ) : (
                 <div className="grid grid-cols-1 gap-8">
                    {applications.map((app) => (
-                     <div key={app.id} className="p-8 md:p-12 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl hover:shadow-2xl transition-all duration-500">
+                     <div key={app.id} className="p-5 sm:p-8 md:p-12 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl hover:shadow-2xl transition-all duration-500">
                         <div className="flex flex-col md:flex-row gap-10">
                            <div className="md:w-64 shrink-0 flex flex-col items-center text-center space-y-4">
                               <div className="relative size-24 rounded-[1.8rem] bg-slate-100 dark:bg-slate-800 overflow-hidden shadow-inner border border-slate-200/50">
@@ -207,18 +207,18 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
                                  </p>
                               </div>
 
-                              <div className="flex items-center gap-4 pt-4">
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
                                  <Button 
                                     onClick={() => acceptProposal(app.id, app.expert_id)}
                                     disabled={app.status === 'accepted' || job.status !== 'open'}
-                                    className="flex-1 h-16 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest shadow-2xl shadow-emerald-500/10 flex items-center justify-center gap-3"
+                                    className="w-full sm:flex-1 min-h-14 sm:h-16 rounded-2xl bg-primary hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest shadow-2xl shadow-emerald-500/10 flex items-center justify-center gap-3 whitespace-normal text-center px-2"
                                  >
                                     {app.status === 'accepted' ? 'Hired' : 'Accept Proposal'}
-                                    <ArrowRight className="size-4" />
+                                    <ArrowRight className="size-4 shrink-0" />
                                  </Button>
-                                 <Link href={`/dashboard/messages/job/${job.id}`} className="flex-1">
-                                    <Button variant="outline" className="w-full h-16 rounded-2xl border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3">
-                                       <MessageSquare className="size-4" />
+                                 <Link href={`/dashboard/messages/job/${job.id}`} className="w-full sm:flex-1">
+                                    <Button variant="outline" className="w-full min-h-14 sm:h-16 rounded-2xl border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 whitespace-normal text-center px-2">
+                                       <MessageSquare className="size-4 shrink-0" />
                                        Open Message Line
                                     </Button>
                                  </Link>
@@ -232,8 +232,8 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
            </div>
         </div>
 
-        <div className="lg:w-80 shrink-0 space-y-6">
-           <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl space-y-6">
+        <div className="lg:w-80 shrink-0 space-y-4 sm:space-y-6">
+           <div className="p-5 sm:p-8 bg-slate-900 rounded-2xl sm:rounded-[2.5rem] text-white shadow-2xl space-y-6">
               <div>
                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Target Budget</p>
                  <p className="text-3xl font-black tracking-tighter">PKR {job.budget_pkr ? job.budget_pkr.toLocaleString() : "TBD"}</p>
@@ -251,7 +251,7 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
               </div>
            </div>
            
-           <div className="p-8 bg-white dark:bg-slate-950 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl">
+           <div className="p-5 sm:p-8 bg-white dark:bg-slate-950 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl">
               <ShieldCheck className="size-10 text-primary mb-6" />
               <h4 className="text-xl font-black text-slate-900 dark:text-white mb-2 leading-tight">Elite Guarantee</h4>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest leading-relaxed">Ensure you review expert portfolios & ratings before accepting a mandate.</p>
