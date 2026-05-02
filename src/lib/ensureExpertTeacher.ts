@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
+import { normalizeExpertCategory } from "@/lib/expertProfileBasics"
 
 type EnsureExpertTeacherResult =
   | { status: "skipped" }
@@ -11,9 +12,9 @@ function readExpertCategory(user: User): string {
   const raw =
     (meta?.expert_category as string | undefined) ??
     (meta?.category as string | undefined) ??
-    "Academic"
-
-  return raw || "Academic"
+    ""
+  const norm = normalizeExpertCategory(raw)
+  return norm ?? "Academic"
 }
 
 /**

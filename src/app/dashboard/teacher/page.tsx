@@ -29,7 +29,11 @@ import { useEffect, useState, useMemo } from "react"
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
-import { validateProfileForPublish, type ExpertProfileBasicsInput } from "@/lib/expertProfileBasics"
+import {
+  validateProfileForPublish,
+  buildPublishInputFromTeacherRow,
+  pickJoinedProfile,
+} from "@/lib/expertProfileBasics"
 import { ensureExpertTeacherRow } from "@/lib/ensureExpertTeacher"
 
 const AVAIL_TIP_KEY = "paktellect_dismiss_avail_tip_v1"
@@ -37,6 +41,13 @@ const AVAIL_TIP_KEY = "paktellect_dismiss_avail_tip_v1"
 function formatVisibilityError(err: unknown): string {
   if (err && typeof err === "object") {
     const o = err as { message?: string; details?: string; hint?: string; code?: string }
+    if (o.code === "P0001") {
+      const extra =
+        o.message?.includes("Academic") || o.message?.toLowerCase().includes("subject")
+          ? " If you are a lawyer, open Profile and set Professional category to Legal — then fill bar, jurisdiction, and practice areas only (not tutoring subjects)."
+          : ""
+      return `${o.message}${extra} Save your profile, then try Go Live again.`
+    }
     if (o.message) {
       return [o.message, o.hint, o.details].filter(Boolean).join(" — ")
     }
@@ -137,30 +148,15 @@ export default function TeacherOverview() {
           setIsOnline(teacher.is_online || false)
           setIsPublic(Boolean(teacher.is_public))
 
-          const validationInput: ExpertProfileBasicsInput = {
-            displayNameFromAccount: teacher.profiles?.full_name || "",
-            phone: teacher.profiles?.phone || "",
-            category: teacher.category || "Academic",
-            headline: teacher.headline || "",
-            specialty: teacher.specialty || "",
-            rate: String(teacher.hourly_rate || ""),
-            city: teacher.profiles?.city || "",
-            country: teacher.profiles?.country || "",
-            bio: teacher.bio || "",
-            qualifications: teacher.qualifications || "",
-            legalBarNumber: teacher.legal_bar_number || "",
-            legalJurisdiction: teacher.legal_jurisdiction || "",
-            legalPracticeAreas: (teacher.legal_practice_areas || []).join(", "),
-            mentalLicenseNumber: teacher.mental_license_number || "",
-            mentalLicenseType: teacher.mental_license_type || "",
-            mentalModalities: (teacher.mental_modalities || []).join(", "),
-            wellnessCertification: teacher.wellness_certification || "",
-            wellnessSpecialties: (teacher.wellness_specialties || []).join(", "),
-            wellnessApproach: teacher.wellness_approach || "",
-            academicSubjects: (teacher.academic_subjects || []).join(", "),
-            academicEducationLevel: teacher.academic_education_level || "",
-            academicCredentials: teacher.academic_credentials || "",
-          }
+          const prof = pickJoinedProfile(
+            teacher.profiles as {
+              full_name?: string | null
+              city?: string | null
+              country?: string | null
+              phone?: string | null
+            } | null
+          )
+          const validationInput = buildPublishInputFromTeacherRow(teacher, prof)
 
           setChecklist(validateProfileForPublish(validationInput))
 
@@ -319,6 +315,39 @@ export default function TeacherOverview() {
       const ensured = await ensureExpertTeacherRow(authUser)
       if (ensured.status === "error") {
         throw new Error(ensured.message)
+      }
+
+      // Re-load row and re-validate so we never send is_public=true when the DB trigger
+      // (e.g. Academic subjects) would reject — also fixes stale dashboard state.
+      if (next) {
+        const { data: freshTeacher, error: freshErr } = await supabase
+          .from("teachers")
+          .select(`*, profiles:user_id(full_name, city, country, phone)`)
+          .eq("user_id", authUser.id)
+          .maybeSingle()
+
+        if (freshErr) throw freshErr
+        if (!freshTeacher) {
+          throw new Error("No expert record found. Open Profile and tap Save once, then try Go Live.")
+        }
+
+        const prof = pickJoinedProfile(
+          freshTeacher.profiles as {
+            full_name?: string | null
+            city?: string | null
+            country?: string | null
+            phone?: string | null
+          } | null
+        )
+        const freshInput = buildPublishInputFromTeacherRow(freshTeacher, prof)
+        const liveCheck = validateProfileForPublish(freshInput)
+        setChecklist(liveCheck)
+        if (!liveCheck.ok) {
+          throw new Error(
+            liveCheck.errors[0] +
+              (liveCheck.errors.length > 1 ? ` (+${liveCheck.errors.length - 1} more — see checklist below)` : "")
+          )
+        }
       }
 
       const updatedAt = new Date().toISOString()

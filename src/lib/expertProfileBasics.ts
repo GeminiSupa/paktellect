@@ -36,6 +36,132 @@ export type ExpertProfileBasicsInput = {
 
 export type ValidationResult = { ok: boolean; errors: string[] }
 
+/** Values accepted by DB `teachers.category` CHECK constraint */
+export const EXPERT_CATEGORY_VALUES = [
+  "Academic",
+  "Legal",
+  "Wellness",
+  "Mental Health",
+  "Plumbing",
+  "Electrical",
+  "Logistics",
+  "Mechanics",
+] as const
+
+export type ExpertCategoryValue = (typeof EXPERT_CATEGORY_VALUES)[number]
+
+/**
+ * Normalize signup typos / casing so Legal experts never fall through to "Academic"
+ * tutoring rules by mistake.
+ */
+export function normalizeExpertCategory(raw: string | null | undefined): ExpertCategoryValue | null {
+  const s = (raw ?? "").trim()
+  if (!s) return null
+  const key = s.toLowerCase().replace(/\s+/g, " ").trim()
+
+  const aliases: Record<string, ExpertCategoryValue> = {
+    academic: "Academic",
+    tutor: "Academic",
+    tutoring: "Academic",
+    education: "Academic",
+    teacher: "Academic",
+    legal: "Legal",
+    law: "Legal",
+    lawyer: "Legal",
+    attorneys: "Legal",
+    attorney: "Legal",
+    solicitor: "Legal",
+    advocate: "Legal",
+    wellness: "Wellness",
+    fitness: "Wellness",
+    nutrition: "Wellness",
+    mental: "Mental Health",
+    "mental health": "Mental Health",
+    psychology: "Mental Health",
+    therapist: "Mental Health",
+    counselling: "Mental Health",
+    counseling: "Mental Health",
+    plumbing: "Plumbing",
+    plumber: "Plumbing",
+    electrical: "Electrical",
+    electrician: "Electrical",
+    logistics: "Logistics",
+    freight: "Logistics",
+    mechanics: "Mechanics",
+    mechanic: "Mechanics",
+    automotive: "Mechanics",
+  }
+
+  if (aliases[key]) return aliases[key]
+
+  const exact = EXPERT_CATEGORY_VALUES.find((c) => c.toLowerCase() === key)
+  return exact ?? null
+}
+
+/** PostgREST may return `profiles` as a single object or a one-element array. */
+export function pickJoinedProfile<T extends { full_name?: string | null }>(
+  p: T | T[] | null | undefined
+): T | null {
+  if (p == null) return null
+  if (Array.isArray(p)) return p[0] ?? null
+  return p
+}
+
+/**
+ * Map a `teachers` row (+ optional profile) to the publish validator input.
+ * Keeps dashboard / go-live checks aligned with the same rules.
+ */
+export function buildPublishInputFromTeacherRow(
+  teacher: {
+    category?: string | null
+    headline?: string | null
+    specialty?: string | null
+    hourly_rate?: number | string | null
+    bio?: string | null
+    qualifications?: string | null
+    legal_bar_number?: string | null
+    legal_jurisdiction?: string | null
+    legal_practice_areas?: string[] | null
+    mental_license_number?: string | null
+    mental_license_type?: string | null
+    mental_modalities?: string[] | null
+    wellness_certification?: string | null
+    wellness_specialties?: string[] | null
+    wellness_approach?: string | null
+    academic_subjects?: string[] | null
+    academic_education_level?: string | null
+    academic_credentials?: string | null
+  },
+  profile: { full_name?: string | null; city?: string | null; country?: string | null; phone?: string | null } | null
+): ExpertProfileBasicsInput {
+  const rawCat = teacher.category?.trim() || ""
+  const normalized = normalizeExpertCategory(teacher.category)
+  return {
+    displayNameFromAccount: profile?.full_name || "",
+    phone: profile?.phone || "",
+    category: normalized ?? rawCat,
+    headline: teacher.headline || "",
+    specialty: teacher.specialty || "",
+    rate: teacher.hourly_rate != null && String(teacher.hourly_rate) !== "" ? String(teacher.hourly_rate) : "",
+    city: profile?.city || "",
+    country: profile?.country || "",
+    bio: teacher.bio || "",
+    qualifications: teacher.qualifications || "",
+    legalBarNumber: teacher.legal_bar_number || "",
+    legalJurisdiction: teacher.legal_jurisdiction || "",
+    legalPracticeAreas: (teacher.legal_practice_areas || []).join(", "),
+    mentalLicenseNumber: teacher.mental_license_number || "",
+    mentalLicenseType: teacher.mental_license_type || "",
+    mentalModalities: (teacher.mental_modalities || []).join(", "),
+    wellnessCertification: teacher.wellness_certification || "",
+    wellnessSpecialties: (teacher.wellness_specialties || []).join(", "),
+    wellnessApproach: teacher.wellness_approach || "",
+    academicSubjects: (teacher.academic_subjects || []).join(", "),
+    academicEducationLevel: teacher.academic_education_level || "",
+    academicCredentials: teacher.academic_credentials || "",
+  }
+}
+
 function commaList(v: string): string[] {
   return v.split(",").map((s) => s.trim()).filter(Boolean)
 }
@@ -75,14 +201,51 @@ export function validateProfileForPublish(input: ExpertProfileBasicsInput): Vali
     errors.push("Write a short bio (at least 24 characters) explaining how you help clients.")
   }
   if (!input.qualifications.trim()) {
-    errors.push("Add a qualifications line (highlighted on your public card).")
+    errors.push("Add one headline qualifications line (shown on your public card — e.g. bar admission, degrees, certifications).")
   }
 
-  switch (input.category) {
+  const catNorm = normalizeExpertCategory(input.category)
+  if (catNorm === null && input.category.trim()) {
+    errors.push(
+      `Unrecognized category "${input.category}". Open Profile → Professional category and choose Legal, Wellness, Mental Health, Academic, or a trade — so we only ask for fields that apply to you.`
+    )
+    return { ok: errors.length === 0, errors }
+  }
+  const cat = catNorm ?? "Academic"
+
+  /** Academic + trades share DB columns academic_*; labels differ by category in the UI only. */
+  const requireTradeOrTeachingDetails = () => {
+    const isAcademic = cat === "Academic"
+    if (commaList(input.academicSubjects).length === 0) {
+      errors.push(
+        isAcademic
+          ? "Teaching: list at least one subject or exam you cover (comma-separated)."
+          : `${cat}: list the main services or job types you offer (comma-separated).`
+      )
+    }
+    if (!input.academicEducationLevel.trim()) {
+      errors.push(
+        isAcademic
+          ? "Teaching: say which grade levels or learners you support (e.g. O Levels, undergrad)."
+          : `${cat}: describe the typical scope or tier you handle (e.g. residential, commercial, nationwide).`
+      )
+    }
+    if (!input.academicCredentials.trim()) {
+      errors.push(
+        isAcademic
+          ? "Teaching: add your credentials or experience (degrees, years tutoring, etc.)."
+          : `${cat}: add licenses, certifications, or relevant experience.`
+      )
+    }
+  }
+
+  switch (cat) {
     case "Legal":
       if (!input.legalBarNumber.trim()) errors.push("Legal: add your bar / registration number.")
       if (!input.legalJurisdiction.trim()) errors.push("Legal: add your jurisdiction.")
-      if (commaList(input.legalPracticeAreas).length === 0) errors.push("Legal: list at least one practice area.")
+      if (commaList(input.legalPracticeAreas).length === 0) {
+        errors.push("Legal: list at least one practice area (e.g. civil litigation, contracts).")
+      }
       break
     case "Mental Health":
       if (!input.mentalLicenseNumber.trim()) errors.push("Mental health: add your license number.")
@@ -94,10 +257,12 @@ export function validateProfileForPublish(input: ExpertProfileBasicsInput): Vali
       if (commaList(input.wellnessSpecialties).length === 0) errors.push("Wellness: list at least one specialty.")
       if (!input.wellnessApproach.trim()) errors.push("Wellness: describe your approach.")
       break
-    default:
-      if (commaList(input.academicSubjects).length === 0) errors.push("Academic: list at least one subject.")
-      if (!input.academicEducationLevel.trim()) errors.push("Academic: add the education level you support.")
-      if (!input.academicCredentials.trim()) errors.push("Academic: add your credentials or experience.")
+    case "Academic":
+    case "Plumbing":
+    case "Electrical":
+    case "Logistics":
+    case "Mechanics":
+      requireTradeOrTeachingDetails()
       break
   }
 

@@ -24,6 +24,8 @@ import {
 import {
   validateProfileForSave,
   validateProfileForPublish,
+  normalizeExpertCategory,
+  EXPERT_CATEGORY_VALUES,
   type ExpertProfileBasicsInput,
 } from "@/lib/expertProfileBasics"
 import { supabase } from "@/lib/supabase"
@@ -39,6 +41,56 @@ const INPUT_WITH_ICON =
 
 const FIELD_LABEL =
   "block text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-300 mb-2 px-1"
+
+function tradeFieldLabels(cat: string): {
+  subjects: string
+  level: string
+  creds: string
+  subjectsPh: string
+  levelPh: string
+  credsPh: string
+} {
+  if (cat === "Academic") {
+    return {
+      subjects: "Subjects or exams",
+      level: "Levels / learners you support",
+      creds: "Teaching credentials & experience",
+      subjectsPh: "Algebra, IELTS, SAT Math",
+      levelPh: "e.g. Grades 9–12, undergrad, professionals",
+      credsPh: "e.g. MSc Math, 8+ years tutoring",
+    }
+  }
+  return {
+    subjects: "Services or work types",
+    level: "Typical scope",
+    creds: "Licenses & relevant experience",
+    subjectsPh:
+      cat === "Plumbing"
+        ? "Leak repair, drain cleaning, water heater install"
+        : cat === "Electrical"
+          ? "Residential wiring, panel upgrades, safety inspections"
+          : cat === "Logistics"
+            ? "Last-mile delivery, warehousing, freight coordination"
+            : "Brake service, diagnostics, fleet maintenance",
+    levelPh: "e.g. residential only, commercial, nationwide",
+    credsPh: "e.g. licensed journeyman, EPA cert, 10+ yrs",
+  }
+}
+
+function qualificationsPlaceholder(cat: string): string {
+  switch (cat) {
+    case "Legal":
+      return "e.g. Advocate High Court, LL.M., 12 yrs corporate law"
+    case "Mental Health":
+      return "e.g. Licensed psychologist, trauma-focused therapist"
+    case "Wellness":
+      return "e.g. ISSA CPT, nutrition coach, 500+ clients"
+    case "Academic":
+      return "e.g. PhD Physics, IB examiner, 10+ yrs teaching"
+    default:
+      return "e.g. Licensed contractor, certified technician, 10+ yrs"
+  }
+}
 
 export default function TeacherProfile() {
   const { user, setUser } = useStore()
@@ -100,7 +152,7 @@ export default function TeacherProfile() {
       }
 
       if (data) {
-        setCategory(data.category || "Academic")
+        setCategory(normalizeExpertCategory(data.category) ?? "Academic")
         setBio(data.bio || "")
         setQualifications(data.qualifications || "")
         setHeadline(data.headline || "")
@@ -251,6 +303,8 @@ export default function TeacherProfile() {
   )
 
   const publishCheck = useMemo(() => validateProfileForPublish(validatorInput), [validatorInput])
+
+  const teachingTradeLabels = tradeFieldLabels(category)
 
   const submitReply = async (reviewId: string) => {
     if (!user) return
@@ -671,10 +725,10 @@ export default function TeacherProfile() {
                 </div>
               </div>
               <div>
-                <label className={FIELD_LABEL}>Qualifications</label>
+                <label className={FIELD_LABEL}>Qualifications (one short line)</label>
                 <input
                   type="text"
-                  placeholder="e.g. Board Certified, MBBS, 10+ yrs"
+                  placeholder={qualificationsPlaceholder(category)}
                   className={INPUT_CLASS}
                   value={qualifications}
                   onChange={(e) => setQualifications(e.target.value)}
@@ -705,6 +759,27 @@ export default function TeacherProfile() {
               </div>
             </div>
 
+            <div className="rounded-2xl border border-border bg-muted/25 px-4 py-4 md:col-span-2">
+              <label className={FIELD_LABEL}>Professional category</label>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 px-1 leading-relaxed">
+                This controls which <strong className="text-foreground">go-live checklist</strong> you see. Lawyers complete{" "}
+                <strong className="text-foreground">legal</strong> fields only; tutors complete <strong className="text-foreground">teaching</strong> fields; trades
+                complete <strong className="text-foreground">service / license</strong> fields — nothing is mixed together.
+              </p>
+              <select
+                className={`${INPUT_CLASS} bg-background`}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                aria-label="Professional category"
+              >
+                {EXPERT_CATEGORY_VALUES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label className={FIELD_LABEL}>Bio</label>
               <textarea
@@ -722,9 +797,23 @@ export default function TeacherProfile() {
               <div className="size-9 rounded-xl bg-slate-900/5 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-slate-800">
                 <ShieldCheck className="size-4 text-slate-700 dark:text-slate-200" />
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                {category} requirements
-              </h2>
+              <div>
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                  Only for {category}
+                </h2>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium leading-relaxed max-w-2xl">
+                  Fill <strong className="text-foreground">only</strong> this section for your category.{" "}
+                  {category === "Legal"
+                    ? "Bar registration, jurisdiction, and practice areas — not school subjects."
+                    : category === "Mental Health"
+                      ? "License and modalities — separate from tutoring or legal fields."
+                      : category === "Wellness"
+                        ? "Certifications, specialties, and approach — separate from clinical mental-health licensing."
+                        : category === "Academic"
+                          ? "Subjects and teaching credentials — lawyers use the Legal section instead."
+                          : "What you fix or deliver, scope, and trade credentials — different from Legal or Academic."}
+                </p>
+              </div>
             </div>
 
             {category === "Legal" && (
@@ -828,30 +917,30 @@ export default function TeacherProfile() {
               category === "Mechanics") && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-2">
-                  <label className={FIELD_LABEL}>Subjects / services (comma-separated)</label>
+                  <label className={FIELD_LABEL}>{teachingTradeLabels.subjects} (comma-separated)</label>
                   <input
                     value={academicSubjects}
                     onChange={(e) => setAcademicSubjects(e.target.value)}
                     className={INPUT_CLASS}
-                    placeholder="Algebra, IELTS, Physics"
+                    placeholder={teachingTradeLabels.subjectsPh}
                   />
                 </div>
                 <div>
-                  <label className={FIELD_LABEL}>Education / experience level</label>
+                  <label className={FIELD_LABEL}>{teachingTradeLabels.level}</label>
                   <input
                     value={academicEducationLevel}
                     onChange={(e) => setAcademicEducationLevel(e.target.value)}
                     className={INPUT_CLASS}
-                    placeholder="e.g. High school, University"
+                    placeholder={teachingTradeLabels.levelPh}
                   />
                 </div>
                 <div>
-                  <label className={FIELD_LABEL}>Credentials</label>
+                  <label className={FIELD_LABEL}>{teachingTradeLabels.creds}</label>
                   <input
                     value={academicCredentials}
                     onChange={(e) => setAcademicCredentials(e.target.value)}
                     className={INPUT_CLASS}
-                    placeholder="e.g. MSc Math, 8+ yrs experience"
+                    placeholder={teachingTradeLabels.credsPh}
                   />
                 </div>
               </div>
