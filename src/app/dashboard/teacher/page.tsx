@@ -30,8 +30,20 @@ import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { validateProfileForPublish, type ExpertProfileBasicsInput } from "@/lib/expertProfileBasics"
+import { ensureExpertTeacherRow } from "@/lib/ensureExpertTeacher"
 
 const AVAIL_TIP_KEY = "paktellect_dismiss_avail_tip_v1"
+
+function formatVisibilityError(err: unknown): string {
+  if (err && typeof err === "object") {
+    const o = err as { message?: string; details?: string; hint?: string; code?: string }
+    if (o.message) {
+      return [o.message, o.hint, o.details].filter(Boolean).join(" — ")
+    }
+  }
+  if (err instanceof Error) return err.message
+  return "Could not update directory visibility. Save your profile once, then try again."
+}
 
 export default function TeacherOverview() {
   const { user } = useStore()
@@ -206,6 +218,12 @@ export default function TeacherOverview() {
           })
         } else {
           console.warn("No teacher record found for expert user:", user.id)
+          setChecklist({
+            ok: false,
+            errors: [
+              "Open Profile and tap Save once so your expert record exists — then you can go live.",
+            ],
+          })
         }
       } catch (err) {
         console.error("Dashboard load crashed", err)
@@ -291,13 +309,46 @@ export default function TeacherOverview() {
     const previous = isPublic
     setIsPublic(next)
     try {
-      const { error } = await supabase
+      const { data: sessionData, error: sessErr } = await supabase.auth.getSession()
+      if (sessErr) throw sessErr
+      const authUser = sessionData.session?.user
+      if (!authUser) {
+        throw new Error("Your session expired. Please sign in again.")
+      }
+
+      const ensured = await ensureExpertTeacherRow(authUser)
+      if (ensured.status === "error") {
+        throw new Error(ensured.message)
+      }
+
+      const updatedAt = new Date().toISOString()
+
+      // Prefer UPDATE on an existing row — avoids PostgREST upsert edge cases with RLS.
+      const { data: updatedRows, error: updErr } = await supabase
         .from("teachers")
-        .upsert(
-          { user_id: user.id, is_public: next, updated_at: new Date().toISOString() },
+        .update({ is_public: next, updated_at: updatedAt })
+        .eq("user_id", authUser.id)
+        .select("id")
+
+      if (updErr) throw updErr
+
+      if (updatedRows && updatedRows.length > 0) {
+        setTeacherId(updatedRows[0].id)
+      } else {
+        const { error: upErr } = await supabase.from("teachers").upsert(
+          {
+            user_id: authUser.id,
+            category: category || "Academic",
+            is_public: next,
+            updated_at: updatedAt,
+          },
           { onConflict: "user_id" }
         )
-      if (error) throw error
+        if (upErr) throw upErr
+        const { data: row } = await supabase.from("teachers").select("id").eq("user_id", authUser.id).maybeSingle()
+        if (row?.id) setTeacherId(row.id)
+      }
+
       if (next) {
         toast.success("You're live", {
           description: "Your profile is now visible in the directory.",
@@ -308,10 +359,9 @@ export default function TeacherOverview() {
         })
       }
     } catch (err: unknown) {
-      console.error(err)
+      console.error("Go live / visibility failed:", err)
       setIsPublic(previous)
-      const msg = err instanceof Error ? err.message : "Failed to update visibility"
-      toast.error(msg)
+      toast.error(formatVisibilityError(err))
     } finally {
       setIsPublishing(false)
     }
