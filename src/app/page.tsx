@@ -10,6 +10,7 @@ import Link from "next/link"
 import { ArrowUpRight, Globe, Star, Zap, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { fetchProfilesByUserIds } from "@/lib/fetchProfilesByUserIds"
 import Image from "next/image"
 
 const FEATURE_CATEGORIES = ["Academic", "Legal", "Wellness", "Mental Health", "Plumbing", "Electrical", "Logistics", "Mechanics"] as const
@@ -17,6 +18,7 @@ const FEATURE_CATEGORIES = ["Academic", "Legal", "Wellness", "Mental Health", "P
 export default function Home() {
   type FeaturedExpert = {
     id: string
+    user_id: string
     category?: string | null
     qualifications?: string | null
     rating_avg?: number | null
@@ -33,9 +35,18 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    async function attachDisplayNames(rows: Omit<FeaturedExpert, "profiles">[]): Promise<FeaturedExpert[]> {
+      const ids = rows.map((r) => r.user_id).filter(Boolean)
+      const map = await fetchProfilesByUserIds<{ full_name?: string | null }>(supabase, ids, "id, full_name")
+      return rows.map((t) => ({
+        ...t,
+        profiles: map.has(t.user_id) ? { full_name: map.get(t.user_id)?.full_name ?? null } : null,
+      }))
+    }
+
     async function loadFeaturedForCategory(category: (typeof FEATURE_CATEGORIES)[number]): Promise<FeaturedExpert[]> {
-      const teacherSelect =
-        "id, category, qualifications, rating_avg, review_count, is_online, profile_pic_url, profiles!teachers_user_id_fkey(full_name)"
+      const teacherCols =
+        "id, user_id, category, qualifications, rating_avg, review_count, is_online, profile_pic_url"
 
       const { data: ranked, error: rErr } = await supabase
         .from("teacher_rankings")
@@ -49,11 +60,12 @@ export default function Home() {
         const teacherIds = ranked.map((x) => x.teacher_id as string)
         const { data: teachers, error: tErr } = await supabase
           .from("teachers")
-          .select(teacherSelect)
+          .select(teacherCols)
           .in("id", teacherIds)
         if (!tErr && teachers && teachers.length > 0) {
-          const byId = new Map((teachers as FeaturedExpert[]).map((t) => [t.id as string, t]))
-          return teacherIds.map((id) => byId.get(id)).filter(Boolean) as FeaturedExpert[]
+          const byId = new Map((teachers as Omit<FeaturedExpert, "profiles">[]).map((t) => [t.id as string, t]))
+          const ordered = teacherIds.map((id) => byId.get(id)).filter(Boolean) as Omit<FeaturedExpert, "profiles">[]
+          return attachDisplayNames(ordered)
         }
         if (tErr) console.warn("teacher_rankings ok but teachers fetch failed", tErr)
       } else if (rErr) {
@@ -62,7 +74,7 @@ export default function Home() {
 
       const { data: fallback, error: fErr } = await supabase
         .from("teachers")
-        .select(teacherSelect)
+        .select(teacherCols)
         .eq("category", category)
         .eq("is_public", true)
         .order("review_count", { ascending: false })
@@ -72,7 +84,7 @@ export default function Home() {
         console.error("Featured experts fallback failed", fErr.message, fErr)
         return []
       }
-      return (fallback ?? []) as FeaturedExpert[]
+      return attachDisplayNames((fallback ?? []) as Omit<FeaturedExpert, "profiles">[])
     }
 
     async function fetchFeatured() {

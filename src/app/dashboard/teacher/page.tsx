@@ -35,6 +35,7 @@ import {
   pickJoinedProfile,
 } from "@/lib/expertProfileBasics"
 import { ensureExpertTeacherRow } from "@/lib/ensureExpertTeacher"
+import { fetchProfilesByUserIds } from "@/lib/fetchProfilesByUserIds"
 
 const AVAIL_TIP_KEY = "paktellect_dismiss_avail_tip_v1"
 
@@ -102,42 +103,26 @@ export default function TeacherOverview() {
       if (!user) return
       try {
         console.log("Loading dashboard data for expert:", user.id)
-        
-        // Attempt to load teacher data with profile in one query
-        let { data: teacher, error } = await supabase
+
+        const { data: tOnly, error: tErr } = await supabase
           .from("teachers")
-          .select(`
-            *,
-            profiles!teachers_user_id_fkey(full_name, city, country, phone)
-          `)
+          .select("*")
           .eq("user_id", user.id)
           .maybeSingle()
 
-        if (error) {
-          console.warn("Joint query failed, attempting separate fetches:", error.message)
-          
-          // Fallback: Fetch teacher and profile separately if relationship is missing
-          const { data: tOnly, error: tErr } = await supabase
-            .from("teachers")
-            .select("*")
-            .eq("user_id", user.id)
-            .maybeSingle()
-            
-          if (tErr) throw tErr
-          
-          if (tOnly) {
-            const { data: pOnly, error: pErr } = await supabase
-              .from("profiles")
-              .select("full_name, city, country, phone")
-              .eq("id", user.id)
-              .maybeSingle()
-              
-            if (pErr) console.error("Could not fetch profile fallback:", pErr)
-            
-            teacher = {
-              ...tOnly,
-              profiles: pOnly || null
-            }
+        if (tErr) throw tErr
+
+        let teacher: (typeof tOnly & { profiles?: unknown }) | null = null
+        if (tOnly) {
+          const profMap = await fetchProfilesByUserIds<{
+            full_name?: string | null
+            city?: string | null
+            country?: string | null
+            phone?: string | null
+          }>(supabase, [user.id], "id, full_name, city, country, phone")
+          teacher = {
+            ...tOnly,
+            profiles: profMap.get(user.id) ?? null,
           }
         }
 
@@ -320,15 +305,26 @@ export default function TeacherOverview() {
       // Re-load row and re-validate so we never send is_public=true when the DB trigger
       // (e.g. Academic subjects) would reject — also fixes stale dashboard state.
       if (next) {
-        const { data: freshTeacher, error: freshErr } = await supabase
+        const { data: freshRow, error: freshErr } = await supabase
           .from("teachers")
-          .select(`*, profiles!teachers_user_id_fkey(full_name, city, country, phone)`)
+          .select("*")
           .eq("user_id", authUser.id)
           .maybeSingle()
 
         if (freshErr) throw freshErr
-        if (!freshTeacher) {
+        if (!freshRow) {
           throw new Error("No expert record found. Open Profile and tap Save once, then try Go Live.")
+        }
+
+        const profMap = await fetchProfilesByUserIds<{
+          full_name?: string | null
+          city?: string | null
+          country?: string | null
+          phone?: string | null
+        }>(supabase, [authUser.id], "id, full_name, city, country, phone")
+        const freshTeacher = {
+          ...freshRow,
+          profiles: profMap.get(authUser.id) ?? null,
         }
 
         const prof = pickJoinedProfile(

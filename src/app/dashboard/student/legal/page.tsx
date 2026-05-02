@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
+import { fetchProfilesByUserIds } from "@/lib/fetchProfilesByUserIds"
 import Link from "next/link"
 import { toast } from "sonner"
 import { Loader2, Scale, FileText, ChevronRight, Signature } from "lucide-react"
@@ -28,12 +29,23 @@ export default function StudentLegalFiles() {
       try {
         const { data: m, error: mErr } = await supabase
           .from("matters")
-          // Avoid relying on a specific FK constraint name (schema-cache mismatch can break embeds).
-          .select("id, title, status, created_at, teacher:teachers(id, profiles!teachers_user_id_fkey(full_name))")
+          .select("id, title, status, created_at, teacher:teachers(id, user_id)")
           .eq("client_id", user.id)
           .order("created_at", { ascending: false })
         if (mErr) throw mErr
-        setMatters((m || []) as MatterListRow[])
+        const raw = (m || []) as Array<MatterListRow & { teacher?: { id?: string; user_id?: string } | null }>
+        const uids = raw.map((row) => row.teacher?.user_id).filter((id): id is string => Boolean(id))
+        const names = await fetchProfilesByUserIds<{ full_name?: string | null }>(supabase, uids, "id, full_name")
+        const enriched = raw.map((row) => ({
+          ...row,
+          teacher: row.teacher
+            ? {
+                id: row.teacher.id,
+                profiles: row.teacher.user_id ? names.get(row.teacher.user_id) ?? null : null,
+              }
+            : row.teacher,
+        }))
+        setMatters(enriched as MatterListRow[])
 
         const { count: sigCount, error: sErr } = await supabase
           .from("esign_requests")

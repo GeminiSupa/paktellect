@@ -7,6 +7,7 @@ import Image from "next/image"
 
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
+import { fetchProfilesByUserIds } from "@/lib/fetchProfilesByUserIds"
 
 type ProfileLite = { full_name?: string | null; avatar_url?: string | null }
 
@@ -44,15 +45,29 @@ export default function StudentMessagesInbox() {
       try {
         const { data } = await supabase
           .from("bookings")
-          .select(
-            "id, topic, status, booking_date, booking_time, expert_id, teachers!bookings_expert_id_fkey(user_id, category, profiles!teachers_user_id_fkey(full_name, avatar_url))"
-          )
+          .select("id, topic, status, booking_date, booking_time, expert_id, teachers!bookings_expert_id_fkey(user_id, category)")
           .eq("user_id", user!.id)
           .order("booking_date", { ascending: false })
           .limit(50)
 
         if (!active) return
-        const rows = (data || []) as unknown as BookingThread[]
+        const rowsRaw = (data || []) as unknown as BookingThread[]
+        const expertUserIds = rowsRaw
+          .map((r) => r.teachers?.user_id)
+          .filter((uid): uid is string => typeof uid === "string" && uid.length > 0)
+        const profMap = await fetchProfilesByUserIds<ProfileLite & { id?: string }>(
+          supabase,
+          expertUserIds,
+          "id, full_name, avatar_url"
+        )
+        const rows = rowsRaw.map((r) => {
+          const uid = r.teachers?.user_id
+          const profiles = uid ? profMap.get(uid) ?? null : null
+          return {
+            ...r,
+            teachers: r.teachers ? { ...r.teachers, profiles } : r.teachers,
+          }
+        })
         setThreads(rows)
 
         const ids = rows.map((r) => r.id)

@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react"
 import { useStore } from "@/store/useStore"
 import { supabase } from "@/lib/supabase"
+import { fetchProfilesByUserIds } from "@/lib/fetchProfilesByUserIds"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
@@ -51,17 +52,34 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
             *,
             expert:expert_id (
               id,
+              user_id,
               headline,
               rating_avg,
-              profile_pic_url,
-              profiles!teachers_user_id_fkey (full_name, city, country)
+              profile_pic_url
             )
           `)
           .eq("job_id", id)
           .order("created_at", { ascending: false })
 
         if (aErr) throw aErr
-        setApplications(apps || [])
+        const list = apps || []
+        const expertUserIds = list
+          .map((a: { expert?: { user_id?: string } }) => a.expert?.user_id)
+          .filter((uid): uid is string => typeof uid === "string" && uid.length > 0)
+        const profMap = await fetchProfilesByUserIds<{ full_name?: string | null; city?: string | null; country?: string | null }>(
+          supabase,
+          expertUserIds,
+          "id, full_name, city, country"
+        )
+        const merged = list.map((app: { expert?: { user_id?: string } }) => {
+          const uid = app.expert?.user_id
+          const profiles =
+            uid && profMap.has(uid)
+              ? profMap.get(uid)!
+              : { full_name: "Expert", city: null as string | null, country: null as string | null }
+          return app.expert ? { ...app, expert: { ...app.expert, profiles } } : app
+        })
+        setApplications(merged)
       } catch (err: any) {
         console.error(err)
         toast.error("Failed to load project details")

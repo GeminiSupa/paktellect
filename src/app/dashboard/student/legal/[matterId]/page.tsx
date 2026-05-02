@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import { fetchProfilesByUserIds } from "@/lib/fetchProfilesByUserIds"
 import { useStore } from "@/store/useStore"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/Button"
@@ -12,7 +13,7 @@ type MatterRow = {
   id: string
   title: string
   status: string
-  teacher?: { profiles?: { full_name?: string | null } | null } | null
+  teacher?: { user_id?: string; profiles?: { full_name?: string | null } | null } | null
 }
 
 type DocRow = {
@@ -52,11 +53,23 @@ export default function StudentMatterDetail() {
       try {
         const { data: m, error: mErr } = await supabase
           .from("matters")
-          .select("id, title, status, teacher:teachers(profiles!teachers_user_id_fkey(full_name))")
+          .select("id, title, status, teacher:teachers(user_id)")
           .eq("id", matterId)
           .single()
         if (mErr) throw mErr
-        setMatter(m as MatterRow)
+        const matterRaw = m as MatterRow | null
+        if (matterRaw?.teacher?.user_id) {
+          const pmap = await fetchProfilesByUserIds<{ full_name?: string | null }>(
+            supabase,
+            [matterRaw.teacher.user_id],
+            "id, full_name"
+          )
+          matterRaw.teacher = {
+            ...matterRaw.teacher,
+            profiles: pmap.get(matterRaw.teacher.user_id) ?? null,
+          }
+        }
+        setMatter(matterRaw)
 
         const { data: d, error: dErr } = await supabase
           .from("matter_documents")

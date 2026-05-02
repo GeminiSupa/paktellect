@@ -3,6 +3,12 @@
 -- Run this entire script in Supabase SQL Editor.
 -- Safe to re-run multiple times.
 -- ============================================================
+--
+-- Expert directory (/experts): the app lists teachers where is_public IS TRUE or IS NULL
+-- (legacy rows). Experts must complete profile requirements and use Dashboard → Go Live
+-- so is_public becomes TRUE. Anonymous visitors only pass RLS when those visibility rules
+-- hold—or when they already have a booking / job / offer / legal matter with that expert.
+-- ============================================================
 
 -- ============================================================
 -- STEP 1: DROP ALL DEPENDENT POLICIES (prevents type-change errors)
@@ -33,6 +39,7 @@ BEGIN
 
     -- teachers policies
     DROP POLICY IF EXISTS "Public teachers are viewable by everyone" ON teachers;
+    DROP POLICY IF EXISTS "Teachers readable by owner public or participants" ON teachers;
     DROP POLICY IF EXISTS "Teachers can insert their own profile" ON teachers;
     DROP POLICY IF EXISTS "Teachers can update their own profile" ON teachers;
 
@@ -130,7 +137,7 @@ FOR EACH ROW EXECUTE FUNCTION public.handle_new_user_profile();
 -- Must exist before bookings due to FK reference
 CREATE TABLE IF NOT EXISTS teachers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   bio TEXT,
   qualifications TEXT,
   hourly_rate NUMERIC,
@@ -184,16 +191,63 @@ BEFORE INSERT OR UPDATE ON public.teachers
 FOR EACH ROW
 EXECUTE FUNCTION public.enforce_teacher_public_requirements();
 
--- Ensure PostgREST join support for `profiles!teachers_user_id_fkey(...)`
+-- teachers.user_id must reference public.profiles(id) (not only auth.users) so:
+-- (1) PostgREST exposes a stable teachers ↔ profiles relationship for embeds;
+-- (2) a profile row must exist before an expert teacher row (same UUID as auth user).
 DO $$
+DECLARE
+  r RECORD;
 BEGIN
+  FOR r IN
+    SELECT c.conname AS cname
+    FROM pg_constraint c
+    INNER JOIN pg_class t ON c.conrelid = t.oid
+    INNER JOIN pg_namespace n ON t.relnamespace = n.oid
+    WHERE n.nspname = 'public'
+      AND t.relname = 'teachers'
+      AND c.contype = 'f'
+      AND EXISTS (
+        SELECT 1
+        FROM unnest(c.conkey) AS ck(attnum)
+        INNER JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ck.attnum AND NOT a.attisdropped
+        WHERE a.attname = 'user_id'
+      )
+  LOOP
+    EXECUTE format('ALTER TABLE public.teachers DROP CONSTRAINT IF EXISTS %I', r.cname);
+  END LOOP;
+
+  -- Every teachers.user_id must exist in profiles before FK(public.profiles) can be added.
+  -- Experts sometimes have a teachers row but no profile (signup path skipped handle_new_user_profile).
+  INSERT INTO public.profiles (id, full_name, role, updated_at)
+  SELECT u.id,
+         COALESCE(NULLIF(btrim(u.raw_user_meta_data->>'full_name'), ''), 'Expert'),
+         'expert',
+         NOW()
+  FROM public.teachers t
+  INNER JOIN auth.users u ON u.id = t.user_id
+  LEFT JOIN public.profiles p ON p.id = t.user_id
+  WHERE p.id IS NULL
+  ON CONFLICT (id) DO NOTHING;
+
+  IF EXISTS (
+    SELECT 1
+    FROM public.teachers t
+    WHERE NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = t.user_id)
+  ) THEN
+    RAISE EXCEPTION
+      'Cannot add teachers_user_id_fkey: % teacher row(s) still lack a profiles row after backfill (user_id not in auth.users, or delete those teacher rows / insert profiles manually).',
+      (SELECT COUNT(*)::INT FROM public.teachers t WHERE NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = t.user_id));
+  END IF;
+
   IF NOT EXISTS (
     SELECT 1
-    FROM information_schema.table_constraints
-    WHERE table_schema = 'public'
-      AND table_name = 'teachers'
-      AND constraint_type = 'FOREIGN KEY'
-      AND constraint_name = 'teachers_user_id_fkey'
+    FROM pg_constraint c
+    INNER JOIN pg_class t ON c.conrelid = t.oid
+    INNER JOIN pg_namespace n ON t.relnamespace = n.oid
+    WHERE n.nspname = 'public'
+      AND t.relname = 'teachers'
+      AND c.contype = 'f'
+      AND c.conname = 'teachers_user_id_fkey'
   ) THEN
     ALTER TABLE public.teachers
       ADD CONSTRAINT teachers_user_id_fkey
@@ -526,8 +580,24 @@ CREATE POLICY "Users can update own profile"
 -- Policy is created after the view is defined (see below).
 
 -- TEACHERS
-CREATE POLICY "Public teachers are viewable by everyone"
-  ON teachers FOR SELECT USING (true);
+-- Prefer this over SELECT USING (true): hide is_public = false from anonymous visitors while keeping
+-- dashboard, bookings, and booking_offers working. Matters / job proposals clauses are layered
+-- later once those tables exist (see legal module + marketplace sections).
+CREATE POLICY "Teachers readable by owner public or participants"
+  ON teachers FOR SELECT
+  USING (
+    auth.uid() = user_id
+    OR (is_public IS TRUE OR is_public IS NULL)
+    OR EXISTS (
+      SELECT 1 FROM public.bookings b
+      WHERE b.expert_id = teachers.id AND b.user_id = auth.uid()
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.booking_offers o
+      WHERE o.expert_teacher_id = teachers.id
+        AND (o.student_user_id = auth.uid() OR o.expert_user_id = auth.uid())
+    )
+  );
 
 CREATE POLICY "Teachers can insert their own profile"
   ON teachers FOR INSERT WITH CHECK (auth.uid() = user_id);
@@ -1081,6 +1151,29 @@ CREATE POLICY "Lawyers can manage time entries"
   USING (auth.uid() IN (SELECT user_id FROM teachers WHERE id = teacher_id))
   WITH CHECK (auth.uid() IN (SELECT user_id FROM teachers WHERE id = teacher_id));
 
+-- Matters exists only after this step; extend teachers SELECT so legal clients can load lawyer embeds.
+-- (job_applications is added later — see marketplace section below.)
+DROP POLICY IF EXISTS "Teachers readable by owner public or participants" ON teachers;
+CREATE POLICY "Teachers readable by owner public or participants"
+  ON teachers FOR SELECT
+  USING (
+    auth.uid() = user_id
+    OR (is_public IS TRUE OR is_public IS NULL)
+    OR EXISTS (
+      SELECT 1 FROM public.bookings b
+      WHERE b.expert_id = teachers.id AND b.user_id = auth.uid()
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.booking_offers o
+      WHERE o.expert_teacher_id = teachers.id
+        AND (o.student_user_id = auth.uid() OR o.expert_user_id = auth.uid())
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.matters m
+      WHERE m.teacher_id = teachers.id AND m.client_id = auth.uid()
+    )
+  );
+
 -- ============================================================
 -- STEP 6: STORAGE BUCKETS & POLICIES
 -- ============================================================
@@ -1233,6 +1326,33 @@ CREATE POLICY "Experts can apply to jobs"
 CREATE POLICY "Applicants can update their applications"
   ON job_applications FOR UPDATE
   USING (auth.uid() IN (SELECT user_id FROM teachers WHERE id = expert_id));
+
+-- Full teachers SELECT policy (job_applications + jobs exist only from this point forward).
+DROP POLICY IF EXISTS "Teachers readable by owner public or participants" ON teachers;
+CREATE POLICY "Teachers readable by owner public or participants"
+  ON teachers FOR SELECT
+  USING (
+    auth.uid() = user_id
+    OR (is_public IS TRUE OR is_public IS NULL)
+    OR EXISTS (
+      SELECT 1 FROM public.bookings b
+      WHERE b.expert_id = teachers.id AND b.user_id = auth.uid()
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.job_applications ja
+      INNER JOIN public.jobs j ON j.id = ja.job_id
+      WHERE ja.expert_id = teachers.id AND j.client_id = auth.uid()
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.booking_offers o
+      WHERE o.expert_teacher_id = teachers.id
+        AND (o.student_user_id = auth.uid() OR o.expert_user_id = auth.uid())
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.matters m
+      WHERE m.teacher_id = teachers.id AND m.client_id = auth.uid()
+    )
+  );
 
 -- Update messages to support job_id
 DO $$

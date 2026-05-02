@@ -353,14 +353,35 @@ function ExpertsContent() {
 
         {isLoading ? (
           <div className="flex justify-center items-center py-40 min-h-[40vh]"><Loader2 className="animate-spin size-12 text-primary" /></div>
+        ) : loadError ? (
+          <div className="py-16 text-center text-sm text-muted-foreground font-medium">Fix the connection issue above, then retry.</div>
         ) : activeExperts.length === 0 ? (
-          <div className="text-center py-40 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl">
-            <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-950 mx-auto flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-800">
-              <Search className="size-10 text-slate-300" />
+          experts.length === 0 ? (
+            <div className="text-center py-40 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl">
+              <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-950 mx-auto flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-800">
+                <Search className="size-10 text-slate-300" />
+              </div>
+              <h3 className="text-3xl font-black text-slate-950 dark:text-white tracking-tighter mb-4">No experts listed yet</h3>
+              <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto font-medium leading-relaxed">
+                The directory only shows experts who have turned on{" "}
+                <strong className="text-foreground font-black">directory visibility</strong> (Go Live). If you are an expert, open your dashboard checklist,
+                complete what your category requires, then enable Go Live. In Supabase, confirm{" "}
+                <code className="text-xs bg-muted px-1.5 py-0.5 rounded">teachers.is_public</code> is{" "}
+                <code className="text-xs bg-muted px-1.5 py-0.5 rounded">true</code> after publishing.
+              </p>
             </div>
-            <h3 className="text-3xl font-black text-slate-950 dark:text-white tracking-tighter mb-4">No experts found</h3>
-            <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">We couldn&apos;t find a match for your search. Try broadening your criteria or selecting a different category.</p>
-          </div>
+          ) : (
+            <div className="text-center py-40 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl">
+              <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-950 mx-auto flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-800">
+                <Search className="size-10 text-slate-300" />
+              </div>
+              <h3 className="text-3xl font-black text-slate-950 dark:text-white tracking-tighter mb-4">No experts found</h3>
+              <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">
+                We couldn&apos;t find a match for your search or category filter. Try clearing the search box or choosing{" "}
+                <strong className="text-foreground">All</strong>.
+              </p>
+            </div>
+          )
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             <AnimatePresence mode='popLayout'>
