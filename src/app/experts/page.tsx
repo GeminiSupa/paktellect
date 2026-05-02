@@ -426,7 +426,8 @@ function ExpertsContent() {
                                 <div className="flex flex-col items-end gap-3">
                                     {typeof expert.rate === "number" && expert.rate > 0 ? (
                                       <div className="bg-slate-950 dark:bg-primary text-white dark:text-primary-foreground px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl text-base sm:text-lg font-black shadow-xl tabular-nums max-w-full truncate">
-                                          ${expert.rate}<span className="text-[10px] opacity-70 ml-1">/hr</span>
+                                          PKR {expert.rate.toLocaleString(undefined, { maximumFractionDigits: expert.rate % 1 ? 2 : 0 })}
+                                          <span className="text-[10px] opacity-70 ml-1">/hr</span>
                                       </div>
                                     ) : (
                                       <div className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700">

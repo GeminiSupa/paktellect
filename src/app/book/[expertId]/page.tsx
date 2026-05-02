@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { Loader2, Calendar, Video, Clock, ShieldCheck, MessageSquare } from "lucide-react"
+import { Loader2, Calendar, Video, Clock, ShieldCheck, MessageSquare, ExternalLink } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -13,6 +13,34 @@ import { supabase } from "@/lib/supabase"
 import { Navbar } from "@/components/Navbar"
 import { Footer } from "@/components/Footer"
 import Link from "next/link"
+import Image from "next/image"
+
+function formatPkrHourly(rate: number) {
+  const n = Number(rate)
+  if (!Number.isFinite(n)) return "PKR —/hr"
+  const formatted = n % 1 === 0 ? n.toLocaleString() : n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+  return `PKR ${formatted}/hr`
+}
+
+const MAX_PORTFOLIO_IMAGES = 8
+
+type PortfolioItem = { id?: string; type?: string; content?: unknown }
+
+function parsePortfolioUrls(raw: unknown): { images: string[]; links: string[] } {
+  if (!raw || !Array.isArray(raw)) return { images: [], links: [] }
+  const images: string[] = []
+  const links: string[] = []
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object") continue
+    const item = entry as PortfolioItem
+    const content = typeof item.content === "string" ? item.content.trim() : ""
+    if (!content || !/^https?:\/\//i.test(content)) continue
+    if (item.type === "image") images.push(content)
+    else if (item.type === "link") links.push(content)
+  }
+  const uniq = (arr: string[]) => [...new Set(arr)]
+  return { images: uniq(images), links: uniq(links) }
+}
 
 const bookingSchema = z.object({
   date: z.string().min(1, "Please select a date"),
@@ -23,6 +51,16 @@ const bookingSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingSchema>
 
+type TeacherBookingRow = {
+  id: string
+  user_id: string
+  qualifications: string | null
+  hourly_rate: number | null
+  profile_pic_url?: string | null
+  headline?: string | null
+  portfolio_urls?: unknown
+}
+
 export default function BookingPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [expert, setExpert] = useState<{
@@ -32,6 +70,9 @@ export default function BookingPage() {
     role: string
     company: string
     rate: number
+    photoUrl: string | null
+    portfolioImages: string[]
+    portfolioLinks: string[]
   } | null>(null)
   const [isContactOpen, setIsContactOpen] = useState(false)
   const [contactMessage, setContactMessage] = useState("")
@@ -54,28 +95,48 @@ export default function BookingPage() {
       if (!expertId) return
       
       try {
-        const { data: teacher, error: tErr } = await supabase
-            .from('teachers')
-            .select('id, user_id, qualifications, hourly_rate')
-            .eq('id', expertId)
+        const { data: teacherRaw, error: tErr } = await supabase
+            .from("teachers")
+            .select("id, user_id, qualifications, hourly_rate, profile_pic_url, headline, portfolio_urls")
+            .eq("id", expertId)
             .single()
-            
+
         if (tErr) throw tErr
-        
+
+        const teacher = teacherRaw as TeacherBookingRow | null
+
         if (teacher) {
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('full_name')
+                .select('full_name, avatar_url')
                 .eq('id', teacher.user_id)
                 .single()
-                
+
+            const pic =
+              (typeof teacher.profile_pic_url === "string" && teacher.profile_pic_url.trim()) ||
+              (typeof profile?.avatar_url === "string" && profile.avatar_url.trim()) ||
+              null
+
+            const subtitle =
+              (typeof teacher.headline === "string" && teacher.headline.trim()) ||
+              teacher.qualifications?.split(',')[0]?.trim() ||
+              "Consultant"
+
+            const { images: rawImages, links: rawLinks } = parsePortfolioUrls(teacher.portfolio_urls)
+            const portfolioImages = rawImages
+              .filter((u) => u !== pic)
+              .slice(0, MAX_PORTFOLIO_IMAGES)
+
             setExpert({
                 id: teacher.id,
                 user_id: teacher.user_id,
                 name: profile?.full_name || "Expert",
-                role: teacher.qualifications?.split(',')[0] || "Consultant",
+                role: subtitle,
                 company: teacher.qualifications?.split(',')[1]?.trim() || "Independent",
                 rate: teacher.hourly_rate ?? 0,
+                photoUrl: pic,
+                portfolioImages,
+                portfolioLinks: rawLinks,
             })
         } else {
             toast.error("Expert not found.")
@@ -208,23 +269,36 @@ export default function BookingPage() {
   return (
     <main className="min-h-screen bg-[#f8fafc] dark:bg-slate-950">
       <Navbar />
-      <div className="container mx-auto px-4 pt-40 pb-20">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="container mx-auto px-4 pt-36 sm:pt-40 pb-20">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 items-start">
           
           {/* Sidebar: Expert Summary */}
           <div className="lg:col-span-1">
-             <div className="bg-[#0f172a] text-white rounded-[2.5rem] p-8 sticky top-40 shadow-2xl">
-                <div className="size-24 rounded-3xl bg-primary flex items-center justify-center text-3xl font-black mb-6 shadow-xl shadow-emerald-500/20">
-                    {expert.name.charAt(0)}
+             <div className="bg-[#0f172a] text-white rounded-[2.5rem] p-8 lg:sticky lg:top-36 shadow-2xl border border-white/5">
+                <div className="relative size-28 rounded-3xl overflow-hidden mb-6 shadow-xl shadow-emerald-500/20 ring-2 ring-white/10 bg-primary shrink-0">
+                    {expert.photoUrl ? (
+                      <Image
+                        src={expert.photoUrl}
+                        alt={expert.name}
+                        fill
+                        className="object-cover"
+                        sizes="112px"
+                        priority
+                      />
+                    ) : (
+                      <div className="flex h-full min-h-28 w-full items-center justify-center text-3xl font-black text-primary-foreground bg-primary">
+                        {expert.name.charAt(0)}
+                      </div>
+                    )}
                 </div>
-                <h3 className="text-2xl font-black tracking-tight mb-2">{expert.name}</h3>
-                <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-6">{expert.role}</p>
+                <h3 className="text-2xl font-black tracking-tight mb-2 wrap-break-word">{expert.name}</h3>
+                <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-6 wrap-break-word">{expert.role}</p>
                 
                 <div className="space-y-4 pt-6 border-t border-white/10 text-sm">
-                   <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Hourly Rate</span>
+                   <div className="flex justify-between items-center gap-3">
+                      <span className="text-slate-400 shrink-0">Hourly rate</span>
                       {rateIsSet ? (
-                        <span className="font-black text-xl text-primary">${expert.rate}/hr</span>
+                        <span className="font-black text-lg sm:text-xl text-primary tabular-nums text-right">{formatPkrHourly(expert.rate)}</span>
                       ) : (
                         <span className="font-black text-xs text-slate-300 uppercase tracking-widest">Not set</span>
                       )}
@@ -234,6 +308,58 @@ export default function BookingPage() {
                       <ShieldCheck className="size-4" />
                    </div>
                 </div>
+
+                {(expert.portfolioImages.length > 0 || expert.portfolioLinks.length > 0) ? (
+                  <div className="pt-6 mt-2 border-t border-white/10 space-y-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Portfolio</p>
+                    {expert.portfolioImages.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        {expert.portfolioImages.map((url) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="relative aspect-square rounded-xl overflow-hidden ring-1 ring-white/15 bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <Image
+                              src={url}
+                              alt={`${expert.name} portfolio`}
+                              fill
+                              className="object-cover transition-transform hover:scale-105"
+                              sizes="(max-width: 1024px) 40vw, 160px"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
+                    {expert.portfolioLinks.length > 0 ? (
+                      <ul className="space-y-2">
+                        {expert.portfolioLinks.map((url) => {
+                          let label = url
+                          try {
+                            label = new URL(url).hostname.replace(/^www\./, "")
+                          } catch {
+                            /* keep full url */
+                          }
+                          return (
+                            <li key={url}>
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/90 break-all"
+                              >
+                                <ExternalLink className="size-3.5 shrink-0 opacity-90" aria-hidden />
+                                <span className="underline-offset-2 hover:underline">{label}</span>
+                              </a>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    ) : null}
+                  </div>
+                ) : null}
              </div>
           </div>
 
@@ -353,15 +479,15 @@ export default function BookingPage() {
                 <fieldset disabled={!rateIsSet || isLoading} className={!rateIsSet ? "opacity-60 pointer-events-none" : ""}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-3">
-                        <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                            <Calendar className="size-4 text-primary" /> Select Date
+                        <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                            <Calendar className="size-4 text-primary shrink-0" aria-hidden /> Select date
                         </label>
                         <Input type="date" className="h-16 rounded-2xl border-slate-200 focus:ring-primary bg-slate-50 dark:bg-slate-950" disabled={isLoading} {...register("date")} />
                         {errors.date && <p className="text-xs text-red-500 font-bold">{errors.date.message}</p>}
                     </div>
                     <div className="space-y-3">
-                        <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                            <Clock className="size-4 text-orange-500" /> Select Time
+                        <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                            <Clock className="size-4 text-primary shrink-0" aria-hidden /> Select time
                         </label>
                         <Input type="time" className="h-16 rounded-2xl border-slate-200 focus:ring-primary bg-slate-50 dark:bg-slate-950" disabled={isLoading} {...register("time")} />
                         {errors.time && <p className="text-xs text-red-500 font-bold">{errors.time.message}</p>}
@@ -369,8 +495,8 @@ export default function BookingPage() {
                 </div>
 
                 <div className="space-y-3">
-                    <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                        <Video className="size-4 text-purple-500" /> Meeting Link (Zoom/Meet)
+                    <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                        <Video className="size-4 text-primary shrink-0" aria-hidden /> Meeting link (Zoom/Meet)
                     </label>
                     <Input 
                         placeholder="https://zoom.us/j/..." 
@@ -382,7 +508,7 @@ export default function BookingPage() {
                 </div>
 
                 <div className="space-y-3">
-                    <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Project / Topic Description</label>
+                    <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">Project / topic description</label>
                     <textarea 
                         className="flex min-h-[160px] w-full rounded-3xl border border-slate-200 bg-slate-50 dark:bg-slate-950 px-6 py-4 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
                         placeholder="Describe what you need help with in detail..."
@@ -396,8 +522,8 @@ export default function BookingPage() {
                     <Button type="submit" className="w-full h-20 text-xl font-black bg-primary hover:bg-emerald-700 text-white rounded-[2rem] shadow-2xl shadow-emerald-500/30 transition-all hover:scale-[1.02]" disabled={isLoading}>
                         {isLoading ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : "Confirm and Hold Funds"}
                     </Button>
-                    <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-6">
-                        No money is released until the session ends
+                    <p className="text-center text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide sm:tracking-widest mt-6 max-w-md mx-auto leading-relaxed">
+                        No money is released until the session ends.
                     </p>
                 </div>
                 </fieldset>
