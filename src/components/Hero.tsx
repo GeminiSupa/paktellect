@@ -117,7 +117,7 @@ export function Hero() {
 
           {/* Interactive Domain Grid */}
           <motion.div 
-            className="mt-20 sm:mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 w-full"
+            className="relative z-10 mt-20 sm:mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 w-full isolate"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 1 }}
@@ -201,9 +201,9 @@ function CategoryCard({
 }) {
   return (
     <Link href={href} className="group block">
-      <div className="h-full p-6 sm:p-8 rounded-[2.5rem] border border-white/12 bg-white/6 backdrop-blur-xl shadow-lg shadow-black/25 transition-all duration-500 group-hover:-translate-y-2 sm:group-hover:-translate-y-3 group-hover:border-teal-400/40 group-hover:bg-emerald-500/9 group-hover:shadow-[0_24px_48px_-12px_rgba(20,184,166,0.22)]">
+      <div className="h-full overflow-hidden rounded-[2.5rem] border border-white/12 bg-white/6 p-6 sm:p-8 backdrop-blur-xl shadow-lg shadow-black/25 transition-all duration-500 group-hover:-translate-y-2 sm:group-hover:-translate-y-3 group-hover:border-teal-400/40 group-hover:bg-emerald-500/9 group-hover:shadow-[0_24px_48px_-12px_rgba(20,184,166,0.22)]">
         <div
-          className={`size-14 sm:size-16 rounded-[1.8rem] bg-linear-to-br ${color} flex items-center justify-center text-white mb-5 sm:mb-6 shadow-inner border border-white/15 ring-1 ring-white/10 transition-all duration-500 group-hover:rotate-6 group-hover:ring-teal-400/40`}
+          className={`relative z-10 size-14 sm:size-16 shrink-0 rounded-[1.8rem] bg-linear-to-br ${color} flex items-center justify-center text-white mb-5 sm:mb-6 shadow-inner border border-white/15 ring-1 ring-white/10 transition-all duration-500 group-hover:rotate-6 group-hover:ring-teal-400/40`}
         >
           {icon}
         </div>

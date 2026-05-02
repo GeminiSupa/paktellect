@@ -39,6 +39,15 @@ function featuredExpertHeaderGradient(category: string | null | undefined): stri
   }
 }
 
+function expertDisplayPhoto(expert: {
+  profile_pic_url?: string | null
+  profiles?: { avatar_url?: string | null } | null
+}): string | null {
+  const fromTeacher = expert.profile_pic_url?.trim()
+  const fromProfile = expert.profiles?.avatar_url?.trim()
+  return fromTeacher || fromProfile || null
+}
+
 export default function Home() {
   type FeaturedExpert = {
     id: string
@@ -49,7 +58,7 @@ export default function Home() {
     review_count?: number | null
     is_online?: boolean | null
     profile_pic_url?: string | null
-    profiles?: { full_name?: string | null } | null
+    profiles?: { full_name?: string | null; avatar_url?: string | null } | null
   }
 
   const categories = FEATURE_CATEGORIES
@@ -61,11 +70,20 @@ export default function Home() {
   useEffect(() => {
     async function attachDisplayNames(rows: Omit<FeaturedExpert, "profiles">[]): Promise<FeaturedExpert[]> {
       const ids = rows.map((r) => r.user_id).filter(Boolean)
-      const map = await fetchProfilesByUserIds<{ full_name?: string | null }>(supabase, ids, "id, full_name")
-      return rows.map((t) => ({
-        ...t,
-        profiles: map.has(t.user_id) ? { full_name: map.get(t.user_id)?.full_name ?? null } : null,
-      }))
+      const map = await fetchProfilesByUserIds<{ full_name?: string | null; avatar_url?: string | null }>(
+        supabase,
+        ids,
+        "id, full_name, avatar_url"
+      )
+      return rows.map((t) => {
+        const p = map.get(t.user_id)
+        return {
+          ...t,
+          profiles: p
+            ? { full_name: p.full_name ?? null, avatar_url: p.avatar_url ?? null }
+            : null,
+        }
+      })
     }
 
     async function loadFeaturedForCategory(category: (typeof FEATURE_CATEGORIES)[number]): Promise<FeaturedExpert[]> {
@@ -166,23 +184,24 @@ export default function Home() {
         </div>
 
         {isLoading ? (
-          <div className="space-y-16">
-            {[1, 2].map((groupIdx) => (
-              <div key={groupIdx} className="space-y-8">
-                <div className="h-10 w-48 bg-muted rounded-xl animate-pulse" />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                  {[1, 2, 3].map((cardIdx) => (
-                    <div key={cardIdx} className="premium-card p-1 bg-card h-[400px] flex flex-col border-border animate-pulse">
-                      <div className="aspect-4/3 rounded-[2rem] bg-muted mb-8" />
-                      <div className="p-8 pt-0 grow flex flex-col gap-4">
-                        <div className="h-8 bg-muted rounded-lg w-3/4" />
-                        <div className="h-4 bg-muted rounded-md w-1/2" />
-                      </div>
-                    </div>
-                  ))}
+          <div className="space-y-8">
+            <p className="text-center text-xs font-black uppercase tracking-widest text-muted-foreground">
+              Loading featured experts…
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div
+                  key={i}
+                  className="premium-card p-1 bg-card h-[400px] flex flex-col border-border animate-pulse"
+                >
+                  <div className="aspect-4/3 rounded-[2rem] bg-muted mb-8" />
+                  <div className="p-8 pt-0 grow flex flex-col gap-4">
+                    <div className="h-8 bg-muted rounded-lg w-3/4" />
+                    <div className="h-4 bg-muted rounded-md w-1/2" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         ) : (
           <div className="space-y-16">
@@ -212,7 +231,9 @@ export default function Home() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                      {experts.map((expert) => (
+                      {experts.map((expert) => {
+                        const photoUrl = expertDisplayPhoto(expert)
+                        return (
                         <Link key={expert.id} href={`/book/${expert.id}`} className="group relative">
                           <div className="premium-card p-1 bg-card overflow-hidden h-full flex flex-col border-border">
                             <div className="aspect-4/3 rounded-[2rem] bg-muted mb-8 overflow-hidden relative shadow-inner isolate">
@@ -237,17 +258,17 @@ export default function Home() {
                                 </div>
                               )}
                               <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
-                                <div className="relative size-22 rounded-2xl ring-4 ring-card bg-card shadow-2xl overflow-hidden">
-                                  {expert.profile_pic_url ? (
+                                <div className="relative size-28 rounded-2xl ring-4 ring-card bg-card shadow-2xl overflow-hidden">
+                                  {photoUrl ? (
                                     <Image
-                                      src={expert.profile_pic_url}
+                                      src={photoUrl}
                                       alt={expert.profiles?.full_name ?? "Expert"}
                                       fill
                                       className="object-cover"
-                                      sizes="88px"
+                                      sizes="112px"
                                     />
                                   ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-3xl font-black text-muted-foreground bg-muted">
+                                    <div className="flex h-full min-h-28 w-full items-center justify-center text-3xl font-black text-muted-foreground bg-muted">
                                       {expert.profiles?.full_name?.charAt(0) || "E"}
                                     </div>
                                   )}
@@ -257,7 +278,7 @@ export default function Home() {
                             <div className="p-8 pt-0 grow flex flex-col">
                               <div className="grow">
                                 <h3 className="font-black text-3xl tracking-tighter mb-2 text-foreground transition-colors group-hover:text-primary leading-tight">
-                                  {expert.profiles?.full_name}
+                                  {expert.profiles?.full_name ?? "Expert"}
                                 </h3>
                                 <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-8 flex items-center gap-2">
                                   <BriefcaseIcon className="size-3" />
@@ -279,7 +300,8 @@ export default function Home() {
                             </div>
                           </div>
                         </Link>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
                 </div>

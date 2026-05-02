@@ -68,7 +68,7 @@ export function Features() {
                 {f.icon}
               </div>
               <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 group-hover:text-primary transition-colors">{f.title}</h3>
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed">{f.desc}</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
         </div>
