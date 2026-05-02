@@ -12,7 +12,6 @@ import Link from "next/link"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
-import { getDeviceId } from "@/lib/fingerprint"
 import { ensureExpertTeacherRow } from "@/lib/ensureExpertTeacher"
 
 const loginSchema = z.object({
@@ -36,11 +35,7 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true)
-    console.log("Attempting login for:", data.email)
     try {
-      const deviceId = await getDeviceId();
-      console.log("Device ID:", deviceId)
-      
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
