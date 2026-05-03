@@ -79,21 +79,8 @@ export default function SignupPage() {
 
       console.log("SignUp successful, user:", authData.user?.id, "session:", !!authData.session)
 
-      if (authData.user && data.role === "expert" && authData.session) {
-        console.log("Creating expert record immediately (session found)...")
-        const { error: tErr } = await supabase.from("teachers").upsert(
-          {
-            user_id: authData.user.id,
-            category: data.category || "Academic",
-            is_public: false,
-          },
-          { onConflict: "user_id", ignoreDuplicates: true }
-        )
-        if (tErr && tErr.code !== "23505") {
-          console.error("Could not create expert record immediately:", tErr)
-          throw new Error(tErr.message || "Failed to create expert profile")
-        }
-      }
+      // Do not write `teachers` here: auth/RLS can race during immediate signup.
+      // AuthProvider provisions the expert row safely after session settles.
 
       if (authData.session) {
         toast.success("Account created! Redirecting to dashboard...")

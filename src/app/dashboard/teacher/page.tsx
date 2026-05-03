@@ -360,18 +360,24 @@ export default function TeacherOverview() {
       if (updatedRows && updatedRows.length > 0) {
         setTeacherId(updatedRows[0].id)
       } else {
-        const { error: upErr } = await supabase.from("teachers").upsert(
-          {
-            user_id: authUser.id,
-            category: category || "Academic",
-            is_public: next,
-            updated_at: updatedAt,
-          },
-          { onConflict: "user_id" }
-        )
-        if (upErr) throw upErr
-        const { data: row } = await supabase.from("teachers").select("id").eq("user_id", authUser.id).maybeSingle()
-        if (row?.id) setTeacherId(row.id)
+        // If the row is missing, provision through the dedicated helper first
+        // (handles signup timing/races better than ad-hoc upsert here), then retry update.
+        const ensuredAgain = await ensureExpertTeacherRow(authUser)
+        if (ensuredAgain.status === "error") {
+          throw new Error(ensuredAgain.message || "Failed to prepare expert profile row")
+        }
+
+        const { data: retriedRows, error: retryErr } = await supabase
+          .from("teachers")
+          .update({ is_public: next, updated_at: updatedAt })
+          .eq("user_id", authUser.id)
+          .select("id")
+
+        if (retryErr) throw retryErr
+        if (!retriedRows || retriedRows.length === 0) {
+          throw new Error("Could not locate your expert row after provisioning. Please refresh and try again.")
+        }
+        setTeacherId(retriedRows[0].id)
       }
 
       if (next) {
