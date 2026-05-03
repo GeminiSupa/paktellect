@@ -49,6 +49,7 @@ export default function StudentDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set())
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({})
 
   const [isReviewOpen, setIsReviewOpen] = useState(false)
   const [reviewBookingId, setReviewBookingId] = useState<string | null>(null)
@@ -134,6 +135,23 @@ export default function StudentDashboard() {
         }))
 
         setBookings(mergedBookings as Booking[])
+
+        // Fetch unread message counts
+        const bookingIds = bookingsData.map(b => b.id)
+        if (bookingIds.length > 0) {
+          const { data: unreadMsgs } = await supabase
+            .from("messages")
+            .select("booking_id")
+            .in("booking_id", bookingIds)
+            .eq("is_read", false)
+            .neq("sender_id", currentUserId)
+          
+          const counts: Record<string, number> = {}
+          unreadMsgs?.forEach(m => {
+            counts[m.booking_id] = (counts[m.booking_id] || 0) + 1
+          })
+          setUnreadCounts(counts)
+        }
 
         // Fetch reviews
         const { data: r, error: rErr } = await supabase
@@ -458,8 +476,13 @@ export default function StudentDashboard() {
                                 </Button>
                             ) : (
                                 <Link href={`/dashboard/messages/${booking.id}`} className="flex-1">
-                                <Button className="w-full bg-slate-950 hover:bg-slate-900 text-white h-16 rounded-[1.5rem] font-black shadow-2xl transition-all group-hover:shadow-emerald-500/10">
+                                <Button className="w-full bg-slate-950 hover:bg-slate-900 text-white h-16 rounded-[1.5rem] font-black shadow-2xl transition-all group-hover:shadow-emerald-500/10 relative">
                                     Internal Secure Chat
+                                    {unreadCounts[booking.id] > 0 && (
+                                      <span className="absolute -top-2 -right-2 size-7 bg-primary text-white rounded-full flex items-center justify-center text-[10px] shadow-lg border-2 border-white dark:border-slate-900 animate-in zoom-in duration-300">
+                                        {unreadCounts[booking.id]}
+                                      </span>
+                                    )}
                                 </Button>
                                 </Link>
                             )}

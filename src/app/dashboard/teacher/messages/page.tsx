@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { Loader2, MessageSquare, Calendar, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { fetchProfilesByUserIds } from "@/lib/fetchProfilesByUserIds"
 export default function TeacherMessagesInbox() {
   const { user } = useStore()
   type Conversation = {
@@ -26,14 +27,25 @@ export default function TeacherMessagesInbox() {
         
         if (teacher) {
             // Fetch bookings that have messages or are active
-            const { data, error } = await supabase
+            const { data: bookingsRaw, error } = await supabase
               .from("bookings")
-              .select("*, profiles!bookings_user_id_fkey(full_name, avatar_url)")
+              .select("*")
               .eq("expert_id", teacher.id)
               .order("created_at", { ascending: false })
 
-            if (!error) {
-                setConversations(data || [])
+            if (!error && bookingsRaw) {
+                const studentUserIds = [...new Set(bookingsRaw.map(b => b.user_id))]
+                const profMap = await fetchProfilesByUserIds<{ full_name?: string | null; avatar_url?: string | null }>(
+                  supabase,
+                  studentUserIds,
+                  "id, full_name, avatar_url"
+                )
+
+                const rows = bookingsRaw.map(b => ({
+                  ...b,
+                  profiles: profMap.get(b.user_id) || null
+                }))
+                setConversations(rows)
             }
         }
       } catch (err) {

@@ -91,17 +91,56 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
   }, [user, id])
 
   const acceptProposal = async (appId: string, expertId: string) => {
-     // This would normally involve a payment flow (escrow) or creating a booking.
-     // For MVP, we'll mark the application as accepted and the job as in_progress.
      toast.info("Accepting proposal & initiating message line...")
      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error("No user found")
+
+        // 1. Mark application as accepted
         await supabase.from("job_applications").update({ status: 'accepted' }).eq("id", appId)
+        
+        // 2. Mark job as in_progress
         await supabase.from("jobs").update({ status: 'in_progress' }).eq("id", id)
+
+        // 3. Create a Booking to enable messaging/escrow
+        const now = new Date()
+        const bookingDate = now.toISOString().slice(0, 10)
+        const bookingTime = now.toTimeString().slice(0, 8)
+        
+        const { data: booking, error: bErr } = await supabase
+          .from("bookings")
+          .insert({
+            expert_id: expertId,
+            user_id: user.id,
+            booking_date: bookingDate,
+            booking_time: bookingTime,
+            video_link: "pending",
+            topic: `Mandate: ${job.title}`,
+            status: "pending",
+          })
+          .select()
+          .single()
+        
+        if (bErr) throw bErr
+
+        // 4. Create Escrow Transaction
+        const app = applications.find(a => a.id === appId)
+        const amount = app?.bid_amount || job.budget_pkr || 0
+
+        const { error: tErr } = await supabase.from("transactions").insert({
+           booking_id: booking.id,
+           payer_id: user.id,
+           payee_id: app.expert.user_id,
+           amount: amount,
+           status: 'held'
+        })
+        if (tErr) throw tErr
         
         toast.success("Proposal accepted! You can now message the expert.")
-        router.refresh()
-     } catch (err) {
-        toast.error("Process interrupted. Please try again.")
+        router.push(`/dashboard/messages/${booking.id}`)
+     } catch (err: any) {
+        console.error(err)
+        toast.error(err.message || "Process interrupted. Please try again.")
      }
   }
 
@@ -216,12 +255,48 @@ export default function StudentJobDetailPage({ params }: { params: Promise<{ id:
                                     {app.status === 'accepted' ? 'Hired' : 'Accept Proposal'}
                                     <ArrowRight className="size-4 shrink-0" />
                                  </Button>
-                                 <Link href={`/dashboard/messages/job/${job.id}`} className="w-full sm:flex-1">
-                                    <Button variant="outline" className="w-full min-h-14 sm:h-16 rounded-2xl border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 whitespace-normal text-center px-2">
-                                       <MessageSquare className="size-4 shrink-0" />
-                                       Open Message Line
-                                    </Button>
-                                 </Link>
+                                 <Button 
+                                   variant="outline" 
+                                   onClick={async () => {
+                                     try {
+                                       const { data: b } = await supabase
+                                         .from("bookings")
+                                         .select("id")
+                                         .eq("expert_id", app.expert_id)
+                                         .eq("user_id", user?.id)
+                                         .limit(1)
+                                         .maybeSingle()
+
+                                       if (b) {
+                                         router.push(`/dashboard/messages/${b.id}`)
+                                       } else {
+                                         const now = new Date()
+                                         const { data: newB, error } = await supabase
+                                           .from("bookings")
+                                           .insert({
+                                             expert_id: app.expert_id,
+                                             user_id: user?.id,
+                                             booking_date: now.toISOString().slice(0, 10),
+                                             booking_time: now.toTimeString().slice(0, 8),
+                                             video_link: "pending",
+                                             topic: `Inquiry: ${job.title}`,
+                                             status: "pending",
+                                           })
+                                           .select()
+                                           .single()
+                                         
+                                         if (error) throw error
+                                         router.push(`/dashboard/messages/${newB.id}`)
+                                       }
+                                     } catch (err) {
+                                       toast.error("Could not open message line.")
+                                     }
+                                   }}
+                                   className="w-full sm:flex-1 min-h-14 sm:h-16 rounded-2xl border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 whitespace-normal text-center px-2"
+                                 >
+                                    <MessageSquare className="size-4 shrink-0" />
+                                    Open Message Line
+                                 </Button>
                               </div>
                            </div>
                         </div>

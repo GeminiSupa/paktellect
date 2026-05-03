@@ -265,7 +265,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   booking_time TIME NOT NULL,
   video_link TEXT NOT NULL,
   topic TEXT NOT NULL,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed', 'requested')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;

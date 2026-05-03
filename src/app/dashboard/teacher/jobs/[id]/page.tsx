@@ -216,12 +216,49 @@ export default function ExpertJobDetailPage({ params }: { params: Promise<{ id: 
                 <h4 className="text-xl font-black text-emerald-800 dark:text-emerald-400 tracking-tight">Proposal Submitted</h4>
                 <p className="text-xs font-bold text-emerald-700/70 uppercase tracking-widest leading-relaxed">The client has been notified of your interest. You will be alerted upon their review.</p>
                 
-                <Link href={`/dashboard/messages/job/${id}`}>
-                   <Button variant="outline" className="w-full h-14 rounded-2xl border-emerald-200 text-emerald-700 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3">
-                      <MessageSquare className="size-4" />
-                      Message Client
-                   </Button>
-                </Link>
+                 <Button 
+                   onClick={async () => {
+                     try {
+                       const { data: b } = await supabase
+                         .from("bookings")
+                         .select("id")
+                         .eq("expert_id", teacherId)
+                         .eq("user_id", job.client_id)
+                         .limit(1)
+                         .maybeSingle()
+
+                       if (b) {
+                         router.push(`/dashboard/messages/${b.id}`)
+                       } else {
+                         // Create inquiry booking
+                         const now = new Date()
+                         const { data: newB, error } = await supabase
+                           .from("bookings")
+                           .insert({
+                             expert_id: teacherId,
+                             user_id: job.client_id,
+                             booking_date: now.toISOString().slice(0, 10),
+                             booking_time: now.toTimeString().slice(0, 8),
+                             video_link: "pending",
+                             topic: `Inquiry: ${job.title}`,
+                             status: "pending",
+                           })
+                           .select()
+                           .single()
+                         
+                         if (error) throw error
+                         router.push(`/dashboard/messages/${newB.id}`)
+                       }
+                     } catch (err) {
+                       toast.error("Could not open chat line.")
+                     }
+                   }}
+                   variant="outline" 
+                   className="w-full h-14 rounded-2xl border-emerald-200 text-emerald-700 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3"
+                 >
+                    <MessageSquare className="size-4" />
+                    Message Client
+                 </Button>
              </div>
            ) : (
              <form onSubmit={handleApply} className="bg-white dark:bg-slate-950 p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-xl space-y-8">
