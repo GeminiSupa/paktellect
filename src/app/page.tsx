@@ -7,7 +7,7 @@ import { HowItWorks } from "@/components/HowItWorks"
 import { Pricing } from "@/components/Pricing"
 import { Footer } from "@/components/Footer"
 import Link from "next/link"
-import { ArrowUpRight, Globe, Star, Zap, Loader2 } from "lucide-react"
+import { ArrowUpRight, Globe, Star, Zap } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { fetchProfilesByUserIds } from "@/lib/fetchProfilesByUserIds"
@@ -62,7 +62,6 @@ export default function Home() {
   }
 
   const categories = FEATURE_CATEGORIES
-  const MIN_REVIEWS = 3
 
   const [featuredByCategory, setFeaturedByCategory] = useState<Record<string, FeaturedExpert[]>>({})
   const [isLoading, setIsLoading] = useState(true)
@@ -90,11 +89,51 @@ export default function Home() {
       const teacherCols =
         "id, user_id, category, qualifications, rating_avg, review_count, is_online, profile_pic_url"
 
+      /** Must match /experts: RLS allows `is_public` true or null; `.eq(true)` alone hid legacy / edge rows. */
+      const publicDirectoryOr = "is_public.eq.true,is_public.is.null"
+
+      /**
+       * Top up to 3 slots from the live directory so brand-new experts (0 reviews) still appear.
+       * Rankings alone used to require review_count ≥ 3 and skipped everyone until they had reviews.
+       */
+      async function mergeWithDirectory(
+        existing: Omit<FeaturedExpert, "profiles">[]
+      ): Promise<Omit<FeaturedExpert, "profiles">[]> {
+        const seen = new Set(existing.map((t) => t.id))
+        const out = [...existing]
+        if (out.length >= 3) return out.slice(0, 3)
+
+        const { data: rows, error } = await supabase
+          .from("teachers")
+          .select(teacherCols)
+          .eq("category", category)
+          .or(publicDirectoryOr)
+          .order("review_count", { ascending: false, nullsFirst: false })
+          .order("rating_avg", { ascending: false, nullsFirst: false })
+          .limit(24)
+
+        if (error) {
+          console.error("Featured experts directory merge failed", category, error.message)
+          return out.slice(0, 3)
+        }
+
+        for (const row of rows ?? []) {
+          if (out.length >= 3) break
+          const id = row.id as string
+          if (!seen.has(id)) {
+            seen.add(id)
+            out.push(row as Omit<FeaturedExpert, "profiles">)
+          }
+        }
+        return out.slice(0, 3)
+      }
+
+      let ordered: Omit<FeaturedExpert, "profiles">[] = []
+
       const { data: ranked, error: rErr } = await supabase
         .from("teacher_rankings")
         .select("teacher_id, review_count, rating_avg, bayesian_score")
         .eq("category", category)
-        .gte("review_count", MIN_REVIEWS)
         .order("bayesian_score", { ascending: false })
         .limit(3)
 
@@ -106,27 +145,17 @@ export default function Home() {
           .in("id", teacherIds)
         if (!tErr && teachers && teachers.length > 0) {
           const byId = new Map((teachers as Omit<FeaturedExpert, "profiles">[]).map((t) => [t.id as string, t]))
-          const ordered = teacherIds.map((id) => byId.get(id)).filter(Boolean) as Omit<FeaturedExpert, "profiles">[]
-          return attachDisplayNames(ordered)
+          ordered = teacherIds
+            .map((id) => byId.get(id))
+            .filter(Boolean) as Omit<FeaturedExpert, "profiles">[]
         }
         if (tErr) console.warn("teacher_rankings ok but teachers fetch failed", tErr)
       } else if (rErr) {
-        console.warn("teacher_rankings unavailable, using fallback", rErr)
+        console.warn("teacher_rankings unavailable; filling from directory only", rErr.message)
       }
 
-      const { data: fallback, error: fErr } = await supabase
-        .from("teachers")
-        .select(teacherCols)
-        .eq("category", category)
-        .eq("is_public", true)
-        .order("review_count", { ascending: false })
-        .limit(3)
-
-      if (fErr) {
-        console.error("Featured experts fallback failed", fErr.message, fErr)
-        return []
-      }
-      return attachDisplayNames((fallback ?? []) as Omit<FeaturedExpert, "profiles">[])
+      const merged = await mergeWithDirectory(ordered)
+      return attachDisplayNames(merged)
     }
 
     async function fetchFeatured() {
@@ -170,7 +199,7 @@ export default function Home() {
             </h2>
             <p className="text-xl text-muted-foreground font-medium leading-relaxed">From clinical specialists to legal counselors, access the world&apos;s most trusted minds.</p>
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-6">
-              Featured rankings use verified reviews (min {MIN_REVIEWS}).
+              Mix of Bayesian rankings and live directory members — new experts appear as soon as they go public.
             </p>
           </div>
           <Link href="/experts" className="group flex flex-wrap items-center gap-3 sm:gap-4">
@@ -226,7 +255,7 @@ export default function Home() {
                       </div>
                       <h4 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Building Excellence</h4>
                       <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-sm mx-auto">
-                        Professionals in this category are currently being vetted or gathering their first {MIN_REVIEWS} verified reviews to appear on the leaderboard.
+                        No public experts in this category yet. Try the full directory — or check back as more professionals go live.
                       </p>
                     </div>
                   ) : (
