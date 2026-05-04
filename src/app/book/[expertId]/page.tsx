@@ -165,6 +165,10 @@ export default function BookingPage() {
         toast.error("Expert data not loaded yet. Please try again.")
         return
       }
+      if (user.id === expert.user_id) {
+        toast.error("You cannot book your own expert profile.")
+        return
+      }
 
       const { data: booking, error } = await supabase
         .from('bookings')
@@ -214,6 +218,10 @@ export default function BookingPage() {
         return
       }
       if (!expert) return
+      if (user.id === expert.user_id) {
+        toast.error("You cannot message yourself from your own listing.")
+        return
+      }
 
       const text = contactMessage.trim()
       if (!text) {

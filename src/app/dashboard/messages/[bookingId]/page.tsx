@@ -19,6 +19,7 @@ export default function ChatPage() {
     sender_id: string
     content: string
     created_at: string
+    is_read?: boolean | null
     sender?: { full_name?: string | null }
   }
 
@@ -33,6 +34,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!user || !bookingId) return
+    const currentUserId = user.id
 
     async function loadMessages() {
       try {
@@ -44,6 +46,13 @@ export default function ChatPage() {
 
         if (!error && data) {
           setMessages(data)
+          const unreadFromOtherIds = data
+            .filter((m) => m.sender_id !== currentUserId && m.is_read === false)
+            .map((m) => m.id)
+            .filter((id): id is string => typeof id === "string")
+          if (unreadFromOtherIds.length > 0) {
+            await supabase.from("messages").update({ is_read: true }).in("id", unreadFromOtherIds)
+          }
         }
       } catch (err) {
         console.error(err)
@@ -68,7 +77,13 @@ export default function ChatPage() {
         (payload) => {
           const incoming = payload.new as unknown as ChatMessage
           if (incoming?.sender_id && incoming?.content && incoming?.created_at) {
-            setMessages((current) => [...current, incoming])
+            setMessages((current) => {
+              if (incoming.id && current.some((m) => m.id === incoming.id)) return current
+              return [...current, incoming]
+            })
+            if (incoming.sender_id !== currentUserId && incoming.id) {
+              void supabase.from("messages").update({ is_read: true }).eq("id", incoming.id)
+            }
           }
           setTimeout(scrollToBottom, 50)
         }
@@ -96,12 +111,31 @@ export default function ChatPage() {
     setTimeout(scrollToBottom, 50)
 
     try {
-      const { error } = await supabase.from("messages").insert({
-        booking_id: bookingId,
-        sender_id: user.id,
-        content: tempMsg.content
-      })
-      if (error) throw error;
+      const { data: inserted, error } = await supabase
+        .from("messages")
+        .insert({
+          booking_id: bookingId,
+          sender_id: user.id,
+          content: tempMsg.content,
+        })
+        .select("id, booking_id, sender_id, content, created_at")
+        .single()
+      if (error) throw error
+      if (inserted) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === tempMsg.id
+              ? {
+                  id: inserted.id,
+                  booking_id: inserted.booking_id,
+                  sender_id: inserted.sender_id,
+                  content: inserted.content,
+                  created_at: inserted.created_at,
+                }
+              : m
+          )
+        )
+      }
     } catch (err) {
       console.error("Failed to send message", err)
       setMessages(prev => prev.filter(m => m.id !== tempMsg.id))
