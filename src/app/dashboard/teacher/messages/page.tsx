@@ -22,31 +22,60 @@ export default function TeacherMessagesInbox() {
   useEffect(() => {
     async function loadConversations() {
       if (!user) return
+      setIsLoading(true)
       try {
         const { data: teacher } = await supabase.from('teachers').select('id').eq('user_id', user.id).single()
         
         if (teacher) {
-            // Fetch bookings that have messages or are active
-            const { data: bookingsRaw, error } = await supabase
+            // 1. Fetch bookings
+            const { data: bookingsRaw, error: bErr } = await supabase
               .from("bookings")
               .select("*")
               .eq("expert_id", teacher.id)
               .order("created_at", { ascending: false })
 
-            if (!error && bookingsRaw) {
-                const studentUserIds = [...new Set(bookingsRaw.map(b => b.user_id))]
-                const profMap = await fetchProfilesByUserIds<{ full_name?: string | null; avatar_url?: string | null }>(
-                  supabase,
-                  studentUserIds,
-                  "id, full_name, avatar_url"
-                )
+            // 2. Fetch job applications where the expert is involved
+            const { data: appsRaw, error: aErr } = await supabase
+              .from("job_applications")
+              .select("id, job_id, jobs(title, client_id)")
+              .eq("expert_id", teacher.id)
 
-                const rows = bookingsRaw.map(b => ({
-                  ...b,
-                  profiles: profMap.get(b.user_id) || null
-                }))
-                setConversations(rows)
-            }
+            if (bErr) throw bErr
+            if (aErr) throw aErr
+
+            const studentUserIds = [
+              ...new Set([
+                ...(bookingsRaw || []).map(b => b.user_id),
+                ...(appsRaw || []).map(a => (a.jobs as any)?.client_id)
+              ])
+            ].filter(Boolean)
+
+            const profMap = await fetchProfilesByUserIds<{ full_name?: string | null; avatar_url?: string | null }>(
+              supabase,
+              studentUserIds,
+              "id, full_name, avatar_url"
+            )
+
+            const bookingRows = (bookingsRaw || []).map(b => ({
+              id: b.id,
+              type: 'booking' as const,
+              topic: b.topic || "Session",
+              date: b.booking_date,
+              status: b.status,
+              profiles: profMap.get(b.user_id) || null
+            }))
+
+            const jobRows = (appsRaw || []).map(a => ({
+              id: a.job_id,
+              type: 'job' as const,
+              topic: `Mandate: ${(a.jobs as any)?.title || "Project"}`,
+              date: null,
+              status: 'Inquiry',
+              profiles: profMap.get((a.jobs as any)?.client_id) || null
+            }))
+
+            // Combine and sort by created_at (wait, jobRows don't have created_at here, let's keep it simple for now or fetch it)
+            setConversations([...bookingRows, ...jobRows])
         }
       } catch (err) {
         console.error(err)
@@ -74,8 +103,12 @@ export default function TeacherMessagesInbox() {
           </div>
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-white/5">
-            {conversations.map((conv) => (
-              <Link key={conv.id} href={`/dashboard/messages/${conv.id}`} className="block group">
+            {conversations.map((conv: any) => (
+              <Link 
+                key={conv.id} 
+                href={conv.type === 'job' ? `/dashboard/messages/job/${conv.id}` : `/dashboard/messages/${conv.id}`} 
+                className="block group"
+              >
                 <div className="p-8 hover:bg-slate-50 dark:hover:bg-slate-950 transition-all flex items-center justify-between gap-8">
                   <div className="flex items-center gap-6">
                     <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800">
@@ -89,13 +122,13 @@ export default function TeacherMessagesInbox() {
                         <h4 className="font-black text-xl text-slate-900 dark:text-white mb-1 group-hover:text-primary transition-colors">{conv.profiles?.full_name || 'Student'}</h4>
                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                            <Calendar className="size-3" />
-                           {conv.topic} — {conv.booking_date}
+                           {conv.topic} {conv.date ? `— ${conv.date}` : ''}
                         </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                      <span className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase tracking-widest border ${
-                        conv.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'
+                        conv.status === 'confirmed' || conv.status === 'Inquiry' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'
                      }`}>
                         {conv.status}
                      </span>

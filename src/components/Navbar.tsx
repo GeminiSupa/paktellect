@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "./ui/Button"
 import { LayoutDashboard, Menu, X, LogOut } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -15,6 +16,7 @@ import Image from "next/image"
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const { user, setUser } = useStore()
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? undefined
 
@@ -29,6 +31,8 @@ export function Navbar() {
       if (error) throw error
       setUser(null)
       toast.success("Signed out successfully")
+      router.replace("/")
+      router.refresh()
     } catch (err: unknown) {
       console.error(err)
       const message = err instanceof Error ? err.message : "Failed to sign out"

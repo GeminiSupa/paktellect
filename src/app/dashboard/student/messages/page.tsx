@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Loader2, MessageSquare, ArrowRight, Inbox } from "lucide-react"
+import { Loader2, MessageSquare, ArrowRight, Inbox, Briefcase } from "lucide-react"
 import Image from "next/image"
 
 import { useStore } from "@/store/useStore"
@@ -43,34 +43,61 @@ export default function StudentMessagesInbox() {
     let active = true
     async function load() {
       try {
-        const { data } = await supabase
+        // 1. Fetch bookings
+        const { data: bData } = await supabase
           .from("bookings")
           .select("id, topic, status, booking_date, booking_time, expert_id, teachers!bookings_expert_id_fkey(user_id, category)")
           .eq("user_id", user!.id)
           .order("booking_date", { ascending: false })
           .limit(50)
 
+        // 2. Fetch jobs posted by student
+        const { data: jData } = await supabase
+          .from("jobs")
+          .select("id, title, status, created_at")
+          .eq("client_id", user!.id)
+          .order("created_at", { ascending: false })
+          .limit(50)
+
         if (!active) return
-        const rowsRaw = (data || []) as unknown as BookingThread[]
-        const expertUserIds = rowsRaw
+
+        const bookingRowsRaw = (bData || []) as unknown as BookingThread[]
+        const expertUserIds = bookingRowsRaw
           .map((r) => r.teachers?.user_id)
           .filter((uid): uid is string => typeof uid === "string" && uid.length > 0)
+        
         const profMap = await fetchProfilesByUserIds<ProfileLite & { id?: string }>(
           supabase,
           expertUserIds,
           "id, full_name, avatar_url"
         )
-        const rows = rowsRaw.map((r) => {
+
+        const bookingThreads = bookingRowsRaw.map((r) => {
           const uid = r.teachers?.user_id
           const profiles = uid ? profMap.get(uid) ?? null : null
           return {
-            ...r,
-            teachers: r.teachers ? { ...r.teachers, profiles } : r.teachers,
+            id: r.id,
+            type: 'booking' as const,
+            topic: r.topic || "Session",
+            status: r.status,
+            date: r.booking_date,
+            profiles
           }
         })
-        setThreads(rows)
 
-        const ids = rows.map((r) => r.id)
+        const jobThreads = (jData || []).map(j => ({
+          id: j.id,
+          type: 'job' as const,
+          topic: `Job: ${j.title}`,
+          status: j.status,
+          date: j.created_at?.split('T')[0] || null,
+          profiles: null // In job view, you see applications, so profiles is handled differently
+        }))
+
+        setThreads([...bookingThreads, ...jobThreads] as any)
+
+        // Unread counts for bookings
+        const ids = bookingThreads.map((r) => r.id)
         if (ids.length > 0) {
           const { data: msgRows } = await supabase
             .from("messages")
@@ -147,23 +174,25 @@ export default function StudentMessagesInbox() {
         </div>
       ) : (
         <ul className="space-y-3">
-          {threads.map((t) => {
-            const profile = pickProfile(t.teachers?.profiles)
-            const name = profile?.full_name || "Expert"
+          {threads.map((t: any) => {
+            const profile = t.profiles
+            const name = profile?.full_name || (t.type === 'job' ? "Multiple Experts" : "Expert")
             const avatar = profile?.avatar_url
             const unread = unreadByBooking[t.id] || 0
+            const href = t.type === 'job' ? `/dashboard/student/jobs/${t.id}` : `/dashboard/messages/${t.id}`
+            
             return (
               <li key={t.id}>
                 <Link
-                  href={`/dashboard/messages/${t.id}`}
+                  href={href}
                   className="flex items-center gap-4 p-4 sm:p-5 rounded-2xl border border-border bg-card hover:border-primary/40 transition-colors"
                 >
-                  <div className="relative size-12 rounded-xl overflow-hidden bg-muted shrink-0 border border-border">
+                  <div className="relative size-12 rounded-xl overflow-hidden bg-muted shrink-0 border border-border flex items-center justify-center">
                     {avatar ? (
                       <Image src={avatar} alt={name} fill className="object-cover" sizes="48px" />
                     ) : (
                       <div className="size-full flex items-center justify-center text-muted-foreground font-black">
-                        {name.slice(0, 1).toUpperCase()}
+                        {t.type === 'job' ? <Briefcase className="size-5" /> : name.slice(0, 1).toUpperCase()}
                       </div>
                     )}
                   </div>
@@ -172,13 +201,13 @@ export default function StudentMessagesInbox() {
                       <p className="font-bold text-foreground truncate">{name}</p>
                       {unread > 0 && (
                         <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black">
-                          {unread}
+                           {unread}
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">
-                      {t.topic || "Booking conversation"}
-                      {t.booking_date ? ` • ${t.booking_date}` : ""}
+                      {t.topic}
+                      {t.date ? ` • ${t.date}` : ""}
                       {t.status ? ` • ${t.status}` : ""}
                     </p>
                   </div>
